@@ -508,6 +508,14 @@ func _update_world_visuals() -> void:
         if is_instance_valid(unit):
             unit.z_index = clampi(int(Projection.screen_depth(unit.global_position) / 4.0), 0, 1024)
             unit.queue_redraw()
+    # Bosses live in separate references rather than the ordinary
+    # enemies array, but share the same world-depth ordering.
+    if boss != null and is_instance_valid(boss):
+        boss.z_index = clampi(int(Projection.screen_depth(boss.global_position) / 4.0), 0, 1024)
+        boss.queue_redraw()
+    if elite_boss != null and is_instance_valid(elite_boss):
+        elite_boss.z_index = clampi(int(Projection.screen_depth(elite_boss.global_position) / 4.0), 0, 1024)
+        elite_boss.queue_redraw()
     if chest_node != null:
         chest_node.z_index = clampi(int(Projection.screen_depth(chest_node.global_position) / 4.0), 0, 1024)
         chest_node.queue_redraw()
