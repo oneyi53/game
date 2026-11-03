@@ -1,7 +1,7 @@
 class_name Hero
 extends CharacterBody2D
 
-const WorldProjection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 
 # One party member. The captain moves with the joystick or keyboard.
 # Followers move toward a fixed offset from the captain and speed up
@@ -247,7 +247,7 @@ func use_skill() -> bool:
 func _draw() -> void:
     if dead:
         return
-    var projection_offset: Vector2 = WorldProjection.world_to_screen(global_position) - global_position
+    var projection_offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
     # Flattened shadow stays on the projected ground; the character is
     # drawn upright above the foot anchor to create visible 2.5D height.
     draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.42))
