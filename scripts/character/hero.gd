@@ -245,9 +245,14 @@ func use_skill() -> bool:
     return true
 
 func _draw() -> void:
-    draw_set_transform(Projection.world_to_screen(global_position) - global_position)
     if dead:
         return
+    var projection_offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    # A flattened ground shadow keeps the foot point visually grounded.
+    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
+    draw_circle(Vector2.ZERO, 14.0, Color(0.05, 0.18, 0.05, 0.28))
+    # Raise the upright character body from its ground anchor.
+    draw_set_transform(projection_offset + Vector2(0.0, -16.0))
     # Visual only: body circle radius, hp bar and all gameplay values
     # are unchanged. Per-hero details are small _draw() marks inside
     # or beside the same 16 px body, following the Q-style bright
