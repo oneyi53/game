@@ -152,6 +152,7 @@ func _draw() -> void:
             draw_colored_polygon(PackedVector2Array([Vector2(-15.0, -2.0), Vector2(-13.0, -17.0), Vector2(-5.0, -26.0), Vector2(8.0, -24.0), Vector2(15.0, -13.0), Vector2(12.0, -2.0)]), enemy_color)
             draw_colored_polygon(PackedVector2Array([Vector2(-8.0, -18.0), Vector2(-4.0, -24.0), Vector2(2.0, -20.0)]), Color(0.75, 0.75, 0.72))
             draw_circle(Vector2(7.0, -7.0), 3.0, Color(1.0, 0.8, 0.2))
-    draw_rect(Rect2(-16.0, -39.0, 32.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
-    var fill: float = 32.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-16.0, -39.0, fill, 5.0), Color(0.9, 0.2, 0.2))
+    # Keep the health bar clear of ears, horns, wings and mushroom caps.
+    draw_rect(Rect2(-18.0, -47.0, 36.0, 5.0), Color(0.08, 0.08, 0.08, 0.92))
+    var fill: float = 36.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-18.0, -47.0, fill, 5.0), Color(0.95, 0.22, 0.2))
