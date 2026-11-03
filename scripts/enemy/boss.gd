@@ -168,7 +168,8 @@ func _draw() -> void:
         return
     var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
     if telegraph_active:
-        draw_set_transform(offset, 0.0, Vector2(1.0, 0.5))
+        # Match the projected footprint of a 95-unit logical circle.
+        draw_set_transform(offset, 0.0, Vector2(0.7071068, 0.3535534))
         draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.22))
         draw_arc(Vector2.ZERO, 95.0, 0.0, TAU, 48, Color(1.0, 0.12, 0.12, 0.95), 3.0, true)
         for angle_step in range(8):
