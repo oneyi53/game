@@ -148,11 +148,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.config/godot"
-          keytool -genkeypair -v \\
-            -keystore "$HOME/debug.keystore" \\
-            -storepass android -keypass android \\
-            -alias androiddebugkey -keyalg RSA -keysize 2048 \\
-            -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          keytool -genkeypair -v -keystore "$HOME/debug.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           cat > "$HOME/.config/godot/editor_settings-4.3.tres" <<EOF
           [gd_resource type="EditorSettings" format=3]
 
