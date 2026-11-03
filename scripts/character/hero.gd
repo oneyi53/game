@@ -2,6 +2,14 @@ class_name Hero
 extends CharacterBody2D
 
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const HERO_TEXTURES := {
+    "captain": preload("res://assets/art-v1/sprites/heroes/captain.png"),
+    "archer": preload("res://assets/art-v1/sprites/heroes/archer.png"),
+    "guardian": preload("res://assets/art-v1/sprites/heroes/guardian.png"),
+    "mage": preload("res://assets/art-v1/sprites/heroes/mage.png"),
+    "healer": preload("res://assets/art-v1/sprites/heroes/healer.png"),
+    "assassin": preload("res://assets/art-v1/sprites/heroes/assassin.png")
+}
 
 # One party member. The captain moves with the joystick or keyboard.
 # Followers move toward a fixed offset from the captain and speed up
@@ -248,83 +256,15 @@ func _draw() -> void:
     if dead:
         return
     var projection_offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
-    # Flattened shadow stays on the projected ground; the character is
-    # drawn upright above the foot anchor to create visible 2.5D height.
+    # Keep the ground shadow projected while the sprite remains upright.
     draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.42))
     draw_circle(Vector2.ZERO, 14.0, Color(0.05, 0.18, 0.05, 0.28))
     draw_set_transform(projection_offset)
-    # Boots and legs.
-    draw_line(Vector2(-5.0, -5.0), Vector2(-6.0, 0.0), Color(0.22, 0.2, 0.16), 4.0)
-    draw_line(Vector2(5.0, -5.0), Vector2(6.0, 0.0), Color(0.22, 0.2, 0.16), 4.0)
-    draw_line(Vector2(-6.0, 0.0), Vector2(-8.0, 1.0), Color(0.38, 0.25, 0.16), 3.0)
-    draw_line(Vector2(6.0, 0.0), Vector2(8.0, 1.0), Color(0.38, 0.25, 0.16), 3.0)
-    # Role silhouettes: keep the same foot anchor and readable head,
-    # but vary the torso outline and equipment without touching stats.
-    var body_points := PackedVector2Array()
-    match hero_id:
-        "guardian":
-            body_points = PackedVector2Array([Vector2(-12.0, -25.0), Vector2(12.0, -25.0), Vector2(14.0, -8.0), Vector2(8.0, -5.0), Vector2(-8.0, -5.0), Vector2(-14.0, -8.0)])
-        "healer", "mage":
-            body_points = PackedVector2Array([Vector2(-7.0, -27.0), Vector2(7.0, -27.0), Vector2(13.0, -5.0), Vector2(-13.0, -5.0)])
-        "assassin":
-            body_points = PackedVector2Array([Vector2(-6.0, -25.0), Vector2(7.0, -29.0), Vector2(10.0, -8.0), Vector2(3.0, -5.0), Vector2(-9.0, -8.0)])
-        _:
-            body_points = PackedVector2Array([Vector2(-8.0, -25.0), Vector2(8.0, -25.0), Vector2(11.0, -8.0), Vector2(6.0, -5.0), Vector2(-6.0, -5.0), Vector2(-11.0, -8.0)])
-    draw_colored_polygon(body_points, hero_color)
-    var body_outline := PackedVector2Array(body_points)
-    body_outline.append(body_points[0])
-    draw_polyline(body_outline, Color(0.12, 0.16, 0.18), 2.4, true)
-    draw_line(Vector2(-9.0, -21.0), Vector2(-14.0, -12.0), hero_color.lightened(0.15), 4.0)
-    draw_line(Vector2(9.0, -21.0), Vector2(14.0, -12.0), hero_color.lightened(0.15), 4.0)
-    # Head, hair cap and simple readable face.
-    draw_circle(Vector2(0.0, -32.0), 9.0, Color(1.0, 0.78, 0.58))
-    draw_arc(Vector2(0.0, -34.0), 9.0, PI, TAU, 16, Color(0.28, 0.2, 0.16), 3.0)
-    draw_circle(Vector2(-3.0, -31.0), 1.0, Color(0.15, 0.15, 0.15))
-    draw_circle(Vector2(3.0, -31.0), 1.0, Color(0.15, 0.15, 0.15))
-    draw_line(Vector2(-3.0, -25.0), Vector2(3.0, -25.0), Color(0.72, 0.32, 0.28), 1.0)
-    # Small role-specific silhouettes; all marks are visual only.
-    match hero_id:
-        "captain":
-            draw_rect(Rect2(-9.0, -17.0, 18.0, 3.0), Color(1.0, 0.78, 0.2))
-            # Clearly readable short sword and crossguard.
-            draw_line(Vector2(13.0, -20.0), Vector2(22.0, -4.0), Color(0.12, 0.16, 0.18), 5.0)
-            draw_line(Vector2(13.0, -20.0), Vector2(22.0, -4.0), Color(0.92, 0.97, 1.0), 2.5)
-            draw_line(Vector2(10.0, -15.0), Vector2(17.0, -19.0), Color(0.68, 0.43, 0.2), 2.5)
-        "archer":
-            draw_arc(Vector2(16.0, -17.0), 10.0, -1.2, 1.2, 16, Color(0.12, 0.16, 0.18), 4.0)
-            draw_arc(Vector2(16.0, -17.0), 10.0, -1.2, 1.2, 16, Color(0.72, 0.46, 0.2), 2.0)
-            draw_line(Vector2(16.0, -27.0), Vector2(16.0, -7.0), Color(0.95, 0.9, 0.7), 1.2)
-        "guardian":
-            # Broad shield with dark outline and bright center boss.
-            var shield := PackedVector2Array([Vector2(10.0, -27.0), Vector2(22.0, -23.0), Vector2(21.0, -10.0), Vector2(15.0, -5.0), Vector2(9.0, -10.0)])
-            draw_colored_polygon(shield, Color(0.28, 0.62, 0.9))
-            shield.append(shield[0])
-            draw_polyline(shield, Color(0.1, 0.15, 0.2), 2.5, true)
-            draw_circle(Vector2(15.0, -17.0), 3.0, Color(1.0, 0.82, 0.2))
-        "mage":
-            draw_line(Vector2(-15.0, -29.0), Vector2(-15.0, -2.0), Color(0.12, 0.16, 0.18), 5.0)
-            draw_line(Vector2(-15.0, -29.0), Vector2(-15.0, -2.0), Color(0.55, 0.36, 0.2), 2.5)
-            draw_circle(Vector2(-15.0, -31.0), 5.0, Color(0.65, 0.9, 1.0))
-            draw_circle(Vector2(-15.0, -31.0), 2.0, Color.WHITE)
-            draw_colored_polygon(
-                PackedVector2Array([Vector2(-9.0, -39.0), Vector2(0.0, -48.0), Vector2(9.0, -39.0)]),
-                Color(0.42, 0.3, 0.68)
-            )
-        "healer":
-            # Light robe and a tall healing staff.
-            draw_colored_polygon(PackedVector2Array([Vector2(-9.0, -24.0), Vector2(9.0, -24.0), Vector2(13.0, -5.0), Vector2(-13.0, -5.0)]), Color(0.78, 0.94, 0.88))
-            draw_polyline(PackedVector2Array([Vector2(-9.0, -24.0), Vector2(9.0, -24.0), Vector2(13.0, -5.0), Vector2(-13.0, -5.0), Vector2(-9.0, -24.0)]), Color(0.12, 0.16, 0.18), 2.0, true)
-            draw_line(Vector2(-16.0, -34.0), Vector2(-16.0, -2.0), Color(0.12, 0.16, 0.18), 5.0)
-            draw_line(Vector2(-16.0, -34.0), Vector2(-16.0, -2.0), Color(0.66, 0.48, 0.25), 2.5)
-            draw_circle(Vector2(-16.0, -36.0), 5.0, Color(0.55, 0.98, 0.88))
-            draw_circle(Vector2(-16.0, -36.0), 2.0, Color.WHITE)
-        "assassin":
-            draw_colored_polygon(
-                PackedVector2Array([Vector2(-8.0, -25.0), Vector2(0.0, -29.0), Vector2(8.0, -25.0), Vector2(0.0, -21.0)]),
-                Color(0.25, 0.22, 0.32)
-            )
-            draw_line(Vector2(12.0, -14.0), Vector2(21.0, -20.0), Color(1.0, 0.48, 0.3), 2.5)
-    # HP bar remains attached above the character, not to the ground.
-    draw_rect(Rect2(-18.0, -51.0, 36.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
-    var fill: float = 36.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-18.0, -51.0, fill, 5.0), Color(0.2, 0.9, 0.3))
+    var hero_texture: Texture2D = HERO_TEXTURES.get(hero_id)
+    if hero_texture != null:
+        # 512px canvas, foot anchor (256, 480), displayed at 96px high.
+        draw_texture_rect(hero_texture, Rect2(-48.0, -90.0, 96.0, 96.0), false)
+    # Health bar sits above the complete sprite silhouette.
+    draw_rect(Rect2(-24.0, -98.0, 48.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
+    var fill: float = 48.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-24.0, -98.0, fill, 5.0), Color(0.2, 0.9, 0.3))
