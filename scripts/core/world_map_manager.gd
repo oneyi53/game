@@ -76,6 +76,37 @@ func is_unlocked(map_id: String, boss_defeated: bool, elite_defeated: bool, vall
 func map_from_legacy_position(_position: Vector2, _boss_defeated: bool, _elite_defeated: bool, _valley_quest_done: bool) -> String:
     return MOSS_CROWN
 
+# Stable region routing for the legacy combined-world spawn table.
+# The starter field contains the original opening encounters and the
+# north clearing becomes an advanced subregion after the main boss.
+const STARTER_REGION := "starter"
+const NORTH_CLEARING_REGION := "north_clearing"
+
+func enemy_region(enemy_id: String) -> String:
+    match enemy_id:
+        "thorn_vine", "forest_wasp", "boss_thorn":
+            return NORTH_CLEARING_REGION
+        _:
+            return STARTER_REGION
+
+func is_region_unlocked(region_id: String, boss_defeated: bool) -> bool:
+    match region_id:
+        STARTER_REGION:
+            return true
+        NORTH_CLEARING_REGION:
+            return boss_defeated
+        _:
+            return false
+
+func map_for_enemy(enemy_id: String) -> String:
+    match enemy_id:
+        "valley_firefly", "withered_puppet", "stream_spirit", "valley_mushroom":
+            return FALLEN_LEAF
+        "dawn_deer", "hill_rock":
+            return MORNING_DEW
+        _:
+            return MOSS_CROWN
+
 func clamp_to_map(position: Vector2, map_id: String, margin: float = 24.0) -> Vector2:
     var bounds: Rect2 = map_bounds(map_id)
     return Vector2(
