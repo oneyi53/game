@@ -4,6 +4,7 @@ extends Node2D
 # Static map art is projected for display only. All gameplay positions
 # remain in the original 1600x1200 logical coordinate system.
 const Projection = preload("res://scripts/core/world_projection.gd")
+const TREE_VISUAL_SCRIPT = preload("res://scripts/core/tree_visual.gd")
 
 const MAP_WIDTH: int = 1600
 const MAP_HEIGHT: int = 1200
@@ -15,6 +16,15 @@ var tree_positions: Array = [
     Vector2(180, 560), Vector2(1420, 640), Vector2(640, 120), Vector2(980, 1080),
     Vector2(220, 320), Vector2(1380, 880), Vector2(760, 240), Vector2(520, 920),
 ]
+
+func _ready() -> void:
+    # Trees are separate world objects so they can interleave with heroes,
+    # monsters, bosses and interactables in one depth-sorted render order.
+    for tree_pos in tree_positions:
+        var tree := Node2D.new()
+        tree.set_script(TREE_VISUAL_SCRIPT)
+        tree.position = tree_pos
+        add_child(tree)
 
 func _project(point: Vector2) -> Vector2:
     return Projection.world_to_screen(point)
@@ -104,5 +114,3 @@ func _draw() -> void:
         Color(0.6, 0.45, 0.25)
     )
 
-    for tree_pos in tree_positions:
-        _draw_tree(tree_pos)
