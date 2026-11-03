@@ -2,6 +2,7 @@ class_name TreeVisual
 extends Node2D
 
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const TREE_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/tree_green.png")
 
 func _ready() -> void:
     z_as_relative = false
@@ -9,9 +10,9 @@ func _ready() -> void:
     queue_redraw()
 
 func _draw() -> void:
-    # Anchor the tree at its logical ground point, but keep its body upright.
-    draw_set_transform(WorldProjectionScript.world_to_screen(global_position) - global_position)
-    draw_rect(Rect2(-3.0, -17.0, 6.0, 17.0), Color(0.45, 0.3, 0.15))
-    draw_circle(Vector2(0.0, -26.0), 18.0, Color(0.15, 0.55, 0.25))
-    draw_circle(Vector2(-9.0, -20.0), 10.0, Color(0.2, 0.62, 0.3))
-    draw_circle(Vector2(9.0, -33.0), 7.0, Color(0.25, 0.68, 0.35))
+    var offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
+    draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 18.0, Color(0.08, 0.22, 0.06, 0.28))
+    draw_set_transform(offset)
+    # Slightly smaller than featured landmarks to keep the walking lanes open.
+    draw_texture_rect(TREE_TEXTURE, Rect2(-45.0, -84.375, 90.0, 90.0), false)
