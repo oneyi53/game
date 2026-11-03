@@ -157,6 +157,8 @@ func _heal_lowest_ally() -> void:
     for ally in get_tree().get_nodes_in_group("heroes"):
         if ally == null or ally == self:
             continue
+        if str(ally.get("world_map_id")) != world_map_id:
+            continue
         if bool(ally.get("dead")):
             continue
         var max_value: int = int(ally.get("max_hp"))
