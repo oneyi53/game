@@ -145,7 +145,9 @@ jobs:
           set -euo pipefail
           mkdir -p build
           "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --headless --import
-          "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --headless --export-release "Android" build/hero-world.apk
+          # Gradle mode requires the project-local android/build template, not only the global export templates.
+          # Godot installs it into this checkout and then performs the release export.
+          "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --headless --install-android-build-template --export-release "Android" build/hero-world.apk
 
       - name: Assert APK artifact (no fake green)
         shell: bash
