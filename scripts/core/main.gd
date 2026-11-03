@@ -23,6 +23,7 @@ extends Node2D
 # only 4 monsters spawned per run and nothing respawned.
 
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const WorldMapManagerScript = preload("res://scripts/core/world_map_manager.gd")
 
 const MAP_WIDTH: int = 1600
 const MAP_HEIGHT: int = 1200
@@ -47,6 +48,9 @@ const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
 @onready var offline_panel: OfflinePanel = $UI/OfflinePanel
 @onready var recruit_panel: RecruitPanel = $UI/RecruitPanel
 @onready var error_label: Label = $UI/ErrorLabel
+
+var world_map_manager: WorldMapManager = WorldMapManagerScript.new()
+var active_map_id: String = WorldMapManagerScript.MOSS_CROWN
 
 var data_loader: DataLoader = null
 var save_manager: SaveManager = null
@@ -361,6 +365,8 @@ func _spawn_enemy_at(enemy_id: String, pos: Vector2) -> bool:
     enemy.setup(enemy_data)
     enemy.global_position = pos
     enemy.set_meta("spawn_pos", pos)
+    enemy.set_meta("world_map_id", world_map_manager.map_for_enemy(enemy_id))
+    enemy.set_meta("world_region_id", world_map_manager.enemy_region(enemy_id))
     enemies_root.add_child(enemy)
     enemy.add_to_group("enemies")
     enemy.died.connect(_on_enemy_died)
@@ -421,6 +427,8 @@ func _spawn_enemies() -> void:
         boss.setup(boss_data)
         boss.global_position = Vector2(1300.0, 900.0)
         boss.spawn_position = Vector2(1300.0, 900.0)
+        boss.set_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)
+        boss.set_meta("world_region_id", WorldMapManagerScript.STARTER_REGION)
         enemies_root.add_child(boss)
         boss.add_to_group("enemies")
         boss.died.connect(_on_enemy_died)
@@ -436,6 +444,8 @@ func _spawn_enemies() -> void:
         elite_boss.setup(elite_data)
         elite_boss.global_position = Vector2(1000.0, 220.0)
         elite_boss.spawn_position = Vector2(1000.0, 220.0)
+        elite_boss.set_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)
+        elite_boss.set_meta("world_region_id", WorldMapManagerScript.NORTH_CLEARING_REGION)
         enemies_root.add_child(elite_boss)
         elite_boss.add_to_group("enemies")
         elite_boss.died.connect(_on_enemy_died)
