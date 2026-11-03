@@ -3,7 +3,10 @@ extends RefCounted
 
 # Owns world-map identity and unlock rules. Existing combat, quest and
 # reward systems remain authoritative; this class only routes the player
-# between safe town and the three existing progression regions.
+# between the safe town and the three progression regions.
+# Progression order follows the original campaign: Moss Crown is the
+# starting field, Fallen Leaf follows the main boss, Morning Dew follows
+# the elite boss and valley quest.
 
 const TOWN := "town"
 const MOSS_CROWN := "moss_crown"
@@ -57,25 +60,21 @@ func is_unlocked(map_id: String, boss_defeated: bool, elite_defeated: bool, vall
         TOWN:
             return true
         MOSS_CROWN:
-            return boss_defeated
+            return true
         FALLEN_LEAF:
-            return elite_defeated
+            return boss_defeated
         MORNING_DEW:
             return elite_defeated and valley_quest_done
         _:
             return false
 
-# Migrate old saves without a map identifier. Coordinates in the original
-# combined world are retained as a best-effort region hint; unknown or
-# central coordinates start in town rather than opening a locked map.
-func map_from_legacy_position(position: Vector2, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool) -> String:
-    if Rect2(200.0, 40.0, 1200.0, 280.0).has_point(position) and boss_defeated:
-        return MOSS_CROWN
-    if Rect2(40.0, 880.0, 720.0, 280.0).has_point(position) and elite_defeated:
-        return FALLEN_LEAF
-    if Rect2(840.0, 880.0, 720.0, 280.0).has_point(position) and elite_defeated and valley_quest_done:
-        return MORNING_DEW
-    return TOWN
+# Legacy saves contain only a position in the old combined world. That
+# coordinate cannot safely identify the active logical map: old boss and
+# monster spawn points overlap the newer map rectangles. Until a caller
+# performs an explicit, validated migration, preserve the campaign's
+# earliest field as the safe fallback rather than guessing a later map.
+func map_from_legacy_position(_position: Vector2, _boss_defeated: bool, _elite_defeated: bool, _valley_quest_done: bool) -> String:
+    return MOSS_CROWN
 
 func clamp_to_map(position: Vector2, map_id: String, margin: float = 24.0) -> Vector2:
     var bounds: Rect2 = map_bounds(map_id)
