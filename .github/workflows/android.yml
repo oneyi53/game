@@ -1,0 +1,133 @@
+# Hero World Android 1.0 release build (cloud only; never run Gradle on a dev VM).
+# Trigger: manual only (workflow_dispatch), so no build runs before the release
+# signing secrets below are set by the repository owner.
+# Required repository Secrets (set in GitHub repo Settings > Secrets and variables > Actions):
+#   ANDROID_KEYSTORE_BASE64 - base64 of the fixed release keystore (never commit the keystore itself)
+#   ANDROID_KEYSTORE_PASSWORD - keystore password
+#   ANDROID_KEY_ALIAS - key alias inside the keystore
+#   ANDROID_KEY_PASSWORD - key password
+# If any secret is missing, the job fails loudly (set -euo pipefail) and
+# produces NO APK. A debug-signed build is never published as 1.0.
+name: Android 1.0
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform and build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Generate project icon if missing (push_files cannot carry PNG)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f icon.png ]; then
+            python3 - << 'PYEOF'
+          from PIL import Image, ImageDraw
+          S = 512
+          img = Image.new('RGBA', (S, S), (0, 0, 0, 0))
+          d = ImageDraw.Draw(img)
+          d.rounded_rectangle([0, 0, S-1, S-1], radius=96, fill=(63, 174, 90, 255))
+          d.ellipse([340, 48, 464, 172], fill=(255, 209, 63, 255))
+          d.rectangle([232, 320, 280, 440], fill=(139, 90, 43, 255))
+          d.ellipse([132, 160, 380, 380], fill=(46, 160, 67, 255))
+          d.ellipse([170, 120, 342, 292], fill=(84, 200, 100, 255))
+          d.ellipse([210, 170, 302, 262], fill=(120, 220, 130, 255))
+          d.ellipse([120, 420, 392, 470], fill=(255, 209, 63, 255))
+          img.save('icon.png')
+          PYEOF
+          fi
+          test -s icon.png
+
+      - name: Download Godot 4.3 and export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot" "$HOME/.local/share/godot/export_templates/4.3.stable"
+          cd "$HOME/godot"
+          curl -fsSL -o godot.zip "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip"
+          unzip -o -q godot.zip
+          chmod +x Godot_v4.3-stable_linux.x86_64
+          curl -fsSL -o templates.tpz "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz"
+          unzip -o -q templates.tpz -d "$HOME/.local/share/godot/export_templates/4.3.stable"
+          "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --version
+
+      - name: Check release signing secrets (fail loudly if missing)
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for v in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!v:-}" ]; then echo "Missing required secret: $v" >&2; exit 1; fi
+          done
+          echo "All release signing secrets are present."
+
+      - name: Inject release keystore into export preset
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > release.keystore
+          test -s release.keystore
+          python3 - "$ANDROID_KEYSTORE_PASSWORD" "$ANDROID_KEY_ALIAS" "$ANDROID_KEY_PASSWORD" << 'PY'
+          import re, sys
+          pw, alias, kpw = sys.argv[1], sys.argv[2], sys.argv[3]
+          p = "export_presets.cfg"
+          t = open(p).read()
+          t = re.sub(r'keystore/release=""', 'keystore/release="release.keystore"', t, count=1)
+          t = re.sub(r'keystore/release_user=""', 'keystore/release_user="' + alias + '"', t, count=1)
+          t = re.sub(r'keystore/release_password=""', 'keystore/release_password="' + pw + '"', t, count=1)
+          t = re.sub(r'keystore/release_key=""', 'keystore/release_key="' + kpw + '"', t, count=1)
+          open(p, "w").write(t)
+          PY
+          grep -c 'keystore/release="release.keystore"' export_presets.cfg
+
+      - name: Export release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --headless --import
+          "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --headless --export-release "Android" build/hero-world.apk
+
+      - name: Assert APK artifact (no fake green)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/hero-world.apk
+          ls -lh build/hero-world.apk
+          sha256sum build/hero-world.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hero-world-1.0-apk
+          path: build/hero-world.apk
+          if-no-files-found: error
