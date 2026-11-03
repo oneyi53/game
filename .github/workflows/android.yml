@@ -81,7 +81,24 @@ jobs:
           unzip -o -q godot.zip
           chmod +x Godot_v4.3-stable_linux.x86_64
           curl -fsSL -o templates.tpz "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz"
-          unzip -o -q templates.tpz -d "$HOME/.local/share/godot/export_templates/4.3.stable"
+          # The .tpz archive may nest templates under templates/. Locate the
+          # Android source template and install the full payload at Godot's version path.
+          TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.3.stable"
+          TEMPLATE_TMP="$RUNNER_TEMP/godot-export-templates"
+          mkdir -p "$TEMPLATE_TMP"
+          unzip -o -q templates.tpz -d "$TEMPLATE_TMP"
+          ANDROID_SOURCE="$(find "$TEMPLATE_TMP" -type f -name android_source.zip -print -quit)"
+          if [ -z "$ANDROID_SOURCE" ]; then
+            echo "ERROR: android_source.zip is missing from the Godot export template archive." >&2
+            echo "Archive contents:" >&2
+            find "$TEMPLATE_TMP" -maxdepth 4 -type f | sort | head -200 >&2
+            exit 1
+          fi
+          SOURCE_DIR="$(dirname "$ANDROID_SOURCE")"
+          cp -a "$SOURCE_DIR"/. "$TEMPLATE_DIR"/
+          echo "Installed Godot Android export templates:"
+          find "$TEMPLATE_DIR" -maxdepth 1 -type f -printf '%f (%s bytes)\n' | sort
+          test -s "$TEMPLATE_DIR/android_source.zip"
           "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --version
 
       - name: Check release signing secrets (fail loudly if missing)
