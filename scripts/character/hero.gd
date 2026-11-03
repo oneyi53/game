@@ -1,6 +1,8 @@
 class_name Hero
 extends CharacterBody2D
 
+const Projection = preload("res://scripts/core/world_projection.gd")
+
 # One party member. The captain moves with the joystick or keyboard.
 # Followers move toward a fixed offset from the captain and speed up
 # when they fall behind, so a straggler rejoins the formation on its own.
@@ -243,6 +245,7 @@ func use_skill() -> bool:
     return true
 
 func _draw() -> void:
+    draw_set_transform(Projection.world_to_screen(global_position) - global_position)
     if dead:
         return
     # Visual only: body circle radius, hp bar and all gameplay values
