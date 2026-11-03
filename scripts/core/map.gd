@@ -100,11 +100,21 @@ func _draw() -> void:
         Color(0.5, 0.4, 0.1, 0.12), Color(0.5, 0.4, 0.1), 3.0
     )
 
+    # Region labels sit inside their own clear upper-edge plaques,
+    # away from the boss/monster silhouettes. These are map-only visuals.
     var label_font = ThemeDB.fallback_font
     if label_font != null:
-        draw_string(label_font, _project(Vector2(800.0, 180.0)), "苔冠空地")
-        draw_string(label_font, _project(Vector2(400.0, 1010.0)), "落叶幽谷")
-        draw_string(label_font, _project(Vector2(1200.0, 1010.0)), "朝露林地")
+        var labels: Array = [
+            {"pos": Vector2(760.0, 78.0), "text": "苔冠空地"},
+            {"pos": Vector2(300.0, 920.0), "text": "落叶幽谷"},
+            {"pos": Vector2(1120.0, 920.0), "text": "朝露林地"}
+        ]
+        for entry in labels:
+            var label_pos: Vector2 = _project(entry["pos"])
+            var label_text: String = str(entry["text"])
+            var label_width: float = label_font.get_string_size(label_text).x + 28.0
+            draw_rect(Rect2(label_pos.x - 12.0, label_pos.y - 25.0, label_width, 34.0), Color(0.08, 0.19, 0.12, 0.78))
+            draw_string(label_font, label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.96, 0.94, 0.78))
 
     # Decoration positions are still authored in logical world space.
     for flower in [Vector2(260.0, 480.0), Vector2(500.0, 620.0), Vector2(900.0, 480.0), Vector2(1100.0, 700.0)]:
