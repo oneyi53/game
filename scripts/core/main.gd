@@ -262,7 +262,7 @@ func _ready() -> void:
             offline_panel.show_settlement(lines)
     camera.make_current()
     if captain != null:
-        camera.position = Projection.world_to_screen(captain.global_position)
+        camera.position = _projected_camera_position(captain.global_position)
 
 func _spawn_heroes(save_data: Dictionary) -> void:
     # Only recruited heroes spawn, in heroes.json order, with
@@ -473,13 +473,29 @@ func _process(delta: float) -> void:
     if config_failed or captain == null:
         return
     _update_world_visuals()
-    camera.position = Projection.world_to_screen(captain.global_position)
+    camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
     var input_vec: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
         input_vec = joystick.vector
     captain.move_input = input_vec
     _tick_respawns(delta)
+
+func _projected_camera_position(logical_position: Vector2) -> Vector2:
+    # The projected map is wider than the portrait viewport but shorter
+    # than its height. Keep the complete vertical diamond in view and
+    # scroll horizontally without exposing the outside edges.
+    var bounds: Rect2 = Projection.projected_bounds()
+    var visible_size: Vector2 = get_viewport_rect().size / camera.zoom
+    var min_x: float = bounds.position.x + visible_size.x * 0.5
+    var max_x: float = bounds.end.x - visible_size.x * 0.5
+    var center_x: float = (bounds.position.x + bounds.end.x) * 0.5
+    var projected: Vector2 = Projection.world_to_screen(logical_position)
+    var camera_x: float = center_x if min_x > max_x else clampf(projected.x, min_x, max_x)
+    var min_y: float = bounds.position.y + visible_size.y * 0.5
+    var max_y: float = bounds.end.y - visible_size.y * 0.5
+    var camera_y: float = (bounds.position.y + bounds.end.y) * 0.5 if min_y > max_y else clampf(projected.y, min_y, max_y)
+    return Vector2(camera_x, camera_y)
 
 func _update_world_visuals() -> void:
     # Render-only projection and shared depth ordering. Gameplay nodes
