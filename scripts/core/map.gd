@@ -3,7 +3,7 @@ extends Node2D
 
 # Static map art is projected for display only. All gameplay positions
 # remain in the original 1600x1200 logical coordinate system.
-const WorldProjection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const TREE_VISUAL_SCRIPT = preload("res://scripts/core/tree_visual.gd")
 
 const MAP_WIDTH: int = 1600
@@ -27,10 +27,10 @@ func _ready() -> void:
         add_child(tree)
 
 func _project(point: Vector2) -> Vector2:
-    return WorldProjection.world_to_screen(point)
+    return WorldProjectionScript.world_to_screen(point)
 
 func _projected_rect(rect: Rect2) -> PackedVector2Array:
-    return WorldProjection.world_rect_to_screen_polygon(rect)
+    return WorldProjectionScript.world_rect_to_screen_polygon(rect)
 
 func _draw_region(rect: Rect2, fill_color: Color, line_color: Color, line_width: float) -> void:
     var polygon: PackedVector2Array = _projected_rect(rect)
@@ -58,7 +58,7 @@ func _draw() -> void:
             var tile_color: Color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
             _draw_ground_tile(xi, yi, tile_color)
 
-    var map_outline := WorldProjection.map_corners()
+    var map_outline := WorldProjectionScript.map_corners()
     map_outline.append(map_outline[0])
     draw_polyline(map_outline, Color(0.2, 0.45, 0.2), 5.0, true)
 
