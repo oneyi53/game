@@ -10,11 +10,14 @@ const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 
 func _draw() -> void:
     draw_set_transform(WorldProjectionScript.world_to_screen(global_position) - global_position)
-    # Visual only: same footprint, no gameplay logic here.
-    draw_circle(Vector2.ZERO, 22.0, Color(0.35, 0.25, 0.15, 0.6))
-    draw_line(Vector2(-12.0, 8.0), Vector2(12.0, -8.0), Color(0.45, 0.3, 0.15), 3.0)
-    draw_line(Vector2(12.0, 8.0), Vector2(-12.0, -8.0), Color(0.45, 0.3, 0.15), 3.0)
-    draw_circle(Vector2.ZERO, 14.0, Color(1.0, 0.55, 0.1, 0.9))
-    draw_circle(Vector2(0.0, -4.0), 6.0, Color(1.0, 0.85, 0.3, 1.0))
-    draw_circle(Vector2(-4.0, -14.0), 2.0, Color(1.0, 0.85, 0.3, 0.8))
-    draw_circle(Vector2(5.0, -17.0), 1.5, Color(1.0, 0.85, 0.3, 0.6))
+    # Clear readable firepit: stone ring, crossed logs and a tall flame.
+    draw_set_transform(WorldProjectionScript.world_to_screen(global_position) - global_position, 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 25.0, Color(0.28, 0.22, 0.16, 0.55))
+    draw_arc(Vector2.ZERO, 23.0, 0.0, TAU, 32, Color(0.72, 0.66, 0.52), 4.0, true)
+    draw_set_transform(WorldProjectionScript.world_to_screen(global_position) - global_position)
+    draw_line(Vector2(-15.0, 7.0), Vector2(15.0, -7.0), Color(0.16, 0.12, 0.1), 7.0)
+    draw_line(Vector2(-15.0, 7.0), Vector2(15.0, -7.0), Color(0.56, 0.34, 0.18), 4.0)
+    draw_line(Vector2(15.0, 7.0), Vector2(-15.0, -7.0), Color(0.16, 0.12, 0.1), 7.0)
+    draw_line(Vector2(15.0, 7.0), Vector2(-15.0, -7.0), Color(0.66, 0.4, 0.2), 4.0)
+    draw_colored_polygon(PackedVector2Array([Vector2(-8.0, -4.0), Vector2(-5.0, -17.0), Vector2(0.0, -28.0), Vector2(5.0, -17.0), Vector2(8.0, -4.0), Vector2(0.0, 1.0)]), Color(1.0, 0.42, 0.08))
+    draw_colored_polygon(PackedVector2Array([Vector2(-4.0, -4.0), Vector2(-2.0, -15.0), Vector2(2.0, -20.0), Vector2(5.0, -7.0), Vector2(0.0, -1.0)]), Color(1.0, 0.86, 0.28))
