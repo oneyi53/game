@@ -63,12 +63,22 @@ offset_top = 52.0
 offset_right = 700.0
 offset_bottom = 84.0
 
-[node name="QuestLabel" type="Label" parent="UI/HUD"]
+[node name="QuestLabel" type="RichTextLabel" parent="UI/HUD"]
 offset_left = 20.0
 offset_top = 88.0
-offset_right = 700.0
+offset_right = 580.0
 offset_bottom = 300.0
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
 text = "任务：—"
+
+[node name="QuestToggleButton" type="Button" parent="UI/HUD"]
+offset_left = 600.0
+offset_top = 88.0
+offset_right = 700.0
+offset_bottom = 120.0
+text = "收起"
 
 [node name="SkillButton" type="Button" parent="UI/HUD"]
 offset_left = 540.0
