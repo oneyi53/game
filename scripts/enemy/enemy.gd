@@ -1,7 +1,7 @@
 class_name Enemy
 extends CharacterBody2D
 
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjection = preload("res://scripts/core/world_projection.gd")
 
 # Ordinary monster. It retargets on a 0.5 s timer, never every frame,
 # chases the nearest living party member inside its aggro range and
@@ -94,7 +94,7 @@ func take_damage(amount: int) -> void:
 func _draw() -> void:
     if dead:
         return
-    var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    var offset: Vector2 = WorldProjection.world_to_screen(global_position) - global_position
     draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
     draw_circle(Vector2.ZERO, 13.0, Color(0.05, 0.18, 0.05, 0.25))
     draw_set_transform(offset)
