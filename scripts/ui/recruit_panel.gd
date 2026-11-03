@@ -55,19 +55,43 @@ func rebuild() -> void:
         var entry = recruitment_manager.entry(hero_id)
         if entry == null:
             continue
+        var card: PanelContainer = PanelContainer.new()
+        card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        var row: HBoxContainer = HBoxContainer.new()
+        row.add_theme_constant_override("separation", 12)
+        card.add_child(row)
+
+        var portrait: TextureRect = TextureRect.new()
+        portrait.custom_minimum_size = Vector2(72.0, 72.0)
+        portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+        portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+        portrait.texture = load("res://assets/art-v1/sprites/heroes/" + hero_id + ".png")
+        row.add_child(portrait)
+
+        var details: VBoxContainer = VBoxContainer.new()
+        details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        row.add_child(details)
         var label: Label = Label.new()
         var name_text: String = str(hero_data["name"]) + "（" + str(hero_data["role"]) + "）"
         if recruitment_manager.is_recruited(hero_id):
             var level_value: int = 1
             if level_manager != null:
                 level_value = level_manager.level(hero_id)
-            label.text = name_text + " 等级 " + str(level_value) + " — 已加入"
+            label.text = name_text + " · 等级 " + str(level_value) + " · 已加入"
         elif str(entry["unlock_type"]) == "fragments":
-            label.text = name_text + " — 未招募：" + str(entry["condition_text"]) + "（碎片 " + str(recruitment_manager.fragments) + "/" + str(recruitment_manager.fragments_required(hero_id)) + "）"
+            label.text = name_text + " · 未招募 · 碎片 " + str(recruitment_manager.fragments) + "/" + str(recruitment_manager.fragments_required(hero_id))
         else:
-            label.text = name_text + " — 未招募：" + str(entry["condition_text"])
+            label.text = name_text + " · 未招募"
         label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        list_box.add_child(label)
+        details.add_child(label)
+
+        var condition: Label = Label.new()
+        condition.text = str(entry["condition_text"])
+        condition.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        condition.add_theme_font_size_override("font_size", 12)
+        condition.add_theme_color_override("font_color", Color(0.78, 0.82, 0.76))
+        details.add_child(condition)
+
         var button: Button = Button.new()
         if recruitment_manager.is_recruited(hero_id):
             button.text = "已加入"
@@ -81,7 +105,8 @@ func rebuild() -> void:
         else:
             button.text = "完成任务解锁"
             button.disabled = true
-        list_box.add_child(button)
+        details.add_child(button)
+        list_box.add_child(card)
 
 func _on_synthesize_button_pressed(hero_id: String) -> void:
     synthesize_requested.emit(hero_id)
