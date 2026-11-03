@@ -1,7 +1,7 @@
 class_name Boss
 extends CharacterBody2D
 
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjection = preload("res://scripts/core/world_projection.gd")
 
 # Boss. Two phases: below half health it moves faster, hits harder
 # and telegraphs more often. Every telegraph shows a red ground circle
@@ -166,7 +166,7 @@ func take_damage(amount: int) -> void:
 func _draw() -> void:
     if dead:
         return
-    var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    var offset: Vector2 = WorldProjection.world_to_screen(global_position) - global_position
     if telegraph_active:
         # Match the projected footprint of a 95-unit logical circle.
         draw_set_transform(offset, 0.0, Vector2(0.7071068, 0.3535534))
