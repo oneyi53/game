@@ -79,19 +79,19 @@ jobs:
           fi
           test -s icon.png
 
-      - name: Download Godot 4.3 and export templates
+      - name: Download Godot 4.7.2 and export templates
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$HOME/godot" "$HOME/.local/share/godot/export_templates/4.3.stable"
+          mkdir -p "$HOME/godot" "$HOME/.local/share/godot/export_templates/4.7.2.stable"
           cd "$HOME/godot"
-          curl -fsSL -o godot.zip "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip"
+          curl -fsSL -o godot.zip "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
           unzip -o -q godot.zip
-          chmod +x Godot_v4.3-stable_linux.x86_64
-          curl -fsSL -o templates.tpz "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz"
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          curl -fsSL -o templates.tpz "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz"
           # The .tpz archive may nest templates under templates/. Locate the
           # Android source template and install the full payload at Godot's version path.
-          TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.3.stable"
+          TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.7.2.stable"
           TEMPLATE_TMP="$RUNNER_TEMP/godot-export-templates"
           mkdir -p "$TEMPLATE_TMP"
           unzip -o -q templates.tpz -d "$TEMPLATE_TMP"
@@ -107,7 +107,7 @@ jobs:
           echo "Installed Godot Android export templates:"
           find "$TEMPLATE_DIR" -maxdepth 1 -type f -printf '%f (%s bytes)\n' | sort
           test -s "$TEMPLATE_DIR/android_source.zip"
-          "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --version
+          "$HOME/godot/Godot_v4.7.2-stable_linux.x86_64" --version
 
       - name: Check release signing secrets (fail loudly if missing)
         shell: bash
@@ -153,7 +153,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$HOME/.config/godot"
           keytool -genkeypair -v -keystore "$HOME/debug.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          cat > "$HOME/.config/godot/editor_settings-4.3.tres" <<EOF
+          cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
           [gd_resource type="EditorSettings" format=3]
 
           [resource]
@@ -164,7 +164,7 @@ jobs:
           export/android/debug_keystore_pass = "android"
           EOF
           echo "Configured Godot Android paths:"
-          grep -E '^export/android/(java_sdk_path|android_sdk_path|debug_keystore)' "$HOME/.config/godot/editor_settings-4.3.tres"
+          grep -E '^export/android/(java_sdk_path|android_sdk_path|debug_keystore)' "$HOME/.config/godot/editor_settings-4.tres"
           test -x "$JAVA_HOME/bin/java"
           test -x "$ANDROID_HOME/platform-tools/adb"
 
@@ -198,10 +198,14 @@ jobs:
           else:
               raise SystemExit("Failed to set ETC2/ASTC texture import option")
           PY
-          "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --headless --import
+          "$HOME/godot/Godot_v4.7.2-stable_linux.x86_64" --headless --import
+          # Parse project scripts and load referenced resources before packaging.
+          "$HOME/godot/Godot_v4.7.2-stable_linux.x86_64" --headless --editor --path . --quit
+          # Run the main scene briefly to catch startup/runtime errors.
+          "$HOME/godot/Godot_v4.7.2-stable_linux.x86_64" --headless --path . --quit-after 3
           # Gradle mode requires the project-local android/build template, not only the global export templates.
           # Godot installs it into this checkout and then performs the release export.
-          "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --headless --verbose --install-android-build-template --export-release "Android" build/hero-world.apk
+          "$HOME/godot/Godot_v4.7.2-stable_linux.x86_64" --headless --verbose --install-android-build-template --export-release "Android" build/hero-world.apk
 
       - name: Assert APK artifact (no fake green)
         shell: bash
