@@ -22,7 +22,7 @@ extends Node2D
 # 8/6 kill quests were only completable by save/reload farming, since
 # only 4 monsters spawned per run and nothing respawned.
 
-const WorldProjection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 
 const MAP_WIDTH: int = 1600
 const MAP_HEIGHT: int = 1200
@@ -485,12 +485,12 @@ func _projected_camera_position(logical_position: Vector2) -> Vector2:
     # The projected map is wider than the portrait viewport but shorter
     # than its height. Keep the complete vertical diamond in view and
     # scroll horizontally without exposing the outside edges.
-    var bounds: Rect2 = WorldProjection.projected_bounds()
+    var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     var visible_size: Vector2 = get_viewport_rect().size / camera.zoom
     var min_x: float = bounds.position.x + visible_size.x * 0.5
     var max_x: float = bounds.end.x - visible_size.x * 0.5
     var center_x: float = (bounds.position.x + bounds.end.x) * 0.5
-    var projected: Vector2 = WorldProjection.world_to_screen(logical_position)
+    var projected: Vector2 = WorldProjectionScript.world_to_screen(logical_position)
     var camera_x: float = center_x if min_x > max_x else clampf(projected.x, min_x, max_x)
     var min_y: float = bounds.position.y + visible_size.y * 0.5
     var max_y: float = bounds.end.y - visible_size.y * 0.5
@@ -502,25 +502,25 @@ func _update_world_visuals() -> void:
     # retain their original global_position for physics and combat.
     for unit in heroes:
         if is_instance_valid(unit):
-            unit.z_index = clampi(int(WorldProjection.screen_depth(unit.global_position) / 4.0), 0, 1024)
+            unit.z_index = clampi(int(WorldProjectionScript.screen_depth(unit.global_position) / 4.0), 0, 1024)
             unit.queue_redraw()
     for unit in enemies:
         if is_instance_valid(unit):
-            unit.z_index = clampi(int(WorldProjection.screen_depth(unit.global_position) / 4.0), 0, 1024)
+            unit.z_index = clampi(int(WorldProjectionScript.screen_depth(unit.global_position) / 4.0), 0, 1024)
             unit.queue_redraw()
     # Bosses live in separate references rather than the ordinary
     # enemies array, but share the same world-depth ordering.
     if boss != null and is_instance_valid(boss):
-        boss.z_index = clampi(int(WorldProjection.screen_depth(boss.global_position) / 4.0), 0, 1024)
+        boss.z_index = clampi(int(WorldProjectionScript.screen_depth(boss.global_position) / 4.0), 0, 1024)
         boss.queue_redraw()
     if elite_boss != null and is_instance_valid(elite_boss):
-        elite_boss.z_index = clampi(int(WorldProjection.screen_depth(elite_boss.global_position) / 4.0), 0, 1024)
+        elite_boss.z_index = clampi(int(WorldProjectionScript.screen_depth(elite_boss.global_position) / 4.0), 0, 1024)
         elite_boss.queue_redraw()
     if chest_node != null:
-        chest_node.z_index = clampi(int(WorldProjection.screen_depth(chest_node.global_position) / 4.0), 0, 1024)
+        chest_node.z_index = clampi(int(WorldProjectionScript.screen_depth(chest_node.global_position) / 4.0), 0, 1024)
         chest_node.queue_redraw()
     if campfire_node != null and is_instance_valid(campfire_node):
-        campfire_node.z_index = clampi(int(WorldProjection.screen_depth(campfire_node.global_position) / 4.0), 0, 1024)
+        campfire_node.z_index = clampi(int(WorldProjectionScript.screen_depth(campfire_node.global_position) / 4.0), 0, 1024)
         campfire_node.queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
