@@ -1,6 +1,5 @@
 # Hero World Android 1.0 release build (cloud only; never run Gradle on a dev VM).
-# Trigger: manual only (workflow_dispatch), so no build runs before the release
-# signing secrets below are set by the repository owner.
+# Trigger: manual only. Godot validation runs by default; signed APK export is opt-in.
 # Required repository Secrets (set in GitHub repo Settings > Secrets and variables > Actions):
 #   ANDROID_KEYSTORE_BASE64 - base64 of the fixed release keystore (never commit the keystore itself)
 #   ANDROID_KEYSTORE_PASSWORD - keystore password
@@ -12,6 +11,12 @@ name: Android 1.0
 
 on:
   workflow_dispatch:
+    inputs:
+      build_apk:
+        description: 'Build and sign a release APK (optional)'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -109,7 +114,17 @@ jobs:
           test -s "$TEMPLATE_DIR/android_source.zip"
           "$HOME/godot/Godot_v4.7.2-stable_linux.x86_64" --version
 
+      - name: Validate Godot project (import, parse, runtime smoke test)
+        shell: bash
+        run: |
+          set -euo pipefail
+          GODOT="$HOME/godot/Godot_v4.7.2-stable_linux.x86_64"
+          "$GODOT" --headless --import
+          "$GODOT" --headless --editor --path . --quit
+          "$GODOT" --headless --path . --quit-after 3
+
       - name: Check release signing secrets (fail loudly if missing)
+        if: ${{ inputs.build_apk }}
         shell: bash
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -124,6 +139,7 @@ jobs:
           echo "All release signing secrets are present."
 
       - name: Inject release keystore into export preset
+        if: ${{ inputs.build_apk }}
         shell: bash
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -148,6 +164,7 @@ jobs:
           grep -c 'keystore/release="release.keystore"' export_presets.cfg
 
       - name: Configure Godot Android editor settings
+        if: ${{ inputs.build_apk }}
         shell: bash
         run: |
           set -euo pipefail
@@ -169,6 +186,7 @@ jobs:
           test -x "$ANDROID_HOME/platform-tools/adb"
 
       - name: Export release APK
+        if: ${{ inputs.build_apk }}
         shell: bash
         run: |
           set -euo pipefail
@@ -208,6 +226,7 @@ jobs:
           "$HOME/godot/Godot_v4.7.2-stable_linux.x86_64" --headless --verbose --install-android-build-template --export-release "Android" build/hero-world.apk
 
       - name: Assert APK artifact (no fake green)
+        if: ${{ inputs.build_apk }}
         shell: bash
         run: |
           set -euo pipefail
@@ -216,6 +235,7 @@ jobs:
           sha256sum build/hero-world.apk
 
       - name: Upload APK artifact
+        if: ${{ inputs.build_apk }}
         uses: actions/upload-artifact@v4
         with:
           name: hero-world-1.0-apk
