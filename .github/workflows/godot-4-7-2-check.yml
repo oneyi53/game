@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/hero-world-2.5d-boss-p0
+      - feat/hero-world-art-integration
   pull_request:
     branches:
       - main
