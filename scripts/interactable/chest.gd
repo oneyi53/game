@@ -2,6 +2,7 @@ class_name Chest
 extends Area2D
 
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const CHEST_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/chest.png")
 
 # A chest that opens once. Opening gives gold and emits "opened",
 # which the main scene uses to update gold and auto-save.
@@ -28,12 +29,8 @@ func _draw() -> void:
     var projection_offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
     draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
     draw_circle(Vector2.ZERO, 13.0, Color(0.05, 0.18, 0.05, 0.25))
-    draw_set_transform(projection_offset + Vector2(0.0, -10.0))
-    # Visual only: same 28x20 box, same open/closed logic.
+    draw_set_transform(projection_offset)
+    # 512px canvas, bottom anchor (256, 480), displayed at 60px high.
+    draw_texture_rect(CHEST_TEXTURE, Rect2(-30.0, -56.25, 60.0, 60.0), false)
     if is_open:
-        draw_rect(Rect2(-14.0, -10.0, 28.0, 20.0), Color(0.5, 0.35, 0.1))
-        draw_rect(Rect2(-14.0, -10.0, 28.0, 4.0), Color(0.35, 0.25, 0.08))
-    else:
-        draw_rect(Rect2(-14.0, -10.0, 28.0, 20.0), Color(1.0, 0.8, 0.2))
-        draw_rect(Rect2(-14.0, -10.0, 28.0, 6.0), Color(0.8, 0.6, 0.1))
-        draw_circle(Vector2(0.0, 0.0), 3.0, Color(1.0, 0.9, 0.4))
+        draw_line(Vector2(-8.0, -12.0), Vector2(8.0, -18.0), Color(0.95, 0.8, 0.42, 0.9), 2.0)
