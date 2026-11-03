@@ -169,6 +169,31 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build
+          # Android export requires ETC2/ASTC texture imports. On x86_64 Linux,
+          # Godot otherwise defaults to S3TC and rejects the Android preset
+          # with a blank "configuration errors" message.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("project.godot")
+          s = p.read_text()
+          key = "textures/vram_compression/import_etc2_astc"
+          if re.search(r"(?m)^" + re.escape(key) + r"\\s*=", s):
+              s = re.sub(r"(?m)^" + re.escape(key) + r"\\s*=.*$", key + "=true", s)
+          elif "[rendering]" in s:
+              s = s.replace("[rendering]", "[rendering]\\n" + key + "=true", 1)
+          else:
+              s += "\\n[rendering]\\n" + key + "=true\\n"
+          p.write_text(s)
+          print("Android texture import setting:")
+          for line in s.splitlines():
+              if line.startswith(key + "="):
+                  print(line)
+                  assert line == key + "=true"
+                  break
+          else:
+              raise SystemExit("Failed to set ETC2/ASTC texture import option")
+          PY
           "$HOME/godot/Godot_v4.3-stable_linux.x86_64" --headless --import
           # Gradle mode requires the project-local android/build template, not only the global export templates.
           # Godot installs it into this checkout and then performs the release export.
