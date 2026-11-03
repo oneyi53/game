@@ -94,69 +94,64 @@ func take_damage(amount: int) -> void:
 func _draw() -> void:
     if dead:
         return
-    var projection_offset: Vector2 = Projection.world_to_screen(global_position) - global_position
-    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
-    draw_circle(Vector2.ZERO, 12.0, Color(0.05, 0.18, 0.05, 0.25))
-    draw_set_transform(projection_offset + Vector2(0.0, -14.0))
-    # Visual only: body circle radius, hp bar and all stats are
-    # unchanged. Details are small marks inside the same 14 px body.
-    # A-H art placeholders are mapped by theme here, not by letter:
-    # hill_rock = the stone-slope food-storer (art G),
-    # dawn_deer = the light-dappled forest-edge runner (art H);
-    # the other six use their real names and colours.
-    draw_circle(Vector2.ZERO, 14.0, enemy_color)
+    var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 13.0, Color(0.05, 0.18, 0.05, 0.25))
+    draw_set_transform(offset)
     match enemy_id:
         "slime":
-            # Translucent bubbles inside the soft body.
-            draw_circle(Vector2(-4.0, 2.0), 3.0, Color(1.0, 1.0, 1.0, 0.55))
-            draw_circle(Vector2(5.0, -3.0), 2.0, Color(1.0, 1.0, 1.0, 0.55))
-            draw_circle(Vector2(0.0, -5.0), 2.0, Color(0.1, 0.2, 0.1))
+            draw_colored_polygon(PackedVector2Array([Vector2(-15.0, -3.0), Vector2(-13.0, -15.0), Vector2(-6.0, -21.0), Vector2(7.0, -21.0), Vector2(14.0, -13.0), Vector2(15.0, -3.0)]), enemy_color)
+            draw_circle(Vector2(-5.0, -12.0), 3.0, Color.WHITE)
+            draw_circle(Vector2(5.0, -12.0), 2.0, Color.WHITE)
+            draw_circle(Vector2(-4.0, -6.0), 1.5, Color(0.1, 0.2, 0.1))
+            draw_circle(Vector2(4.0, -6.0), 1.5, Color(0.1, 0.2, 0.1))
         "wolf":
-            # Upright ears + tail line; alert, not menacing.
-            draw_colored_polygon(PackedVector2Array([Vector2(-8.0, -12.0), Vector2(-4.0, -20.0), Vector2(-1.0, -12.0)]), Color(0.55, 0.45, 0.35))
-            draw_colored_polygon(PackedVector2Array([Vector2(2.0, -12.0), Vector2(6.0, -20.0), Vector2(9.0, -12.0)]), Color(0.55, 0.45, 0.35))
-            draw_line(Vector2(-13.0, 4.0), Vector2(-20.0, 10.0), Color(0.55, 0.45, 0.35), 2.0)
+            draw_colored_polygon(PackedVector2Array([Vector2(-12.0, -3.0), Vector2(-10.0, -20.0), Vector2(-5.0, -25.0), Vector2(7.0, -23.0), Vector2(14.0, -12.0), Vector2(12.0, -3.0)]), enemy_color)
+            draw_colored_polygon(PackedVector2Array([Vector2(-11.0, -20.0), Vector2(-10.0, -32.0), Vector2(-3.0, -22.0)]), enemy_color.darkened(0.15))
+            draw_colored_polygon(PackedVector2Array([Vector2(4.0, -22.0), Vector2(11.0, -32.0), Vector2(12.0, -19.0)]), enemy_color.darkened(0.15))
+            draw_circle(Vector2(7.0, -15.0), 1.8, Color(0.1, 0.1, 0.1))
+            draw_line(Vector2(-10.0, -5.0), Vector2(-17.0, -1.0), enemy_color.darkened(0.2), 4.0)
         "thorn_vine":
-            # Thorn spikes + moss dots.
-            draw_line(Vector2(-12.0, -6.0), Vector2(-18.0, -10.0), Color(0.2, 0.6, 0.3), 1.5)
-            draw_line(Vector2(12.0, -6.0), Vector2(18.0, -10.0), Color(0.2, 0.6, 0.3), 1.5)
-            draw_circle(Vector2(0.0, 6.0), 2.5, Color(0.5, 0.85, 0.4))
+            draw_colored_polygon(PackedVector2Array([Vector2(-10.0, 0.0), Vector2(-14.0, -12.0), Vector2(-8.0, -25.0), Vector2(0.0, -18.0), Vector2(8.0, -26.0), Vector2(14.0, -12.0), Vector2(10.0, 0.0)]), enemy_color)
+            draw_line(Vector2(-10.0, -12.0), Vector2(-20.0, -20.0), Color(0.2, 0.6, 0.3), 3.0)
+            draw_line(Vector2(10.0, -12.0), Vector2(20.0, -20.0), Color(0.2, 0.6, 0.3), 3.0)
+            draw_circle(Vector2(0.0, -10.0), 3.0, Color(0.8, 0.9, 0.35))
         "forest_wasp":
-            # Translucent wings + stripe.
-            draw_circle(Vector2(-6.0, -8.0), 5.0, Color(1.0, 1.0, 1.0, 0.5))
-            draw_circle(Vector2(6.0, -8.0), 5.0, Color(1.0, 1.0, 1.0, 0.5))
-            draw_rect(Rect2(-10.0, 2.0, 20.0, 3.0), Color(0.2, 0.2, 0.1))
+            draw_circle(Vector2(-12.0, -18.0), 8.0, Color(0.9, 1.0, 1.0, 0.48))
+            draw_circle(Vector2(12.0, -18.0), 8.0, Color(0.9, 1.0, 1.0, 0.48))
+            draw_colored_polygon(PackedVector2Array([Vector2(-8.0, -6.0), Vector2(-9.0, -19.0), Vector2(0.0, -26.0), Vector2(9.0, -19.0), Vector2(8.0, -6.0)]), enemy_color)
+            draw_rect(Rect2(-9.0, -13.0, 18.0, 4.0), Color(0.18, 0.18, 0.1))
+            draw_line(Vector2(0.0, -24.0), Vector2(0.0, -31.0), Color(0.2, 0.2, 0.1), 2.0)
         "valley_firefly":
-            # Glow dots + antennae, bright yellow-green.
-            draw_circle(Vector2(-8.0, -6.0), 2.5, Color(1.0, 0.95, 0.4))
-            draw_circle(Vector2(8.0, -6.0), 2.5, Color(1.0, 0.95, 0.4))
-            draw_line(Vector2(-3.0, -12.0), Vector2(-6.0, -18.0), Color(0.7, 0.9, 0.4), 1.5)
-            draw_line(Vector2(3.0, -12.0), Vector2(6.0, -18.0), Color(0.7, 0.9, 0.4), 1.5)
+            draw_circle(Vector2.ZERO, 10.0, enemy_color.lightened(0.12))
+            draw_circle(Vector2(0.0, -2.0), 5.0, Color(1.0, 0.98, 0.55))
+            draw_circle(Vector2(-10.0, -14.0), 5.0, Color(0.9, 1.0, 0.7, 0.55))
+            draw_circle(Vector2(10.0, -14.0), 5.0, Color(0.9, 1.0, 0.7, 0.55))
         "withered_puppet":
-            # Dry-leaf / wood patches.
-            draw_circle(Vector2(-5.0, -4.0), 3.0, Color(0.6, 0.5, 0.3))
-            draw_circle(Vector2(6.0, 4.0), 2.5, Color(0.45, 0.6, 0.3))
-            draw_line(Vector2(-10.0, 8.0), Vector2(10.0, 8.0), Color(0.45, 0.35, 0.2), 1.5)
+            draw_colored_polygon(PackedVector2Array([Vector2(-11.0, 0.0), Vector2(-10.0, -19.0), Vector2(-6.0, -25.0), Vector2(7.0, -24.0), Vector2(11.0, -17.0), Vector2(9.0, 0.0)]), enemy_color)
+            draw_line(Vector2(-7.0, -16.0), Vector2(-16.0, -8.0), Color(0.55, 0.35, 0.2), 3.0)
+            draw_line(Vector2(7.0, -16.0), Vector2(16.0, -8.0), Color(0.55, 0.35, 0.2), 3.0)
+            draw_circle(Vector2(-3.0, -17.0), 2.0, Color(1.0, 0.85, 0.45))
+            draw_circle(Vector2(4.0, -17.0), 2.0, Color(1.0, 0.85, 0.45))
         "stream_spirit":
-            # Water ripple + droplet.
-            draw_circle(Vector2(0.0, -14.0), 3.0, Color(0.85, 0.95, 1.0, 0.85))
-            draw_arc(Vector2(0.0, 6.0), 8.0, 0.2, 2.9, 10, Color(0.85, 0.95, 1.0, 0.7), 1.5)
+            draw_colored_polygon(PackedVector2Array([Vector2(-11.0, -2.0), Vector2(-15.0, -14.0), Vector2(-7.0, -25.0), Vector2(0.0, -31.0), Vector2(8.0, -22.0), Vector2(14.0, -10.0), Vector2(9.0, -2.0)]), enemy_color.lightened(0.15))
+            draw_arc(Vector2(0.0, -9.0), 9.0, 0.2, 2.9, 14, Color(0.9, 1.0, 1.0, 0.85), 2.0)
         "valley_mushroom":
-            # Cap spots on a rounded body.
-            draw_circle(Vector2(-5.0, -6.0), 2.5, Color(1.0, 0.85, 0.85))
-            draw_circle(Vector2(5.0, -6.0), 2.5, Color(1.0, 0.85, 0.85))
-            draw_circle(Vector2(0.0, 0.0), 2.0, Color(1.0, 0.85, 0.85))
+            draw_rect(Rect2(-5.0, -15.0, 10.0, 15.0), Color(0.92, 0.82, 0.68))
+            draw_colored_polygon(PackedVector2Array([Vector2(-17.0, -15.0), Vector2(-14.0, -24.0), Vector2(-6.0, -30.0), Vector2(7.0, -30.0), Vector2(15.0, -23.0), Vector2(18.0, -15.0)]), enemy_color)
+            draw_circle(Vector2(-7.0, -22.0), 2.5, Color(1.0, 0.9, 0.9))
+            draw_circle(Vector2(7.0, -24.0), 2.5, Color(1.0, 0.9, 0.9))
         "dawn_deer":
-            # Antler lines + dappled leaf-shadow dots (art H).
-            draw_line(Vector2(-5.0, -12.0), Vector2(-9.0, -20.0), Color(0.65, 0.55, 0.4), 1.5)
-            draw_line(Vector2(5.0, -12.0), Vector2(9.0, -20.0), Color(0.65, 0.55, 0.4), 1.5)
-            draw_circle(Vector2(-11.0, 6.0), 2.0, Color(0.6, 0.85, 0.5, 0.7))
-            draw_circle(Vector2(11.0, 6.0), 2.0, Color(0.6, 0.85, 0.5, 0.7))
+            draw_colored_polygon(PackedVector2Array([Vector2(-12.0, -4.0), Vector2(-11.0, -19.0), Vector2(4.0, -22.0), Vector2(13.0, -12.0), Vector2(11.0, -3.0)]), enemy_color)
+            draw_line(Vector2(-5.0, -20.0), Vector2(-10.0, -31.0), Color(0.7, 0.58, 0.38), 2.0)
+            draw_line(Vector2(-10.0, -31.0), Vector2(-15.0, -34.0), Color(0.7, 0.58, 0.38), 2.0)
+            draw_line(Vector2(5.0, -20.0), Vector2(10.0, -31.0), Color(0.7, 0.58, 0.38), 2.0)
+            draw_line(Vector2(10.0, -31.0), Vector2(15.0, -34.0), Color(0.7, 0.58, 0.38), 2.0)
+            draw_circle(Vector2(4.0, -17.0), 2.0, Color(0.12, 0.12, 0.12))
         "hill_rock":
-            # Stone patches + warm-yellow food pouch (art G).
-            draw_circle(Vector2(-5.0, -3.0), 3.0, Color(0.55, 0.55, 0.55))
-            draw_circle(Vector2(6.0, 5.0), 2.5, Color(0.55, 0.55, 0.55))
-            draw_circle(Vector2(0.0, 9.0), 3.0, Color(1.0, 0.8, 0.2))
-    draw_rect(Rect2(-16.0, -26.0, 32.0, 5.0), Color.BLACK)
+            draw_colored_polygon(PackedVector2Array([Vector2(-15.0, -2.0), Vector2(-13.0, -17.0), Vector2(-5.0, -26.0), Vector2(8.0, -24.0), Vector2(15.0, -13.0), Vector2(12.0, -2.0)]), enemy_color)
+            draw_colored_polygon(PackedVector2Array([Vector2(-8.0, -18.0), Vector2(-4.0, -24.0), Vector2(2.0, -20.0)]), Color(0.75, 0.75, 0.72))
+            draw_circle(Vector2(7.0, -7.0), 3.0, Color(1.0, 0.8, 0.2))
+    draw_rect(Rect2(-16.0, -39.0, 32.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
     var fill: float = 32.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-16.0, -26.0, fill, 5.0), Color(0.9, 0.2, 0.2))
+    draw_rect(Rect2(-16.0, -39.0, fill, 5.0), Color(0.9, 0.2, 0.2))
