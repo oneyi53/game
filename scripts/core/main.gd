@@ -505,31 +505,36 @@ func _projected_camera_position(logical_position: Vector2) -> Vector2:
     var camera_y: float = (bounds.position.y + bounds.end.y) * 0.5 if min_y > max_y else clampf(projected.y, min_y, max_y)
     return Vector2(camera_x, camera_y)
 
+func _set_world_depth_order(unit: Node2D) -> void:
+    var depth_index: int = clampi(int(WorldProjectionScript.screen_depth(unit.global_position) / 4.0), 0, 1024)
+    if unit.z_index != depth_index:
+        unit.z_index = depth_index
+
 func _update_world_visuals() -> void:
     # Render-only projection and shared depth ordering. Gameplay nodes
     # retain their original global_position for physics and combat.
+    # Heroes need redraws while moving because their projected foot
+    # offset is calculated in _draw(); stationary heroes need none.
     for unit in heroes:
         if is_instance_valid(unit):
-            unit.z_index = clampi(int(WorldProjectionScript.screen_depth(unit.global_position) / 4.0), 0, 1024)
-            unit.queue_redraw()
+            _set_world_depth_order(unit)
+            if unit.velocity.length_squared() > 0.01:
+                unit.queue_redraw()
+    # Enemies and bosses already queue their own redraws from their
+    # physics updates. Do not request a second redraw here.
     for unit in enemies:
         if is_instance_valid(unit):
-            unit.z_index = clampi(int(WorldProjectionScript.screen_depth(unit.global_position) / 4.0), 0, 1024)
-            unit.queue_redraw()
-    # Bosses live in separate references rather than the ordinary
-    # enemies array, but share the same world-depth ordering.
+            _set_world_depth_order(unit)
     if boss != null and is_instance_valid(boss):
-        boss.z_index = clampi(int(WorldProjectionScript.screen_depth(boss.global_position) / 4.0), 0, 1024)
-        boss.queue_redraw()
+        _set_world_depth_order(boss)
     if elite_boss != null and is_instance_valid(elite_boss):
-        elite_boss.z_index = clampi(int(WorldProjectionScript.screen_depth(elite_boss.global_position) / 4.0), 0, 1024)
-        elite_boss.queue_redraw()
-    if chest_node != null:
-        chest_node.z_index = clampi(int(WorldProjectionScript.screen_depth(chest_node.global_position) / 4.0), 0, 1024)
-        chest_node.queue_redraw()
+        _set_world_depth_order(elite_boss)
+    # These interactables are static; their draw state changes only
+    # through their own interaction/setup methods.
+    if chest_node != null and is_instance_valid(chest_node):
+        _set_world_depth_order(chest_node)
     if campfire_node != null and is_instance_valid(campfire_node):
-        campfire_node.z_index = clampi(int(WorldProjectionScript.screen_depth(campfire_node.global_position) / 4.0), 0, 1024)
-        campfire_node.queue_redraw()
+        _set_world_depth_order(campfire_node)
 
 func _unhandled_input(event: InputEvent) -> void:
     if config_failed:
