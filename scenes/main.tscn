@@ -24,10 +24,10 @@ script = ExtResource("2_map")
 position = Vector2(800, 600)
 position_smoothing_enabled = true
 position_smoothing_speed = 5.0
-limit_left = 0
-limit_top = 0
-limit_right = 1600
-limit_bottom = 1200
+limit_left = -100000
+limit_top = -100000
+limit_right = 100000
+limit_bottom = 100000
 
 [node name="Heroes" type="Node2D" parent="."]
 
