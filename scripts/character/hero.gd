@@ -258,15 +258,22 @@ func _draw() -> void:
     draw_line(Vector2(5.0, -5.0), Vector2(6.0, 0.0), Color(0.22, 0.2, 0.16), 4.0)
     draw_line(Vector2(-6.0, 0.0), Vector2(-8.0, 1.0), Color(0.38, 0.25, 0.16), 3.0)
     draw_line(Vector2(6.0, 0.0), Vector2(8.0, 1.0), Color(0.38, 0.25, 0.16), 3.0)
-    # Compact tunic and shoulders.
-    draw_colored_polygon(
-        PackedVector2Array([
-            Vector2(-8.0, -25.0), Vector2(8.0, -25.0),
-            Vector2(11.0, -8.0), Vector2(6.0, -5.0),
-            Vector2(-6.0, -5.0), Vector2(-11.0, -8.0)
-        ]),
-        hero_color
-    )
+    # Role silhouettes: keep the same foot anchor and readable head,
+    # but vary the torso outline and equipment without touching stats.
+    var body_points := PackedVector2Array()
+    match hero_id:
+        "guardian":
+            body_points = PackedVector2Array([Vector2(-12.0, -25.0), Vector2(12.0, -25.0), Vector2(14.0, -8.0), Vector2(8.0, -5.0), Vector2(-8.0, -5.0), Vector2(-14.0, -8.0)])
+        "healer", "mage":
+            body_points = PackedVector2Array([Vector2(-7.0, -27.0), Vector2(7.0, -27.0), Vector2(13.0, -5.0), Vector2(-13.0, -5.0)])
+        "assassin":
+            body_points = PackedVector2Array([Vector2(-6.0, -25.0), Vector2(7.0, -29.0), Vector2(10.0, -8.0), Vector2(3.0, -5.0), Vector2(-9.0, -8.0)])
+        _:
+            body_points = PackedVector2Array([Vector2(-8.0, -25.0), Vector2(8.0, -25.0), Vector2(11.0, -8.0), Vector2(6.0, -5.0), Vector2(-6.0, -5.0), Vector2(-11.0, -8.0)])
+    draw_colored_polygon(body_points, hero_color)
+    var body_outline := PackedVector2Array(body_points)
+    body_outline.append(body_points[0])
+    draw_polyline(body_outline, Color(0.12, 0.16, 0.18), 2.4, true)
     draw_line(Vector2(-9.0, -21.0), Vector2(-14.0, -12.0), hero_color.lightened(0.15), 4.0)
     draw_line(Vector2(9.0, -21.0), Vector2(14.0, -12.0), hero_color.lightened(0.15), 4.0)
     # Head, hair cap and simple readable face.
@@ -279,28 +286,38 @@ func _draw() -> void:
     match hero_id:
         "captain":
             draw_rect(Rect2(-9.0, -17.0, 18.0, 3.0), Color(1.0, 0.78, 0.2))
-            draw_line(Vector2(13.0, -19.0), Vector2(20.0, -4.0), Color(0.9, 0.95, 1.0), 2.5)
-            draw_line(Vector2(11.0, -20.0), Vector2(15.0, -18.0), Color(0.65, 0.42, 0.2), 2.0)
+            # Clearly readable short sword and crossguard.
+            draw_line(Vector2(13.0, -20.0), Vector2(22.0, -4.0), Color(0.12, 0.16, 0.18), 5.0)
+            draw_line(Vector2(13.0, -20.0), Vector2(22.0, -4.0), Color(0.92, 0.97, 1.0), 2.5)
+            draw_line(Vector2(10.0, -15.0), Vector2(17.0, -19.0), Color(0.68, 0.43, 0.2), 2.5)
         "archer":
-            draw_arc(Vector2(15.0, -17.0), 8.0, -1.2, 1.2, 12, Color(0.35, 0.22, 0.12), 2.0)
-            draw_line(Vector2(15.0, -25.0), Vector2(15.0, -9.0), Color(0.95, 0.9, 0.7), 1.0)
+            draw_arc(Vector2(16.0, -17.0), 10.0, -1.2, 1.2, 16, Color(0.12, 0.16, 0.18), 4.0)
+            draw_arc(Vector2(16.0, -17.0), 10.0, -1.2, 1.2, 16, Color(0.72, 0.46, 0.2), 2.0)
+            draw_line(Vector2(16.0, -27.0), Vector2(16.0, -7.0), Color(0.95, 0.9, 0.7), 1.2)
         "guardian":
-            draw_colored_polygon(
-                PackedVector2Array([Vector2(10.0, -24.0), Vector2(18.0, -21.0), Vector2(18.0, -9.0), Vector2(10.0, -7.0)]),
-                Color(0.35, 0.65, 0.42)
-            )
-            draw_circle(Vector2(14.0, -16.0), 2.0, Color(1.0, 0.8, 0.2))
+            # Broad shield with dark outline and bright center boss.
+            var shield := PackedVector2Array([Vector2(10.0, -27.0), Vector2(22.0, -23.0), Vector2(21.0, -10.0), Vector2(15.0, -5.0), Vector2(9.0, -10.0)])
+            draw_colored_polygon(shield, Color(0.28, 0.62, 0.9))
+            shield.append(shield[0])
+            draw_polyline(shield, Color(0.1, 0.15, 0.2), 2.5, true)
+            draw_circle(Vector2(15.0, -17.0), 3.0, Color(1.0, 0.82, 0.2))
         "mage":
-            draw_line(Vector2(-14.0, -27.0), Vector2(-14.0, -2.0), Color(0.38, 0.25, 0.16), 2.5)
-            draw_circle(Vector2(-14.0, -29.0), 4.0, Color(0.65, 0.9, 1.0))
+            draw_line(Vector2(-15.0, -29.0), Vector2(-15.0, -2.0), Color(0.12, 0.16, 0.18), 5.0)
+            draw_line(Vector2(-15.0, -29.0), Vector2(-15.0, -2.0), Color(0.55, 0.36, 0.2), 2.5)
+            draw_circle(Vector2(-15.0, -31.0), 5.0, Color(0.65, 0.9, 1.0))
+            draw_circle(Vector2(-15.0, -31.0), 2.0, Color.WHITE)
             draw_colored_polygon(
                 PackedVector2Array([Vector2(-9.0, -39.0), Vector2(0.0, -48.0), Vector2(9.0, -39.0)]),
                 Color(0.42, 0.3, 0.68)
             )
         "healer":
-            draw_circle(Vector2(0.0, -45.0), 3.0, Color(0.65, 0.98, 0.9))
-            draw_circle(Vector2(-10.0, -22.0), 2.5, Color(0.35, 0.8, 0.45))
-            draw_circle(Vector2(10.0, -22.0), 2.5, Color(0.35, 0.8, 0.45))
+            # Light robe and a tall healing staff.
+            draw_colored_polygon(PackedVector2Array([Vector2(-9.0, -24.0), Vector2(9.0, -24.0), Vector2(13.0, -5.0), Vector2(-13.0, -5.0)]), Color(0.78, 0.94, 0.88))
+            draw_polyline(PackedVector2Array([Vector2(-9.0, -24.0), Vector2(9.0, -24.0), Vector2(13.0, -5.0), Vector2(-13.0, -5.0), Vector2(-9.0, -24.0)]), Color(0.12, 0.16, 0.18), 2.0, true)
+            draw_line(Vector2(-16.0, -34.0), Vector2(-16.0, -2.0), Color(0.12, 0.16, 0.18), 5.0)
+            draw_line(Vector2(-16.0, -34.0), Vector2(-16.0, -2.0), Color(0.66, 0.48, 0.25), 2.5)
+            draw_circle(Vector2(-16.0, -36.0), 5.0, Color(0.55, 0.98, 0.88))
+            draw_circle(Vector2(-16.0, -36.0), 2.0, Color.WHITE)
         "assassin":
             draw_colored_polygon(
                 PackedVector2Array([Vector2(-8.0, -25.0), Vector2(0.0, -29.0), Vector2(8.0, -25.0), Vector2(0.0, -21.0)]),
