@@ -1,0 +1,814 @@
+class_name Main
+extends Node2D
+
+# M1 main scene. Loads tables, spawns the party, monsters, boss and
+# chest, runs the camera, the skill/interact/save buttons and saving.
+# If a table is invalid, startup stops with an on-screen error and no
+# fallback data is used. Unit count is capped at MAX_UNITS by the
+# initial spawn plan (see _spawn_enemies): main boss alive 6 + 2 + 1
+# = 9; main boss dead, elite alive 6 + 2 + 2 + 1 = 11; both bosses
+# dead, third-zone quest open 6 + 1 + 1 + 4 = 12; both bosses dead,
+# third-zone quest done, fourth zone open 6 + 1 + 1 + 2 + 2 = 12.
+# When the third zone opens, the first and second zones each drop
+# to 1 initial monster so the third zone's 4 still fit. When the
+# fourth zone opens, the third zone drops to 2 initial monsters so
+# the fourth zone's 2 still fit. The dropped species (wolf, forest
+# wasp, then stream spirit, valley mushroom) are not lost: they go
+# into the respawn queue with the same 8 s timer and spawn as soon
+# as a unit slot frees, so no old kill quest can stall in a save
+# that already beat the elite boss. Ordinary monsters
+# respawn 8 s after death
+# at their spawn point (bosses never respawn); without respawn the
+# 8/6 kill quests were only completable by save/reload farming, since
+# only 4 monsters spawned per run and nothing respawned.
+
+const MAP_WIDTH: int = 1600
+const MAP_HEIGHT: int = 1200
+const MAX_UNITS: int = 12
+const RESPAWN_DELAY: float = 8.0
+
+const HERO_SCENE: PackedScene = preload("res://scenes/hero.tscn")
+const ENEMY_SCENE: PackedScene = preload("res://scenes/enemy.tscn")
+const BOSS_SCENE: PackedScene = preload("res://scenes/boss.tscn")
+const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
+
+@onready var camera: Camera2D = $Camera
+@onready var heroes_root: Node2D = $Heroes
+@onready var enemies_root: Node2D = $Enemies
+@onready var chest_node: Chest = $Chest
+@onready var hud: Hud = $UI/HUD
+@onready var joystick: HeroVirtualJoystick = $UI/Joystick
+@onready var hero_panel: HeroPanel = $UI/HeroPanel
+@onready var equip_panel: EquipPanel = $UI/EquipPanel
+@onready var camp_panel: CampPanel = $UI/CampPanel
+@onready var backpack_panel: BackpackPanel = $UI/BackpackPanel
+@onready var offline_panel: OfflinePanel = $UI/OfflinePanel
+@onready var recruit_panel: RecruitPanel = $UI/RecruitPanel
+@onready var error_label: Label = $UI/ErrorLabel
+
+var data_loader: DataLoader = null
+var save_manager: SaveManager = null
+var quest_manager: QuestManager = null
+var equipment_manager: EquipmentManager = null
+var camp_manager: CampManager = null
+var backpack_manager: BackpackManager = null
+var offline_manager: OfflineManager = null
+var recruitment_manager: RecruitmentManager = null
+var level_manager: LevelManager = null
+var pending_offline: Dictionary = {}
+var campfire_node: Node2D = null
+var heroes: Array = []
+var enemies: Array = []
+var boss: Boss = null
+var elite_boss: Boss = null
+var captain: Hero = null
+var gold: int = 0
+var wood: int = 0
+var wood_cap: int = 200
+var wood_drop_chance: float = 0.5
+var wood_drop_min: int = 1
+var wood_drop_max: int = 2
+var chest_opened: bool = false
+var boss_defeated: bool = false
+var elite_defeated: bool = false
+var valley_quest_done: bool = false
+var respawn_queue: Array = []
+var config_failed: bool = false
+var gold_drop_chance: float = 0.3
+var gold_drop_min: int = 1
+var gold_drop_max: int = 2
+
+func _ready() -> void:
+    data_loader = DataLoader.new()
+    if not data_loader.load_all():
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + data_loader.error_message
+        push_error(data_loader.error_message)
+        return
+    quest_manager = QuestManager.new()
+    if not quest_manager.load_quests():
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + quest_manager.error_message
+        push_error(quest_manager.error_message)
+        return
+    quest_manager.quest_completed.connect(_on_quest_completed)
+    equipment_manager = EquipmentManager.new()
+    if not equipment_manager.load_sets():
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + equipment_manager.error_message
+        push_error(equipment_manager.error_message)
+        return
+    camp_manager = CampManager.new()
+    if not camp_manager.load_all():
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + camp_manager.error_message
+        push_error(camp_manager.error_message)
+        return
+    backpack_manager = BackpackManager.new()
+    if not backpack_manager.load_all():
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + backpack_manager.error_message
+        push_error(backpack_manager.error_message)
+        return
+    offline_manager = OfflineManager.new()
+    if not offline_manager.load_all():
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + offline_manager.error_message
+        push_error(offline_manager.error_message)
+        return
+    var hero_ids: Array = []
+    for hero_data in data_loader.heroes:
+        hero_ids.append(str(hero_data["id"]))
+    recruitment_manager = RecruitmentManager.new()
+    if not recruitment_manager.load_all(hero_ids):
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + recruitment_manager.error_message
+        push_error(recruitment_manager.error_message)
+        return
+    level_manager = LevelManager.new()
+    if not level_manager.load_all():
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + level_manager.error_message
+        push_error(level_manager.error_message)
+        return
+    var gold_drop = data_loader.items.get("gold_drop", {})
+    if gold_drop is Dictionary:
+        gold_drop_chance = float(gold_drop.get("chance", 0.3))
+        gold_drop_min = int(gold_drop.get("min", 1))
+        gold_drop_max = int(gold_drop.get("max", 2))
+    wood_cap = int(data_loader.items.get("wood_cap", 200))
+    var wood_drop = data_loader.items.get("wood_drop", {})
+    if wood_drop is Dictionary:
+        wood_drop_chance = float(wood_drop.get("chance", 0.5))
+        wood_drop_min = int(wood_drop.get("min", 1))
+        wood_drop_max = int(wood_drop.get("max", 2))
+    save_manager = SaveManager.new()
+    var load_result: Dictionary = save_manager.load_game()
+    var save_data: Dictionary = save_manager.default_data()
+    var had_save: bool = false
+    if load_result["status"] == "ok":
+        save_data = load_result["data"]
+        had_save = true
+    elif load_result["status"] == "restored_from_backup":
+        save_data = load_result["data"]
+        had_save = true
+        hud.show_message("主存档损坏，已用备份恢复")
+    elif load_result["status"] == "corrupted":
+        hud.show_message("存档损坏且无可用备份，从头开始")
+    gold = int(save_data.get("gold", 0))
+    backpack_manager.load_saved(save_data.get("backpack", {}))
+    wood = mini(wood_cap, maxi(0, int(save_data.get("wood", 0))))
+    # Offline settlement (simplified): computed once from the
+    # saved timestamp, applied to gold/wood here, shown and saved
+    # once after the panels are wired below. An old save without
+    # last_saved_unix gets nothing retroactively; its next save
+    # stamps the timestamp, so later sessions can settle.
+    pending_offline = offline_manager.settle(int(Time.get_unix_time_from_system()), save_data.get("last_saved_unix", 0), wood, wood_cap)
+    if bool(pending_offline.get("eligible", false)):
+        gold += int(pending_offline.get("gold", 0))
+        wood = mini(wood_cap, wood + int(pending_offline.get("wood", 0)))
+    camp_manager.load_camp(save_data.get("camp", {}))
+    # Recruitment migration: a save file without a "recruitment"
+    # field is an old full-roster save, so all heroes stay
+    # recruited at level 1; only a game with no save file at all
+    # starts with the captain alone. Nothing else in the save is
+    # touched by this migration.
+    recruitment_manager.load_saved(save_data.get("recruitment", {}), had_save, hero_ids)
+    level_manager.load_saved(save_data.get("levels", {}), hero_ids)
+    chest_opened = bool(save_data.get("chest_opened", false))
+    boss_defeated = bool(save_data.get("boss_defeated", false))
+    elite_defeated = bool(save_data.get("elite_defeated", false))
+    quest_manager.load_progress(save_data.get("quests", {}))
+    equipment_manager.load_equipped(save_data.get("equipment", {}))
+    # Fourth zone gate: only after the third-zone quest is done.
+    # It reuses the saved quest completion, so no new save field is
+    # needed; an old save without that quest entry defaults closed.
+    # It also implies the elite boss is dead, but check both so a
+    # hand-edited save cannot open the zone out of order.
+    valley_quest_done = elite_defeated and quest_manager.is_completed("side_valley_puppet")
+    # Actual spawn plan, mirroring _spawn_enemies exactly: the
+    # first and second zones each spawn 1 initial monster once the
+    # third zone opens (elite defeated), otherwise 2 each when open.
+    # Once the fourth zone opens, the third zone drops to 2.
+    var planned_units: int = recruitment_manager.recruited_count()
+    if valley_quest_done:
+        planned_units += 1 + 1 + 2 + 2
+    elif elite_defeated:
+        planned_units += 1 + 1 + 4
+    else:
+        planned_units += 2
+        if boss_defeated:
+            planned_units += 2
+    if not boss_defeated:
+        planned_units += 1
+    elif not elite_defeated:
+        planned_units += 1
+    if planned_units > MAX_UNITS:
+        config_failed = true
+        error_label.text = "单位数量超过上限：" + str(planned_units)
+        push_error(error_label.text)
+        return
+    _spawn_heroes(save_data)
+    _spawn_enemies()
+    _spawn_campfire()
+    var chest_loot: Dictionary = data_loader.items["chest_loot"]
+    chest_node.setup(int(chest_loot["gold"]), chest_opened)
+    chest_node.opened.connect(_on_chest_opened)
+    hud.skill_pressed.connect(_on_skill_pressed)
+    hud.interact_pressed.connect(_on_interact_pressed)
+    hud.save_pressed.connect(_on_save_pressed)
+    hud.hero_panel_pressed.connect(_on_hero_panel_pressed)
+    hud.equip_panel_pressed.connect(_on_equip_panel_pressed)
+    hud.camp_panel_pressed.connect(_on_camp_panel_pressed)
+    hud.backpack_panel_pressed.connect(_on_backpack_panel_pressed)
+    hud.recruit_panel_pressed.connect(_on_recruit_panel_pressed)
+    recruit_panel.set_data(recruitment_manager, level_manager, data_loader.heroes)
+    recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
+    recruit_panel.visible = false
+    backpack_panel.set_manager(backpack_manager)
+    backpack_panel.decompose_requested.connect(_on_backpack_decompose)
+    backpack_panel.claim_requested.connect(_on_backpack_claim)
+    backpack_panel.visible = false
+    hud.set_gold(gold)
+    hud.set_wood(wood, wood_cap)
+    camp_panel.set_manager(camp_manager)
+    camp_panel.build_requested.connect(_on_camp_build)
+    camp_panel.hero_panel_requested.connect(_on_camp_hero_panel_pressed)
+    camp_panel.visible = false
+    _refresh_quest_label()
+    hero_panel.set_heroes(heroes)
+    hero_panel.visible = false
+    equip_panel.set_data(heroes, equipment_manager)
+    equip_panel.swap_requested.connect(_on_equip_swap)
+    equip_panel.visible = false
+    offline_panel.visible = false
+    if bool(pending_offline.get("eligible", false)):
+        # Save at once so this offline span cannot be claimed
+        # again; the panel only displays what is already credited.
+        hud.set_gold(gold)
+        hud.set_wood(wood, wood_cap)
+        _save_game()
+        var off_gold: int = int(pending_offline.get("gold", 0))
+        var off_wood: int = int(pending_offline.get("wood", 0))
+        if off_gold > 0 or off_wood > 0:
+            var billed: int = int(pending_offline.get("billed_seconds", 0))
+            var lines: Array = ["离线结算：离线 " + str(billed / 3600) + " 小时 " + str((billed % 3600) / 60) + " 分钟（按封顶后算）"]
+            if off_gold > 0:
+                lines.append("金币 +" + str(off_gold))
+            if off_wood > 0:
+                lines.append("木材 +" + str(off_wood))
+            offline_panel.show_settlement(lines)
+    camera.make_current()
+    if captain != null:
+        camera.position = captain.global_position
+
+func _spawn_heroes(save_data: Dictionary) -> void:
+    # Only recruited heroes spawn, in heroes.json order, with
+    # formation offsets indexed by recruited position (not by
+    # table index) so a 1-person party has no empty slots and a
+    # growing party never overlaps. The captain is always first.
+    var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
+    var start_pos: Vector2 = Vector2(800.0, 600.0)
+    if save_data.get("player_position") is Dictionary:
+        var saved_pos: Dictionary = save_data["player_position"]
+        start_pos = Vector2(float(saved_pos.get("x", 800.0)), float(saved_pos.get("y", 600.0)))
+    var spawn_index: int = 0
+    for hero_data in data_loader.heroes:
+        var hero_id: String = str(hero_data["id"])
+        if not recruitment_manager.is_recruited(hero_id):
+            continue
+        var hero = HERO_SCENE.instantiate()
+        hero.setup(hero_data, hero_id == "captain")
+        hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
+        hero.reset_to_base_stats()
+        hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
+        hero.global_position = start_pos + offsets[spawn_index]
+        hero.formation_offset = offsets[spawn_index]
+        heroes_root.add_child(hero)
+        hero.add_to_group("heroes")
+        hero.died.connect(_on_hero_died)
+        hero.hp_changed.connect(_on_hero_hp_changed)
+        heroes.append(hero)
+        if hero_id == "captain":
+            captain = hero
+        spawn_index += 1
+    for hero in heroes:
+        if hero != captain:
+            hero.captain_ref = captain
+
+# Spawns a newly recruited hero mid-run at the captain's side, with
+# its level growth and preset equipment applied, so the party grows
+# without a reload. Returns false if the hero is already present.
+func _spawn_recruited_hero(hero_id: String) -> bool:
+    for hero in heroes:
+        if hero.hero_id == hero_id:
+            return false
+    var hero_data: Dictionary = {}
+    for entry in data_loader.heroes:
+        if str(entry["id"]) == hero_id:
+            hero_data = entry
+            break
+    if hero_data.is_empty() or captain == null:
+        return false
+    var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
+    var index: int = heroes.size()
+    var hero = HERO_SCENE.instantiate()
+    hero.setup(hero_data, false)
+    hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
+    hero.reset_to_base_stats()
+    hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero_id))
+    hero.global_position = captain.global_position + offsets[index]
+    hero.formation_offset = offsets[index]
+    heroes_root.add_child(hero)
+    hero.add_to_group("heroes")
+    hero.died.connect(_on_hero_died)
+    hero.hp_changed.connect(_on_hero_hp_changed)
+    hero.captain_ref = captain
+    heroes.append(hero)
+    return true
+
+func _grant_party_xp(amount: int) -> void:
+    if level_manager == null or amount <= 0:
+        return
+    for hero in heroes:
+        var result: Dictionary = level_manager.gain_xp(hero.hero_id, amount)
+        var gained: int = int(result.get("levels_gained", 0))
+        if gained <= 0:
+            continue
+        var hp_ratio: float = float(hero.hp) / float(hero.max_hp) if hero.max_hp > 0 else 1.0
+        hero.set_level(level_manager.level(hero.hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
+        hero.reset_to_base_stats()
+        hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
+        hero.hp = maxi(1, int(round(hp_ratio * float(hero.max_hp))))
+        hero.queue_redraw()
+        hud.show_message(str(hero.hero_name) + " 升到 " + str(level_manager.level(hero.hero_id)) + " 级！")
+    if hero_panel.visible:
+        hero_panel.refresh()
+
+func _spawn_enemy_at(enemy_id: String, pos: Vector2) -> bool:
+    var enemy_data = data_loader.get_enemy(enemy_id)
+    if enemy_data == null:
+        config_failed = true
+        error_label.text = "配置错误，无法启动：" + data_loader.error_message
+        push_error(data_loader.error_message)
+        return false
+    var enemy = ENEMY_SCENE.instantiate()
+    enemy.setup(enemy_data)
+    enemy.global_position = pos
+    enemy.set_meta("spawn_pos", pos)
+    enemies_root.add_child(enemy)
+    enemy.add_to_group("enemies")
+    enemy.died.connect(_on_enemy_died)
+    enemies.append(enemy)
+    return true
+
+func _spawn_enemies() -> void:
+    # Third zone (south, the Fallen Leaf Valley) opens only after
+    # the elite boss is defeated; its monsters never spawn before
+    # that. Once it opens, the first and second zones each drop to
+    # 1 initial monster (the other species still respawns after a
+    # kill), keeping the initial total at or below MAX_UNITS.
+    # Fourth zone (southeast, the Morning Dew Grove) opens only
+    # after the third-zone quest is done; once it opens, the third
+    # zone drops to 2 initial monsters (the other two species still
+    # respawn after a kill), keeping the initial total at 12.
+    var placements: Array = []
+    placements.append({"id": "slime", "pos": Vector2(1000.0, 500.0)})
+    if not elite_defeated:
+        placements.append({"id": "wolf", "pos": Vector2(900.0, 820.0)})
+    # Second zone (north, the Moss Crown Clearing) opens only after
+    # the main boss is defeated; its monsters never spawn before that.
+    if boss_defeated:
+        placements.append({"id": "thorn_vine", "pos": Vector2(420.0, 200.0)})
+        if not elite_defeated:
+            placements.append({"id": "forest_wasp", "pos": Vector2(760.0, 150.0)})
+    if elite_defeated:
+        placements.append({"id": "valley_firefly", "pos": Vector2(200.0, 980.0)})
+        placements.append({"id": "withered_puppet", "pos": Vector2(480.0, 1020.0)})
+        if not valley_quest_done:
+            placements.append({"id": "stream_spirit", "pos": Vector2(620.0, 940.0)})
+            placements.append({"id": "valley_mushroom", "pos": Vector2(300.0, 1100.0)})
+        # Species dropped from the initial plan above (wolf, wasp)
+        # re-enter through the ordinary respawn queue: after the
+        # 8 s timer they spawn whenever a unit slot is free, so
+        # their kill quests remain completable after the elite kill.
+        respawn_queue.append({"id": "wolf", "pos": Vector2(900.0, 820.0), "timer": RESPAWN_DELAY})
+        respawn_queue.append({"id": "forest_wasp", "pos": Vector2(760.0, 150.0), "timer": RESPAWN_DELAY})
+    if valley_quest_done:
+        placements.append({"id": "dawn_deer", "pos": Vector2(1100.0, 1000.0)})
+        placements.append({"id": "hill_rock", "pos": Vector2(1400.0, 1080.0)})
+        # Third-zone species dropped from the initial plan above
+        # (stream spirit, valley mushroom) re-enter through the
+        # ordinary respawn queue, same pattern as wolf and wasp.
+        respawn_queue.append({"id": "stream_spirit", "pos": Vector2(620.0, 940.0), "timer": RESPAWN_DELAY})
+        respawn_queue.append({"id": "valley_mushroom", "pos": Vector2(300.0, 1100.0), "timer": RESPAWN_DELAY})
+    for placement in placements:
+        if not _spawn_enemy_at(str(placement["id"]), placement["pos"]):
+            return
+    if not boss_defeated:
+        var boss_data = data_loader.get_enemy(data_loader.boss_id)
+        if boss_data == null:
+            config_failed = true
+            error_label.text = "配置错误，无法启动：" + data_loader.error_message
+            push_error(data_loader.error_message)
+            return
+        boss = BOSS_SCENE.instantiate()
+        boss.setup(boss_data)
+        boss.global_position = Vector2(1300.0, 900.0)
+        boss.spawn_position = Vector2(1300.0, 900.0)
+        enemies_root.add_child(boss)
+        boss.add_to_group("enemies")
+        boss.died.connect(_on_enemy_died)
+        enemies.append(boss)
+    elif not elite_defeated:
+        var elite_data = data_loader.get_enemy(data_loader.elite_boss_id)
+        if elite_data == null:
+            config_failed = true
+            error_label.text = "配置错误，无法启动：" + data_loader.error_message
+            push_error(data_loader.error_message)
+            return
+        elite_boss = BOSS_SCENE.instantiate()
+        elite_boss.setup(elite_data)
+        elite_boss.global_position = Vector2(1000.0, 220.0)
+        elite_boss.spawn_position = Vector2(1000.0, 220.0)
+        enemies_root.add_child(elite_boss)
+        elite_boss.add_to_group("enemies")
+        elite_boss.died.connect(_on_enemy_died)
+        enemies.append(elite_boss)
+
+func _spawn_campfire() -> void:
+    # Framework campfire only: it unlocks a future area flag and
+    # never gates any existing zone. Existing zones keep their
+    # boss / quest gates exactly as before, so an old save that
+    # already opened them stays open whether or not this campfire
+    # is ever visited. If campfires.json ever gains more entries,
+    # each gets its own node the same way.
+    if camp_manager == null or camp_manager.campfire_order.is_empty():
+        return
+    var entry = camp_manager.campfire(camp_manager.campfire_order[0])
+    if entry == null:
+        return
+    var pos = entry["position"]
+    campfire_node = CAMPFIRE_SCENE.instantiate()
+    campfire_node.global_position = Vector2(float(pos["x"]), float(pos["y"]))
+    add_child(campfire_node)
+
+func _tick_respawns(delta: float) -> void:
+    if respawn_queue.is_empty():
+        return
+    var ready: Array = []
+    for entry in respawn_queue:
+        entry["timer"] = float(entry["timer"]) - delta
+        if float(entry["timer"]) <= 0.0:
+            ready.append(entry)
+    for entry in ready:
+        if heroes.size() + enemies.size() >= MAX_UNITS:
+            continue
+        respawn_queue.erase(entry)
+        _spawn_enemy_at(str(entry["id"]), entry["pos"])
+
+func _process(delta: float) -> void:
+    if config_failed or captain == null:
+        return
+    camera.position = captain.global_position
+    hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
+    var input_vec: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+    if joystick.vector.length() > 0.1:
+        input_vec = joystick.vector
+    captain.move_input = input_vec
+    _tick_respawns(delta)
+
+func _unhandled_input(event: InputEvent) -> void:
+    if config_failed:
+        return
+    if event is InputEventKey and event.pressed and not event.echo:
+        if event.keycode == KEY_SPACE:
+            _on_skill_pressed()
+        elif event.keycode == KEY_E:
+            _on_interact_pressed()
+        elif event.keycode == KEY_S:
+            _on_save_pressed()
+        elif event.keycode == KEY_H:
+            _on_hero_panel_pressed()
+        elif event.keycode == KEY_Q:
+            _on_equip_panel_pressed()
+        elif event.keycode == KEY_C:
+            _on_camp_panel_pressed()
+        elif event.keycode == KEY_B:
+            _on_backpack_panel_pressed()
+        elif event.keycode == KEY_R:
+            _on_recruit_panel_pressed()
+
+func _on_skill_pressed() -> void:
+    if captain == null:
+        return
+    if captain.use_skill():
+        hud.show_message("释放技能！")
+    else:
+        hud.show_message("技能冷却中")
+
+func _on_interact_pressed() -> void:
+    if captain == null:
+        return
+    if campfire_node != null and camp_manager != null and not camp_manager.campfire_order.is_empty():
+        var entry = camp_manager.campfire(camp_manager.campfire_order[0])
+        if entry != null and captain.global_position.distance_to(campfire_node.global_position) < 80.0:
+            _on_campfire_interact(entry)
+            return
+    if chest_node == null:
+        return
+    if captain.global_position.distance_to(chest_node.global_position) < 80.0:
+        var gained: int = chest_node.try_open()
+        if gained == 0 and chest_node.is_open:
+            hud.show_message("宝箱已经开过了")
+
+func _on_campfire_interact(entry: Dictionary) -> void:
+    var campfire_id: String = str(entry["id"])
+    if camp_manager.is_campfire_unlocked(campfire_id):
+        hud.show_message(str(entry["intro"]) + " " + str(entry["teleport_intro"]))
+        return
+    var cost: int = int(entry["cost_wood"])
+    if wood < cost:
+        hud.show_message(str(entry["fog_prompt"]) + " " + str(entry["insufficient_prompt"]) + "（需要 " + str(cost) + " 木材，当前 " + str(wood) + "）")
+        return
+    wood -= cost
+    camp_manager.unlock_campfire(campfire_id)
+    hud.set_wood(wood, wood_cap)
+    hud.show_message(str(entry["dispel_prompt"]))
+    _save_game()
+
+func _on_backpack_panel_pressed() -> void:
+    backpack_panel.visible = not backpack_panel.visible
+    if backpack_panel.visible:
+        backpack_panel.refresh()
+
+func _on_backpack_decompose(index: int) -> void:
+    if backpack_manager == null or index < 0 or index >= backpack_manager.backpack.size():
+        hud.show_message("分解失败：未知散件")
+        return
+    var item_id: String = str(backpack_manager.backpack[index])
+    var entry = backpack_manager.item(item_id)
+    if entry == null or not backpack_manager.remove_at(index):
+        hud.show_message("分解失败：未知散件")
+        return
+    gold += backpack_manager.decompose_gold
+    hud.set_gold(gold)
+    backpack_panel.refresh()
+    hud.show_message("分解 " + str(entry["name"]) + "，获得金币 +" + str(backpack_manager.decompose_gold))
+    _save_game()
+
+func _on_backpack_claim(index: int) -> void:
+    if backpack_manager == null or index < 0 or index >= backpack_manager.mailbox.size():
+        hud.show_message("领取失败：未知邮件")
+        return
+    if backpack_manager.is_full():
+        hud.show_message("背包已满，先分解一件再领取")
+        return
+    var item_id: String = str(backpack_manager.mailbox[index])
+    var entry = backpack_manager.item(item_id)
+    if entry == null or not backpack_manager.claim_at(index):
+        hud.show_message("领取失败：未知邮件")
+        return
+    backpack_panel.refresh()
+    hud.show_message("已从邮箱领取 " + str(entry["name"]))
+    _save_game()
+
+func _on_camp_panel_pressed() -> void:
+    camp_panel.visible = not camp_panel.visible
+    if camp_panel.visible:
+        camp_panel.refresh()
+
+func _on_camp_hero_panel_pressed() -> void:
+    camp_panel.visible = false
+    _on_hero_panel_pressed()
+
+func _on_camp_build(building_id: String) -> void:
+    var entry = camp_manager.building(building_id)
+    if entry == null:
+        hud.show_message("建造失败：未知建筑")
+        return
+    if camp_manager.is_built(building_id):
+        hud.show_message("该建筑已建成")
+        return
+    var cost: int = int(entry["cost_wood"])
+    if wood < cost:
+        hud.show_message("木材不足，需要 " + str(cost) + " 木材，当前 " + str(wood))
+        return
+    wood -= cost
+    camp_manager.build(building_id)
+    hud.set_wood(wood, wood_cap)
+    camp_panel.refresh()
+    hud.show_message(str(entry["built_message"]))
+    _save_game()
+
+func _on_save_pressed() -> void:
+    _save_game()
+    hud.show_message("已手动保存")
+
+func _on_hero_panel_pressed() -> void:
+    hero_panel.visible = not hero_panel.visible
+    if hero_panel.visible:
+        hero_panel.refresh()
+
+func _on_equip_panel_pressed() -> void:
+    equip_panel.visible = not equip_panel.visible
+    if equip_panel.visible:
+        equip_panel.refresh()
+
+func _refresh_quest_label() -> void:
+    var text: String = ""
+    for line in quest_manager.progress_lines():
+        text += str(line) + "\n"
+    hud.set_quest_text(text.strip_edges())
+
+func _on_recruit_panel_pressed() -> void:
+    recruit_panel.visible = not recruit_panel.visible
+    if recruit_panel.visible:
+        recruit_panel.refresh()
+
+func _on_recruit_synthesize(hero_id: String) -> void:
+    var entry = recruitment_manager.entry(hero_id)
+    if entry == null or str(entry["unlock_type"]) != "fragments":
+        hud.show_message("合成失败：未知英雄")
+        return
+    if recruitment_manager.is_recruited(hero_id):
+        hud.show_message("该英雄已加入")
+        return
+    if recruitment_manager.fragments < recruitment_manager.fragments_required(hero_id):
+        hud.show_message("碎片不足，需要 " + str(recruitment_manager.fragments_required(hero_id)) + " 片，当前 " + str(recruitment_manager.fragments))
+        return
+    recruitment_manager.recruit(hero_id)
+    var hero_name: String = ""
+    for hero_data in data_loader.heroes:
+        if str(hero_data["id"]) == hero_id:
+            hero_name = str(hero_data["name"])
+            break
+    _spawn_recruited_hero(hero_id)
+    recruit_panel.refresh()
+    if hero_panel.visible:
+        hero_panel.refresh()
+    hud.show_message("新英雄加入：" + hero_name + "！")
+    _save_game()
+
+func _on_quest_completed(quest_id: String, quest_name: String, complete_line: String, reward_gold: int) -> void:
+    _refresh_quest_label()
+    if reward_gold > 0:
+        gold += reward_gold
+        hud.set_gold(gold)
+        hud.show_message("任务完成：" + quest_name + " " + complete_line + " 获得金币 +" + str(reward_gold))
+    else:
+        hud.show_message("任务完成：" + quest_name + " " + complete_line)
+    # Quest-unlocked heroes join immediately, before the save below,
+    # so the saved party already includes them. A quest already
+    # completed in an old save never re-fires, and old saves were
+    # migrated to the full roster anyway, so this cannot double-add.
+    var unlock_hero_id: String = recruitment_manager.hero_id_for_quest(quest_id)
+    if unlock_hero_id != "" and recruitment_manager.recruit(unlock_hero_id):
+        var hero_name: String = ""
+        for hero_data in data_loader.heroes:
+            if str(hero_data["id"]) == unlock_hero_id:
+                hero_name = str(hero_data["name"])
+                break
+        _spawn_recruited_hero(unlock_hero_id)
+        recruit_panel.refresh()
+        if hero_panel.visible:
+            hero_panel.refresh()
+        hud.show_message("新英雄加入：" + hero_name + "！")
+    _save_game()
+
+func _on_equip_swap(hero_id: String, set_id: String) -> void:
+    if equipment_manager == null or not equipment_manager.equip_set_for_hero(hero_id, set_id):
+        hud.show_message("换装失败：未知套装")
+        return
+    for hero in heroes:
+        if hero.hero_id != hero_id:
+            continue
+        var hp_ratio: float = float(hero.hp) / float(hero.max_hp) if hero.max_hp > 0 else 1.0
+        hero.reset_to_base_stats()
+        hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero_id))
+        hero.hp = maxi(1, int(round(hp_ratio * float(hero.max_hp))))
+        hero.queue_redraw()
+    if hero_panel.visible:
+        hero_panel.refresh()
+    equip_panel.refresh()
+    hud.show_message("已换装：" + equipment_manager.set_name(set_id))
+    _save_game()
+
+func _save_game() -> void:
+    if captain == null:
+        return
+    var hero_states: Array = []
+    for hero in heroes:
+        hero_states.append({"id": hero.hero_id, "hp": hero.hp})
+    var data: Dictionary = {
+        "gold": gold,
+        "wood": wood,
+        "last_saved_unix": int(Time.get_unix_time_from_system()),
+        "backpack": backpack_manager.save_data(),
+        "camp": camp_manager.save_camp(),
+        "chest_opened": chest_opened,
+        "boss_defeated": boss_defeated,
+        "elite_defeated": elite_defeated,
+        "player_position": {"x": captain.global_position.x, "y": captain.global_position.y},
+        "heroes": hero_states,
+        "recruitment": recruitment_manager.save_data(),
+        "levels": level_manager.save_data(),
+        "quests": quest_manager.save_progress(),
+        "equipment": equipment_manager.save_equipped(),
+    }
+    if not save_manager.save_game(data):
+        hud.show_message("保存失败")
+
+func _on_chest_opened(amount: int) -> void:
+    gold += amount
+    chest_opened = true
+    hud.set_gold(gold)
+    hud.show_message("获得金币 +" + str(amount))
+    quest_manager.on_chest_opened()
+    _refresh_quest_label()
+    _save_game()
+
+func _on_enemy_died(enemy) -> void:
+    enemies.erase(enemy)
+    if enemy == boss:
+        boss_defeated = true
+        gold += boss.reward_gold
+        hud.set_gold(gold)
+        hud.show_message("击败 BOSS，获得金币 +" + str(boss.reward_gold))
+        _grant_party_xp(level_manager.xp_per_boss)
+        quest_manager.on_enemy_killed(str(enemy.enemy_id), true)
+        _refresh_quest_label()
+        _save_game()
+        return
+    if enemy == elite_boss:
+        elite_defeated = true
+        gold += elite_boss.reward_gold
+        hud.set_gold(gold)
+        hud.show_message("击败精英 BOSS，获得金币 +" + str(elite_boss.reward_gold))
+        _grant_party_xp(level_manager.xp_per_boss)
+        quest_manager.on_enemy_killed(str(enemy.enemy_id), true)
+        _refresh_quest_label()
+        _save_game()
+        return
+    var enemy_id: String = str(enemy.get("enemy_id"))
+    quest_manager.on_enemy_killed(enemy_id, false)
+    _refresh_quest_label()
+    var drop_parts: Array = []
+    if randf() < gold_drop_chance:
+        var dropped: int = randi_range(gold_drop_min, gold_drop_max)
+        gold += dropped
+        hud.set_gold(gold)
+        drop_parts.append("金币 +" + str(dropped))
+    if randf() < wood_drop_chance:
+        var wood_dropped: int = randi_range(wood_drop_min, wood_drop_max)
+        var room: int = wood_cap - wood
+        wood_dropped = mini(wood_dropped, room)
+        if wood_dropped > 0:
+            wood += wood_dropped
+            hud.set_wood(wood, wood_cap)
+            drop_parts.append("木材 +" + str(wood_dropped))
+    # Fragment drops stop once the fragment hero is recruited, so a
+    # full roster never farms useless fragments.
+    if recruitment_manager != null and not recruitment_manager.is_recruited("assassin") and randf() < recruitment_manager.fragment_drop_chance:
+        var fragment_count: int = recruitment_manager.add_fragment()
+        drop_parts.append("砾影碎片 +1（" + str(fragment_count) + "/" + str(recruitment_manager.fragments_required("assassin")) + "）")
+    if backpack_manager != null and randf() < backpack_manager.drop_chance:
+        var loose_count: int = randi_range(backpack_manager.drop_min, backpack_manager.drop_max)
+        for _i in range(loose_count):
+            var loose_id: String = str(backpack_manager.item_order[randi() % backpack_manager.item_order.size()])
+            var dest: String = backpack_manager.add(loose_id)
+            var loose_entry = backpack_manager.item(loose_id)
+            if dest == "backpack":
+                drop_parts.append("散件 " + str(loose_entry["name"]))
+            elif dest == "mailbox":
+                drop_parts.append("散件 " + str(loose_entry["name"]) + "（背包已满，已寄到邮箱）")
+    if not drop_parts.is_empty():
+        var drop_text: String = ""
+        for part in drop_parts:
+            if drop_text != "":
+                drop_text += "、"
+            drop_text += str(part)
+        hud.show_message("击败 " + str(enemy.get("enemy_name")) + "，获得" + drop_text)
+    # Experience is granted after the drop message so a level-up
+    # message is not overwritten by the drop message.
+    _grant_party_xp(level_manager.xp_per_kill)
+    # Ordinary monsters respawn at their spawn point after a delay,
+    # so kill quests stay completable inside one run. Bosses never do.
+    var spawn_pos: Vector2 = enemy.get_meta("spawn_pos", Vector2.ZERO) if enemy.has_meta("spawn_pos") else Vector2.ZERO
+    respawn_queue.append({"id": enemy_id, "pos": spawn_pos, "timer": RESPAWN_DELAY})
+    _save_game()
+
+func _on_hero_died(hero) -> void:
+    hud.show_message(str(hero.hero_name) + " 倒下了，3 秒后复活")
+    var respawn_pos: Vector2 = Vector2(800.0, 600.0)
+    if hero != captain and captain != null:
+        respawn_pos = captain.global_position + Vector2(0.0, 40.0)
+    await get_tree().create_timer(3.0).timeout
+    if hero != null:
+        hero.respawn(respawn_pos)
+        if hero_panel.visible:
+            hero_panel.refresh()
+
+func _on_hero_hp_changed(_hero) -> void:
+    if hero_panel.visible:
+        hero_panel.refresh()
