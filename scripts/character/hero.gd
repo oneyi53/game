@@ -19,6 +19,7 @@ const HERO_TEXTURES := {
 signal died(hero)
 signal hp_changed(hero)
 
+var world_map_id: String = "moss_crown"
 var hero_id: String = ""
 var hero_name: String = ""
 var is_captain: bool = false
@@ -177,6 +178,8 @@ func _scan_and_attack() -> void:
         for enemy in get_tree().get_nodes_in_group("enemies"):
             if enemy == null or bool(enemy.get("dead")):
                 continue
+            if str(enemy.get_meta("world_map_id", "")) != world_map_id:
+                continue
             var dist: float = global_position.distance_to(enemy.global_position)
             if dist <= dash_dist and dist > attack_range:
                 dash_dist = dist
@@ -192,6 +195,8 @@ func _scan_and_attack() -> void:
         if enemy == null:
             continue
         if bool(enemy.get("dead")):
+            continue
+        if str(enemy.get_meta("world_map_id", "")) != world_map_id:
             continue
         var dist: float = global_position.distance_to(enemy.global_position)
         if dist > attack_range:
