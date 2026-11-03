@@ -5,6 +5,7 @@ extends Node2D
 # remain in the original 1600x1200 logical coordinate system.
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const TREE_VISUAL_SCRIPT = preload("res://scripts/core/tree_visual.gd")
+const LANDMARK_VISUAL_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
 
 const MAP_WIDTH: int = 1600
 const MAP_HEIGHT: int = 1200
@@ -25,6 +26,18 @@ func _ready() -> void:
         tree.set_script(TREE_VISUAL_SCRIPT)
         tree.position = tree_pos
         add_child(tree)
+    # Three fixed landmarks add orientation without filling the walking lanes.
+    var landmark_specs: Array = [
+        {"kind": "tower", "position": Vector2(320.0, 300.0)},
+        {"kind": "fountain", "position": Vector2(1260.0, 520.0)},
+        {"kind": "tree_cluster", "position": Vector2(820.0, 1040.0)}
+    ]
+    for spec in landmark_specs:
+        var landmark := Node2D.new()
+        landmark.set_script(LANDMARK_VISUAL_SCRIPT)
+        landmark.position = spec["position"]
+        add_child(landmark)
+        landmark.setup(str(spec["kind"]))
 
 func _project(point: Vector2) -> Vector2:
     return WorldProjectionScript.world_to_screen(point)
