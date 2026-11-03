@@ -72,65 +72,65 @@ text = "任务：—"
 
 [node name="SkillButton" type="Button" parent="UI/HUD"]
 offset_left = 540.0
-offset_top = 1100.0
+offset_top = 1090.0
 offset_right = 680.0
-offset_bottom = 1160.0
+offset_bottom = 1150.0
 text = "技能"
 
 [node name="InteractButton" type="Button" parent="UI/HUD"]
 offset_left = 540.0
-offset_top = 1020.0
+offset_top = 1000.0
 offset_right = 680.0
-offset_bottom = 1080.0
+offset_bottom = 1060.0
 text = "交互"
 
 [node name="SaveButton" type="Button" parent="UI/HUD"]
-offset_left = 10.0
-offset_top = 1205.0
-offset_right = 115.0
-offset_bottom = 1265.0
+offset_left = 7.5
+offset_top = 1190.0
+offset_right = 112.5
+offset_bottom = 1250.0
 text = "保存"
 
 [node name="HeroButton" type="Button" parent="UI/HUD"]
-offset_left = 130.0
-offset_top = 1205.0
-offset_right = 235.0
-offset_bottom = 1265.0
+offset_left = 127.5
+offset_top = 1190.0
+offset_right = 232.5
+offset_bottom = 1250.0
 text = "英雄"
 
 [node name="EquipButton" type="Button" parent="UI/HUD"]
-offset_left = 250.0
-offset_top = 1205.0
-offset_right = 355.0
-offset_bottom = 1265.0
+offset_left = 247.5
+offset_top = 1190.0
+offset_right = 352.5
+offset_bottom = 1250.0
 text = "装备"
 
 [node name="CampButton" type="Button" parent="UI/HUD"]
-offset_left = 370.0
-offset_top = 1205.0
-offset_right = 475.0
-offset_bottom = 1265.0
+offset_left = 367.5
+offset_top = 1190.0
+offset_right = 472.5
+offset_bottom = 1250.0
 text = "营地"
 
 [node name="BackpackButton" type="Button" parent="UI/HUD"]
-offset_left = 490.0
-offset_top = 1205.0
-offset_right = 595.0
-offset_bottom = 1265.0
+offset_left = 487.5
+offset_top = 1190.0
+offset_right = 592.5
+offset_bottom = 1250.0
 text = "背包"
 
 [node name="RecruitButton" type="Button" parent="UI/HUD"]
-offset_left = 610.0
-offset_top = 1205.0
-offset_right = 710.0
-offset_bottom = 1265.0
+offset_left = 607.5
+offset_top = 1190.0
+offset_right = 712.5
+offset_bottom = 1250.0
 text = "招募"
 
 [node name="CooldownLabel" type="Label" parent="UI/HUD"]
 offset_left = 540.0
-offset_top = 985.0
+offset_top = 965.0
 offset_right = 680.0
-offset_bottom = 1015.0
+offset_bottom = 995.0
 text = "技能就绪"
 
 [node name="Joystick" type="Control" parent="UI"]
