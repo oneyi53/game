@@ -58,6 +58,17 @@ func _draw() -> void:
             var tile_color: Color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
             _draw_ground_tile(xi, yi, tile_color)
 
+    # Warm stone paths are fixed visual tiles; they do not alter
+    # collision, movement or any logical region coordinates.
+    var path_tiles: Array = [
+        Vector2(704.0, 576.0), Vector2(768.0, 576.0), Vector2(832.0, 576.0),
+        Vector2(896.0, 576.0), Vector2(960.0, 640.0), Vector2(1024.0, 704.0),
+        Vector2(576.0, 640.0), Vector2(512.0, 704.0), Vector2(448.0, 768.0)
+    ]
+    for i in range(path_tiles.size()):
+        var path_color: Color = Color(0.78, 0.69, 0.52) if i % 2 == 0 else Color(0.84, 0.75, 0.59)
+        _draw_ground_tile(int(path_tiles[i].x), int(path_tiles[i].y), path_color)
+
     var map_outline := WorldProjectionScript.map_corners()
     map_outline.append(map_outline[0])
     draw_polyline(map_outline, Color(0.2, 0.45, 0.2), 5.0, true)
