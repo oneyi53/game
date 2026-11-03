@@ -2,6 +2,10 @@ class_name Boss
 extends CharacterBody2D
 
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const BOSS_TEXTURES := {
+    "boss_tree": preload("res://assets/art-v1/sprites/bosses/boss_tree.png"),
+    "boss_thorn": preload("res://assets/art-v1/sprites/bosses/boss_thorn.png")
+}
 
 # Boss. Two phases: below half health it moves faster, hits harder
 # and telegraphs more often. Every telegraph shows a red ground circle
@@ -166,43 +170,22 @@ func take_damage(amount: int) -> void:
 func _draw() -> void:
     if dead:
         return
-    var offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
+    var projection_offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
     if telegraph_active:
-        # Match the projected footprint of a 95-unit logical circle.
-        draw_set_transform(offset, 0.0, Vector2(0.7071068, 0.3535534))
+        # Preserve the existing projected 95-unit attack warning.
+        draw_set_transform(projection_offset, 0.0, Vector2(0.7071068, 0.3535534))
         draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.22))
         draw_arc(Vector2.ZERO, 95.0, 0.0, TAU, 48, Color(1.0, 0.12, 0.12, 0.95), 3.0, true)
         for angle_step in range(8):
             var angle: float = TAU * float(angle_step) / 8.0
             draw_line(Vector2.ZERO, Vector2(cos(angle), sin(angle)) * 95.0, Color(1.0, 0.18, 0.18, 0.65), 1.5, true)
-    draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
+    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.42))
     draw_circle(Vector2.ZERO, 27.0, Color(0.05, 0.18, 0.05, 0.3))
-    # Boss artwork is rendered at twice the ordinary hero scale.
-    # Gameplay coordinates, collision, reach and attack radii are untouched.
-    draw_set_transform(offset, 0.0, Vector2(2.0, 2.0))
-    var boss_body := PackedVector2Array([Vector2(-18.0, -5.0), Vector2(-22.0, -30.0), Vector2(-15.0, -55.0), Vector2(15.0, -55.0), Vector2(22.0, -30.0), Vector2(18.0, -5.0)])
-    draw_colored_polygon(boss_body, boss_color)
-    boss_body.append(boss_body[0])
-    draw_polyline(boss_body, Color(0.1, 0.15, 0.16), 2.0, true)
-    draw_line(Vector2(-16.0, -35.0), Vector2(-34.0, -51.0), Color(0.38, 0.26, 0.14), 7.0)
-    draw_line(Vector2(16.0, -35.0), Vector2(34.0, -51.0), Color(0.38, 0.26, 0.14), 7.0)
-    draw_circle(Vector2(-34.0, -51.0), 5.0, Color(0.45, 0.65, 0.3))
-    draw_circle(Vector2(34.0, -51.0), 5.0, Color(0.45, 0.65, 0.3))
-    var leaf: Color = Color(0.7, 1.0, 0.35) if phase >= 2 else Color(0.48, 0.82, 0.32)
-    if enemy_id == "boss_tree":
-        draw_circle(Vector2(-20.0, -62.0), 17.0, leaf)
-        draw_circle(Vector2(20.0, -62.0), 17.0, leaf)
-        draw_circle(Vector2(0.0, -78.0), 20.0, leaf.lightened(0.08))
-        draw_circle(Vector2(0.0, -56.0), 13.0, leaf.darkened(0.08))
-    elif enemy_id == "boss_thorn":
-        draw_colored_polygon(PackedVector2Array([Vector2(-30.0, -53.0), Vector2(-25.0, -76.0), Vector2(-14.0, -62.0), Vector2(0.0, -82.0), Vector2(14.0, -62.0), Vector2(25.0, -76.0), Vector2(30.0, -53.0)]), Color(0.24, 0.55, 0.3))
-        draw_line(Vector2(-22.0, -42.0), Vector2(-31.0, -55.0), Color(0.22, 0.48, 0.25), 4.0)
-        draw_line(Vector2(22.0, -42.0), Vector2(31.0, -55.0), Color(0.22, 0.48, 0.25), 4.0)
-        draw_circle(Vector2(-14.0, -62.0), 4.0, Color(0.65, 0.78, 0.38))
-        draw_circle(Vector2(14.0, -62.0), 4.0, Color(0.65, 0.78, 0.38))
-    draw_circle(Vector2(-8.0, -36.0), 3.0, Color(1.0, 0.82, 0.28))
-    draw_circle(Vector2(8.0, -36.0), 3.0, Color(1.0, 0.82, 0.28))
-    draw_line(Vector2(-6.0, -25.0), Vector2(6.0, -25.0), Color(0.18, 0.22, 0.12), 2.0)
-    draw_rect(Rect2(-31.0, -91.0, 62.0, 7.0), Color(0.08, 0.08, 0.08, 0.95))
-    var fill: float = 62.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-31.0, -91.0, fill, 7.0), Color(0.95, 0.18, 0.16))
+    draw_set_transform(projection_offset)
+    var boss_texture: Texture2D = BOSS_TEXTURES.get(enemy_id)
+    if boss_texture != null:
+        # 1024px canvas, foot anchor (512, 960), displayed at 192px high.
+        draw_texture_rect(boss_texture, Rect2(-96.0, -180.0, 192.0, 192.0), false)
+    draw_rect(Rect2(-38.0, -194.0, 76.0, 7.0), Color(0.08, 0.08, 0.08, 0.95))
+    var fill: float = 76.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-38.0, -194.0, fill, 7.0), Color(0.95, 0.18, 0.16))
