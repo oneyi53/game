@@ -166,39 +166,37 @@ func take_damage(amount: int) -> void:
 func _draw() -> void:
     if dead:
         return
-    var projection_offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
     if telegraph_active:
-        # The damaging radius stays exactly 95 logical units. This is
-        # purely a clearer ground-plane warning: translucent fill,
-        # strong perimeter and radial markers before the existing hit.
-        draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.5))
+        draw_set_transform(offset, 0.0, Vector2(1.0, 0.5))
         draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.22))
         draw_arc(Vector2.ZERO, 95.0, 0.0, TAU, 48, Color(1.0, 0.12, 0.12, 0.95), 3.0, true)
         for angle_step in range(8):
             var angle: float = TAU * float(angle_step) / 8.0
-            var ray_end: Vector2 = Vector2(cos(angle), sin(angle)) * 95.0
-            draw_line(Vector2.ZERO, ray_end, Color(1.0, 0.18, 0.18, 0.65), 1.5, true)
-    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
-    draw_circle(Vector2.ZERO, 24.0, Color(0.05, 0.18, 0.05, 0.3))
-    draw_set_transform(projection_offset + Vector2(0.0, -28.0))
-    # Visual only: body radius, telegraph radius, hp bar and all
-    # stats are unchanged. Phase 2 only brightens the leaf crown.
-    draw_circle(Vector2.ZERO, 28.0, boss_color)
-    var leaf: Color = Color(0.6, 0.95, 0.4) if phase >= 2 else Color(0.6, 0.9, 0.4)
-    draw_circle(Vector2(0.0, -8.0), 8.0, leaf)
+            draw_line(Vector2.ZERO, Vector2(cos(angle), sin(angle)) * 95.0, Color(1.0, 0.18, 0.18, 0.65), 1.5, true)
+    draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 27.0, Color(0.05, 0.18, 0.05, 0.3))
+    draw_set_transform(offset)
+    draw_colored_polygon(PackedVector2Array([Vector2(-18.0, -5.0), Vector2(-22.0, -30.0), Vector2(-15.0, -55.0), Vector2(15.0, -55.0), Vector2(22.0, -30.0), Vector2(18.0, -5.0)]), boss_color)
+    draw_line(Vector2(-16.0, -35.0), Vector2(-34.0, -51.0), Color(0.38, 0.26, 0.14), 7.0)
+    draw_line(Vector2(16.0, -35.0), Vector2(34.0, -51.0), Color(0.38, 0.26, 0.14), 7.0)
+    draw_circle(Vector2(-34.0, -51.0), 5.0, Color(0.45, 0.65, 0.3))
+    draw_circle(Vector2(34.0, -51.0), 5.0, Color(0.45, 0.65, 0.3))
+    var leaf: Color = Color(0.7, 1.0, 0.35) if phase >= 2 else Color(0.48, 0.82, 0.32)
     if enemy_id == "boss_tree":
-        # Leaf crown: broad canopy circles + branch arms.
-        draw_circle(Vector2(-16.0, -18.0), 10.0, leaf)
-        draw_circle(Vector2(16.0, -18.0), 10.0, leaf)
-        draw_circle(Vector2(0.0, -26.0), 11.0, leaf)
-        draw_line(Vector2(-24.0, 2.0), Vector2(-34.0, -6.0), Color(0.4, 0.3, 0.15), 3.0)
-        draw_line(Vector2(24.0, 2.0), Vector2(34.0, -6.0), Color(0.4, 0.3, 0.15), 3.0)
+        draw_circle(Vector2(-20.0, -62.0), 17.0, leaf)
+        draw_circle(Vector2(20.0, -62.0), 17.0, leaf)
+        draw_circle(Vector2(0.0, -78.0), 20.0, leaf.lightened(0.08))
+        draw_circle(Vector2(0.0, -56.0), 13.0, leaf.darkened(0.08))
     elif enemy_id == "boss_thorn":
-        # Thorn king: moss-green + stone-brown patches, thorn spikes.
-        draw_circle(Vector2(-10.0, -12.0), 5.0, Color(0.5, 0.65, 0.4))
-        draw_circle(Vector2(12.0, 8.0), 5.0, Color(0.55, 0.45, 0.3))
-        draw_line(Vector2(-22.0, -10.0), Vector2(-30.0, -16.0), Color(0.2, 0.55, 0.3), 2.0)
-        draw_line(Vector2(22.0, -10.0), Vector2(30.0, -16.0), Color(0.2, 0.55, 0.3), 2.0)
-    draw_rect(Rect2(-30.0, -44.0, 60.0, 7.0), Color.BLACK)
-    var fill: float = 60.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-30.0, -44.0, fill, 7.0), Color(0.9, 0.2, 0.2))
+        draw_colored_polygon(PackedVector2Array([Vector2(-30.0, -53.0), Vector2(-25.0, -76.0), Vector2(-14.0, -62.0), Vector2(0.0, -82.0), Vector2(14.0, -62.0), Vector2(25.0, -76.0), Vector2(30.0, -53.0)]), Color(0.24, 0.55, 0.3))
+        draw_line(Vector2(-22.0, -42.0), Vector2(-31.0, -55.0), Color(0.22, 0.48, 0.25), 4.0)
+        draw_line(Vector2(22.0, -42.0), Vector2(31.0, -55.0), Color(0.22, 0.48, 0.25), 4.0)
+        draw_circle(Vector2(-14.0, -62.0), 4.0, Color(0.65, 0.78, 0.38))
+        draw_circle(Vector2(14.0, -62.0), 4.0, Color(0.65, 0.78, 0.38))
+    draw_circle(Vector2(-8.0, -36.0), 3.0, Color(1.0, 0.82, 0.28))
+    draw_circle(Vector2(8.0, -36.0), 3.0, Color(1.0, 0.82, 0.28))
+    draw_line(Vector2(-6.0, -25.0), Vector2(6.0, -25.0), Color(0.18, 0.22, 0.12), 2.0)
+    draw_rect(Rect2(-31.0, -91.0, 62.0, 7.0), Color(0.08, 0.08, 0.08, 0.95))
+    var fill: float = 62.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-31.0, -91.0, fill, 7.0), Color(0.95, 0.18, 0.16))
