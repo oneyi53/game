@@ -21,6 +21,33 @@ var scroll: ScrollContainer = null
 var list_box: VBoxContainer = null
 var pending_decompose: int = -1
 
+const ITEM_TEXTURES := {
+    "worn_iron_sword": preload("res://assets/art-v1/sprites/equipment/worn_iron_sword.png"),
+    "rough_cloth_armor": preload("res://assets/art-v1/sprites/equipment/rough_cloth_armor.png"),
+    "cracked_wooden_shield": preload("res://assets/art-v1/sprites/equipment/cracked_wooden_shield.png"),
+    "worn_leather_boots": preload("res://assets/art-v1/sprites/equipment/worn_leather_boots.png"),
+    "rusty_dagger": preload("res://assets/art-v1/sprites/equipment/rusty_dagger.png"),
+    "vine_bracer": preload("res://assets/art-v1/sprites/equipment/vine_bracer.png")
+}
+
+func _add_item_visual_row(item_id: String, item_name: String, description: String, action_button: Button) -> void:
+    var row: HBoxContainer = HBoxContainer.new()
+    row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    var icon: TextureRect = TextureRect.new()
+    icon.custom_minimum_size = Vector2(52.0, 52.0)
+    icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+    icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    icon.texture = ITEM_TEXTURES.get(item_id)
+    row.add_child(icon)
+    var label: Label = Label.new()
+    label.text = item_name + "（" + description + "）"
+    label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    row.add_child(label)
+    row.add_child(action_button)
+    list_box.add_child(row)
+
 func set_manager(p_manager: BackpackManager) -> void:
     manager = p_manager
     if panel_label != null:
@@ -61,17 +88,13 @@ func rebuild() -> void:
         var entry = manager.item(item_id)
         if entry == null:
             continue
-        var label: Label = Label.new()
-        label.text = str(entry["name"]) + "（" + manager.stats_text(item_id) + "）"
-        label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        list_box.add_child(label)
         var button: Button = Button.new()
         if i == pending_decompose:
             button.text = "确认分解？"
         else:
             button.text = "分解（+" + str(manager.decompose_gold) + " 金币）"
         button.pressed.connect(_on_decompose_button_pressed.bind(i))
-        list_box.add_child(button)
+        _add_item_visual_row(item_id, str(entry["name"]), manager.stats_text(item_id), button)
     if not manager.mailbox.is_empty():
         var mailbox_header: Label = Label.new()
         mailbox_header.text = "邮箱（背包满时溢出到这里，背包有空位时可领取）："
@@ -82,14 +105,10 @@ func rebuild() -> void:
             var entry = manager.item(item_id)
             if entry == null:
                 continue
-            var label: Label = Label.new()
-            label.text = str(entry["name"]) + "（" + manager.stats_text(item_id) + "）"
-            label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-            list_box.add_child(label)
             var button: Button = Button.new()
             button.text = "领取到背包"
             button.pressed.connect(_on_claim_button_pressed.bind(i))
-            list_box.add_child(button)
+            _add_item_visual_row(item_id, str(entry["name"]), manager.stats_text(item_id), button)
 
 func _on_decompose_button_pressed(index: int) -> void:
     if index != pending_decompose:
