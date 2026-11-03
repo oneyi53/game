@@ -47,6 +47,9 @@ func _draw_dot(world_position: Vector2, radius: float, color: Color) -> void:
     draw_circle(_project(world_position), radius, color)
 
 func _draw() -> void:
+    # Fill the portrait viewport beyond the short isometric ground diamond
+    # so camera movement never reveals the renderer's black clear color.
+    draw_rect(Rect2(-1000.0, -1000.0, 3400.0, 2700.0), Color(0.34, 0.62, 0.34))
     # 1600x1200 logical map -> 1400x700 projected ground diamond.
     # Each 64x64 logical tile becomes a 64x32 screen-space diamond.
     for xi in range(0, MAP_WIDTH, TILE):
