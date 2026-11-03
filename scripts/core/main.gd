@@ -270,6 +270,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     # table index) so a 1-person party has no empty slots and a
     # growing party never overlaps. The captain is always first.
     var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
+    var visual_offsets: Array = [Vector2.ZERO, Vector2(-105.0, 35.0), Vector2(105.0, 35.0), Vector2(0.0, 125.0), Vector2(-105.0, 145.0), Vector2(105.0, 145.0)]
     var start_pos: Vector2 = Vector2(800.0, 600.0)
     if save_data.get("player_position") is Dictionary:
         var saved_pos: Dictionary = save_data["player_position"]
@@ -286,6 +287,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
         hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
         hero.global_position = start_pos + offsets[spawn_index]
         hero.formation_offset = offsets[spawn_index]
+        hero.visual_formation_offset = visual_offsets[spawn_index]
         heroes_root.add_child(hero)
         hero.add_to_group("heroes")
         hero.died.connect(_on_hero_died)
@@ -321,6 +323,7 @@ func _spawn_recruited_hero(hero_id: String) -> bool:
     hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero_id))
     hero.global_position = captain.global_position + offsets[index]
     hero.formation_offset = offsets[index]
+    hero.visual_formation_offset = visual_offsets[index]
     heroes_root.add_child(hero)
     hero.add_to_group("heroes")
     hero.died.connect(_on_hero_died)
