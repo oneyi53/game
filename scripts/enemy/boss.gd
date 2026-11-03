@@ -186,6 +186,6 @@ func _draw() -> void:
     if boss_texture != null:
         # 1024px canvas, foot anchor (512, 960), displayed at 192px high.
         draw_texture_rect(boss_texture, Rect2(-96.0, -180.0, 192.0, 192.0), false)
-    draw_rect(Rect2(-38.0, -194.0, 76.0, 7.0), Color(0.08, 0.08, 0.08, 0.95))
-    var fill: float = 76.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-38.0, -194.0, fill, 7.0), Color(0.95, 0.18, 0.16))
+    draw_rect(Rect2(-42.0, -218.0, 84.0, 9.0), Color(0.04, 0.04, 0.04, 0.98))
+    var fill: float = 84.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-42.0, -218.0, fill, 9.0), Color(0.98, 0.16, 0.12))
