@@ -1,0 +1,7 @@
+# 本地与构建产物，暂不进仓库
+*.log
+*.tmp
+.DS_Store
+dist/
+build/
+node_modules/
