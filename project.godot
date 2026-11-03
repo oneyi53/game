@@ -9,9 +9,9 @@ config/icon="res://icon.png"
 run/main_scene="res://scenes/main.tscn"
 
 [display]
-window/size/viewport_width=1280
-window/size/viewport_height=720
-window/handheld/orientation="landscape"
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/handheld/orientation="portrait"
 
 [rendering]
 renderer/rendering_method="gl_compatibility"

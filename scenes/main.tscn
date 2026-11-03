@@ -39,20 +39,20 @@ position = Vector2(1000, 600)
 
 [node name="HUD" type="Control" parent="UI"]
 script = ExtResource("3_hud")
-offset_right = 1280.0
-offset_bottom = 720.0
+offset_right = 720.0
+offset_bottom = 1280.0
 
 [node name="GoldLabel" type="Label" parent="UI/HUD"]
 offset_left = 20.0
 offset_top = 16.0
-offset_right = 300.0
+offset_right = 340.0
 offset_bottom = 48.0
 text = "金币：0"
 
 [node name="WoodLabel" type="Label" parent="UI/HUD"]
-offset_left = 320.0
+offset_left = 360.0
 offset_top = 16.0
-offset_right = 620.0
+offset_right = 700.0
 offset_bottom = 48.0
 text = "木材：0/200"
 
@@ -66,86 +66,86 @@ offset_bottom = 84.0
 offset_left = 20.0
 offset_top = 88.0
 offset_right = 700.0
-offset_bottom = 200.0
+offset_bottom = 300.0
 text = "任务：—"
 
 [node name="SkillButton" type="Button" parent="UI/HUD"]
-offset_left = 1100.0
-offset_top = 560.0
-offset_right = 1240.0
-offset_bottom = 620.0
+offset_left = 540.0
+offset_top = 1100.0
+offset_right = 680.0
+offset_bottom = 1160.0
 text = "技能"
 
 [node name="InteractButton" type="Button" parent="UI/HUD"]
-offset_left = 1100.0
-offset_top = 480.0
-offset_right = 1240.0
-offset_bottom = 540.0
+offset_left = 540.0
+offset_top = 1020.0
+offset_right = 680.0
+offset_bottom = 1080.0
 text = "交互"
 
 [node name="SaveButton" type="Button" parent="UI/HUD"]
-offset_left = 20.0
-offset_top = 640.0
-offset_right = 160.0
-offset_bottom = 700.0
+offset_left = 10.0
+offset_top = 1205.0
+offset_right = 115.0
+offset_bottom = 1265.0
 text = "保存"
 
 [node name="HeroButton" type="Button" parent="UI/HUD"]
-offset_left = 180.0
-offset_top = 640.0
-offset_right = 320.0
-offset_bottom = 700.0
+offset_left = 130.0
+offset_top = 1205.0
+offset_right = 235.0
+offset_bottom = 1265.0
 text = "英雄"
 
 [node name="EquipButton" type="Button" parent="UI/HUD"]
-offset_left = 340.0
-offset_top = 640.0
-offset_right = 480.0
-offset_bottom = 700.0
+offset_left = 250.0
+offset_top = 1205.0
+offset_right = 355.0
+offset_bottom = 1265.0
 text = "装备"
 
 [node name="CampButton" type="Button" parent="UI/HUD"]
-offset_left = 500.0
-offset_top = 640.0
-offset_right = 640.0
-offset_bottom = 700.0
+offset_left = 370.0
+offset_top = 1205.0
+offset_right = 475.0
+offset_bottom = 1265.0
 text = "营地"
 
 [node name="BackpackButton" type="Button" parent="UI/HUD"]
-offset_left = 660.0
-offset_top = 640.0
-offset_right = 800.0
-offset_bottom = 700.0
+offset_left = 490.0
+offset_top = 1205.0
+offset_right = 595.0
+offset_bottom = 1265.0
 text = "背包"
 
 [node name="RecruitButton" type="Button" parent="UI/HUD"]
-offset_left = 820.0
-offset_top = 640.0
-offset_right = 960.0
-offset_bottom = 700.0
+offset_left = 610.0
+offset_top = 1205.0
+offset_right = 710.0
+offset_bottom = 1265.0
 text = "招募"
 
 [node name="CooldownLabel" type="Label" parent="UI/HUD"]
-offset_left = 1100.0
-offset_top = 630.0
-offset_right = 1240.0
-offset_bottom = 660.0
+offset_left = 540.0
+offset_top = 985.0
+offset_right = 680.0
+offset_bottom = 1015.0
 text = "技能就绪"
 
 [node name="Joystick" type="Control" parent="UI"]
 script = ExtResource("4_joy")
 offset_left = 40.0
-offset_top = 500.0
+offset_top = 1020.0
 offset_right = 200.0
-offset_bottom = 660.0
+offset_bottom = 1180.0
 
 [node name="HeroPanel" type="Control" parent="UI"]
 script = ExtResource("5_panel")
 visible = false
-offset_left = 340.0
-offset_top = 180.0
-offset_right = 940.0
-offset_bottom = 420.0
+offset_left = 60.0
+offset_top = 520.0
+offset_right = 660.0
+offset_bottom = 760.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/HeroPanel"]
 offset_right = 600.0
@@ -162,10 +162,10 @@ bbcode_enabled = false
 [node name="EquipPanel" type="Control" parent="UI"]
 script = ExtResource("7_equip")
 visible = false
-offset_left = 340.0
-offset_top = 180.0
-offset_right = 940.0
-offset_bottom = 420.0
+offset_left = 60.0
+offset_top = 520.0
+offset_right = 660.0
+offset_bottom = 760.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/EquipPanel"]
 offset_right = 600.0
@@ -182,10 +182,10 @@ bbcode_enabled = false
 [node name="CampPanel" type="Control" parent="UI"]
 script = ExtResource("8_camp")
 visible = false
-offset_left = 340.0
-offset_top = 180.0
-offset_right = 940.0
-offset_bottom = 420.0
+offset_left = 60.0
+offset_top = 520.0
+offset_right = 660.0
+offset_bottom = 760.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/CampPanel"]
 offset_right = 600.0
@@ -202,10 +202,10 @@ bbcode_enabled = false
 [node name="BackpackPanel" type="Control" parent="UI"]
 script = ExtResource("10_pack")
 visible = false
-offset_left = 340.0
-offset_top = 180.0
-offset_right = 940.0
-offset_bottom = 420.0
+offset_left = 60.0
+offset_top = 520.0
+offset_right = 660.0
+offset_bottom = 760.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/BackpackPanel"]
 offset_right = 600.0
@@ -222,10 +222,10 @@ bbcode_enabled = false
 [node name="OfflinePanel" type="Control" parent="UI"]
 script = ExtResource("11_offline")
 visible = false
-offset_left = 340.0
-offset_top = 180.0
-offset_right = 940.0
-offset_bottom = 420.0
+offset_left = 60.0
+offset_top = 520.0
+offset_right = 660.0
+offset_bottom = 760.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/OfflinePanel"]
 offset_right = 600.0
@@ -242,10 +242,10 @@ bbcode_enabled = false
 [node name="RecruitPanel" type="Control" parent="UI"]
 script = ExtResource("12_recruit")
 visible = false
-offset_left = 340.0
-offset_top = 180.0
-offset_right = 940.0
-offset_bottom = 420.0
+offset_left = 60.0
+offset_top = 520.0
+offset_right = 660.0
+offset_bottom = 760.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/RecruitPanel"]
 offset_right = 600.0
@@ -261,6 +261,6 @@ bbcode_enabled = false
 
 [node name="ErrorLabel" type="Label" parent="UI"]
 offset_left = 20.0
-offset_top = 100.0
-offset_right = 900.0
-offset_bottom = 132.0
+offset_top = 310.0
+offset_right = 700.0
+offset_bottom = 342.0
