@@ -262,7 +262,7 @@ func _ready() -> void:
             offline_panel.show_settlement(lines)
     camera.make_current()
     if captain != null:
-        camera.position = captain.global_position
+        camera.position = Projection.world_to_screen(captain.global_position)
 
 func _spawn_heroes(save_data: Dictionary) -> void:
     # Only recruited heroes spawn, in heroes.json order, with
