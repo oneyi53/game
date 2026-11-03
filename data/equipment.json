@@ -1,0 +1,95 @@
+[
+  {
+    "bonus_2": {
+      "attack_pct": 8
+    },
+    "bonus_4": {
+      "crit_pct": 6
+    },
+    "bonus_6": {
+      "attack_pct": 15,
+      "crit_damage_pct": 20
+    },
+    "id": "dawn_vanguard",
+    "name": "晨曦先锋套装",
+    "pieces": {
+      "accessory": "朝阳徽章",
+      "boots": "逐光战靴",
+      "chest": "金耀胸甲",
+      "gloves": "烈阳护手",
+      "helmet": "曦光战盔",
+      "weapon": "晨辉长剑"
+    },
+    "style": "以明亮金黄与橙色为主，搭配简洁的日光纹饰，整体轻快而有朝气。",
+    "flavor": {
+      "weapon": "剑刃映着晨光，挥动时仿佛划开一缕金色微风。",
+      "helmet": "明亮的金色盔沿在阳光下闪闪发亮。",
+      "chest": "温暖的金色纹饰让这件胸甲显得精神十足。",
+      "gloves": "护手边缘点缀着耀眼纹路，出招时格外醒目。",
+      "boots": "轻快的靴底仿佛总能追上前方的第一缕阳光。",
+      "accessory": "小巧徽章泛着柔和光泽，像把清晨戴在身边。"
+    }
+  },
+  {
+    "bonus_2": {
+      "hp_pct": 10
+    },
+    "bonus_4": {
+      "defense_pct": 12
+    },
+    "bonus_6": {
+      "defense_pct": 15,
+      "hp_pct": 20
+    },
+    "id": "forest_bulwark",
+    "name": "森林壁垒套装",
+    "pieces": {
+      "accessory": "森林守护徽记",
+      "boots": "岩根战靴",
+      "chest": "苍木胸甲",
+      "gloves": "荆叶护手",
+      "helmet": "林卫头盔",
+      "weapon": "古藤重锤"
+    },
+    "style": "以鲜亮青绿与浅棕色为主，采用圆润厚实的护甲轮廓和叶片纹样。",
+    "flavor": {
+      "weapon": "粗壮藤纹缠绕锤身，沉稳中透着蓬勃生机。",
+      "helmet": "圆润的护额饰有叶片纹样，像森林送来的守护。",
+      "chest": "木纹层层舒展，仿佛把林间的宁静穿在身上。",
+      "gloves": "叶片形护边轻巧贴合手腕，坚韧又不失灵动。",
+      "boots": "厚实的靴底稳稳贴地，踏过碎石也步履从容。",
+      "accessory": "清新的绿色徽记记录着与森林并肩的勇气。"
+    }
+  },
+  {
+    "bonus_2": {
+      "attack_speed_pct": 8
+    },
+    "bonus_4": {
+      "crit_pct": 8
+    },
+    "bonus_6": {
+      "attack_pct": 12,
+      "crit_pct": 12
+    },
+    "id": "starfeather_hunt",
+    "name": "星羽游猎套装",
+    "pieces": {
+      "accessory": "星芒吊坠",
+      "boots": "飞羽短靴",
+      "chest": "流星轻甲",
+      "gloves": "疾风护手",
+      "helmet": "轻羽猎盔",
+      "weapon": "星羽长弓"
+    },
+    "style": "以明亮天蓝与紫色为主，点缀轻巧羽纹和星点，突出灵动与精准。",
+    "flavor": {
+      "weapon": "弓身点缀细密羽纹，拉开时轻盈得像一阵风。",
+      "helmet": "轻柔羽饰随步伐微微晃动，灵巧又醒目。",
+      "chest": "流线纹样沿着甲片延展，仿佛星光一闪而过。",
+      "gloves": "贴合手指的轻巧护手，让每次瞄准都更加利落。",
+      "boots": "短靴缀着轻羽装饰，走起路来显得格外轻快。",
+      "accessory": "小小吊坠闪着星点般的光，为旅途添上一抹亮色。"
+    }
+  }
+]

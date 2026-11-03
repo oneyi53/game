@@ -1,0 +1,28 @@
+{
+  "buildings": [
+    {
+      "built_message": "英雄管理处建好了，快来看看有哪些伙伴可以并肩出发吧！",
+      "cost_wood": 0,
+      "default_built": true,
+      "id": "hero_management",
+      "intro": "在这里查看队伍中的英雄，了解他们的能力与当前状态。根据冒险需要调整出战阵容，让每位伙伴都能发挥所长。",
+      "name": "英雄管理"
+    },
+    {
+      "built_message": "铁匠铺已经开张，装备整理工作可以开始了！",
+      "cost_wood": 50,
+      "default_built": false,
+      "id": "blacksmith",
+      "intro": "铁匠铺是修整装备的地方，可以帮助冒险者打理旅途中获得的武器与防具。把合适的装备交给合适的英雄，队伍就能更有底气地迎接挑战。",
+      "name": "铁匠铺"
+    },
+    {
+      "built_message": "训练场准备就绪，伙伴们随时可以开始训练！",
+      "cost_wood": 80,
+      "default_built": false,
+      "id": "training_ground",
+      "intro": "训练场为英雄提供日常练习的场地，让大家熟悉自己的战斗方式。出发前来这里做些准备，以更好的状态面对森林中的考验。",
+      "name": "训练场"
+    }
+  ]
+}

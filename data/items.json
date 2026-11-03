@@ -1,0 +1,1 @@
+{"chest_loot":{"gold":50},"gold":{"name":"金币","type":"currency"},"gold_drop":{"chance":0.3,"max":2,"min":1,"note":"野外小怪掉落草案数字，集中写在这里，便于以后平衡时只改一处。"},"wood":{"name":"木材","type":"resource"},"wood_cap":200,"wood_drop":{"chance":0.5,"max":2,"min":1,"note":"野外小怪木材掉落，与金币掉落并行；上限与获取方式集中写在这里，便于以后平衡时只改一处。"}}

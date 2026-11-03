@@ -1,0 +1,1 @@
+{"attack_growth_pct_per_level":5,"base_xp":100,"hp_growth_pct_per_level":5,"max_level":20,"note":"最小实现：击杀给全队经验，升级时攻击与生命各按每级 +5% 复利作用于基础值，再套装备加成；防御不成长。升一级所需经验 = base_xp + xp_growth_per_level * (等级 - 1)。","xp_growth_per_level":50,"xp_per_boss":100,"xp_per_kill":10}
