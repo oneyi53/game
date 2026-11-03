@@ -8,7 +8,7 @@
 
 ## 二、文件与位置
 本地：~/workspace/art-sample/usable/
-GitHub 目标：oneyi53/game，assets/art-v1/（上传进行中，以上传完成后的提交为准）
+GitHub：oneyi53/game，assets/art-v1/，5 张图已在提交 f7b8f45 中上传
 - heroes-v1.png，1920×1280
 - monsters-v1.png，1920×1280
 - bosses-v1.png，1920×1280
