@@ -11,6 +11,19 @@ const MAP_WIDTH: int = 1600
 const MAP_HEIGHT: int = 1200
 const TILE: int = 64
 
+const WorldMapManagerScript = preload("res://scripts/core/world_map_manager.gd")
+var active_map_id: String = WorldMapManagerScript.MOSS_CROWN
+
+func set_active_map(map_id: String) -> void:
+    if not WorldMapManagerScript.new().is_known_map(map_id):
+        push_warning("Unknown map id: " + map_id)
+        return
+    active_map_id = map_id
+    queue_redraw()
+
+func get_active_map_id() -> String:
+    return active_map_id
+
 var tree_positions: Array = [
     Vector2(120, 120), Vector2(300, 180), Vector2(1480, 140), Vector2(1320, 220),
     Vector2(140, 1040), Vector2(420, 1080), Vector2(1500, 1020), Vector2(1240, 1080),
@@ -60,84 +73,47 @@ func _draw_dot(world_position: Vector2, radius: float, color: Color) -> void:
     draw_circle(_project(world_position), radius, color)
 
 func _draw() -> void:
-    # Fill the portrait viewport beyond the short isometric ground diamond
-    # so camera movement never reveals the renderer's black clear color.
-    draw_rect(Rect2(-1000.0, -1000.0, 3400.0, 2700.0), Color(0.34, 0.62, 0.34))
-    # 1600x1200 logical map -> 1400x700 projected ground diamond.
-    # Each 64x64 logical tile becomes a 64x32 screen-space diamond.
-    for xi in range(0, MAP_WIDTH, TILE):
-        for yi in range(0, MAP_HEIGHT, TILE):
+    var manager = WorldMapManagerScript.new()
+    var bounds: Rect2 = manager.map_bounds(active_map_id)
+    var town: bool = active_map_id == WorldMapManagerScript.TOWN
+    var background: Color = Color(0.22, 0.38, 0.25) if town else Color(0.34, 0.62, 0.34)
+    draw_rect(Rect2(-1000.0, -1000.0, 3400.0, 2700.0), background)
+
+    # Draw only the active map's logical ground. This prevents the former
+    # four-region mega-map from appearing as one continuous play space.
+    var x0: int = int(floor(bounds.position.x / TILE)) * TILE
+    var y0: int = int(floor(bounds.position.y / TILE)) * TILE
+    var x1: int = int(ceil(bounds.end.x / TILE)) * TILE
+    var y1: int = int(ceil(bounds.end.y / TILE)) * TILE
+    for xi in range(x0, x1, TILE):
+        for yi in range(y0, y1, TILE):
             var odd: bool = (int(xi / TILE) + int(yi / TILE)) % 2 == 0
-            var tile_color: Color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
+            var tile_color: Color
+            if town:
+                tile_color = Color(0.66, 0.59, 0.43) if odd else Color(0.72, 0.65, 0.49)
+            else:
+                tile_color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
             _draw_ground_tile(xi, yi, tile_color)
 
-    # Warm stone paths are fixed visual tiles; they do not alter
-    # collision, movement or any logical region coordinates.
-    var path_tiles: Array = [
-        Vector2(704.0, 576.0), Vector2(768.0, 576.0), Vector2(832.0, 576.0),
-        Vector2(896.0, 576.0), Vector2(960.0, 640.0), Vector2(1024.0, 704.0),
-        Vector2(576.0, 640.0), Vector2(512.0, 704.0), Vector2(448.0, 768.0)
-    ]
-    for i in range(path_tiles.size()):
-        var path_color: Color = Color(0.78, 0.69, 0.52) if i % 2 == 0 else Color(0.84, 0.75, 0.59)
-        _draw_ground_tile(int(path_tiles[i].x), int(path_tiles[i].y), path_color)
+    var outline := _projected_rect(bounds)
+    outline.append(outline[0])
+    draw_polyline(outline, Color(0.2, 0.35, 0.2), 5.0, true)
 
-    var map_outline := WorldProjectionScript.map_corners()
-    map_outline.append(map_outline[0])
-    draw_polyline(map_outline, Color(0.2, 0.45, 0.2), 5.0, true)
+    var title: String = manager.map_name(active_map_id)
+    var font = ThemeDB.fallback_font
+    if font != null:
+        var label_pos: Vector2 = _project(bounds.position + Vector2(40.0, 55.0))
+        var label_width: float = font.get_string_size(title).x + 34.0
+        draw_rect(Rect2(label_pos.x - 12.0, label_pos.y - 27.0, label_width, 38.0), Color(0.08, 0.19, 0.12, 0.82))
+        draw_string(font, label_pos, title, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.96, 0.94, 0.78))
 
-    # Region boundaries retain their original logical rectangles.
-    _draw_region(
-        Rect2(200.0, 40.0, 1200.0, 280.0),
-        Color(0.1, 0.4, 0.2, 0.12), Color(0.1, 0.4, 0.2), 3.0
-    )
-    _draw_region(
-        Rect2(40.0, 880.0, 720.0, 280.0),
-        Color(0.1, 0.35, 0.3, 0.12), Color(0.1, 0.35, 0.3), 3.0
-    )
-    _draw_region(
-        Rect2(840.0, 880.0, 720.0, 280.0),
-        Color(0.5, 0.4, 0.1, 0.12), Color(0.5, 0.4, 0.1), 3.0
-    )
-
-    # Region labels sit inside their own clear upper-edge plaques,
-    # away from the boss/monster silhouettes. These are map-only visuals.
-    var label_font = ThemeDB.fallback_font
-    if label_font != null:
-        var labels: Array = [
-            {"pos": Vector2(760.0, 78.0), "text": "苔冠空地"},
-            {"pos": Vector2(300.0, 920.0), "text": "落叶幽谷"},
-            {"pos": Vector2(1120.0, 920.0), "text": "朝露林地"}
-        ]
-        for entry in labels:
-            var label_pos: Vector2 = _project(entry["pos"])
-            var label_text: String = str(entry["text"])
-            var label_width: float = label_font.get_string_size(label_text).x + 28.0
-            draw_rect(Rect2(label_pos.x - 12.0, label_pos.y - 25.0, label_width, 34.0), Color(0.08, 0.19, 0.12, 0.78))
-            draw_string(label_font, label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.96, 0.94, 0.78))
-
-    # Decoration positions are still authored in logical world space.
-    for flower in [Vector2(260.0, 480.0), Vector2(500.0, 620.0), Vector2(900.0, 480.0), Vector2(1100.0, 700.0)]:
-        _draw_dot(flower, 3.0, Color(1.0, 0.85, 0.2))
-        _draw_dot(flower + Vector2(6.0, 6.0), 2.0, Color(1.0, 0.55, 0.35))
-
-    for pebble in [Vector2(400.0, 420.0), Vector2(760.0, 760.0), Vector2(1180.0, 520.0)]:
-        _draw_dot(pebble, 2.5, Color(0.75, 0.75, 0.7))
-
-    for stone in [Vector2(320.0, 180.0), Vector2(900.0, 260.0), Vector2(1250.0, 120.0)]:
-        _draw_dot(stone, 6.0, Color(0.65, 0.85, 0.7))
-        _draw_dot(stone + Vector2(4.0, -4.0), 2.5, Color(0.35, 0.7, 0.4))
-
-    for leaf_pos in [Vector2(120.0, 960.0), Vector2(300.0, 1040.0), Vector2(520.0, 960.0), Vector2(660.0, 1080.0), Vector2(200.0, 1120.0)]:
-        _draw_dot(leaf_pos, 3.0, Color(1.0, 0.75, 0.2))
-        _draw_dot(leaf_pos + Vector2(7.0, 3.0), 2.0, Color(1.0, 0.55, 0.3))
-
-    for puddle in [Vector2(1000.0, 1000.0), Vector2(1300.0, 1120.0), Vector2(1450.0, 960.0)]:
-        _draw_dot(puddle, 7.0, Color(0.55, 0.8, 1.0, 0.55))
-
-    # Bridge: transform the complete logical rectangle, not just its origin.
-    draw_colored_polygon(
-        _projected_rect(Rect2(1120.0, 1020.0, 60.0, 10.0)),
-        Color(0.6, 0.45, 0.25)
-    )
-
+    # Local paths and accents are deliberately clipped to their own map.
+    if town:
+        for p in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
+            _draw_ground_tile(int(p.x), int(p.y), Color(0.82, 0.75, 0.61))
+        for p in [Vector2(300, 300), Vector2(900, 300), Vector2(300, 650), Vector2(900, 650)]:
+            _draw_dot(p, 12.0, Color(0.75, 0.63, 0.38))
+    else:
+        for flower in [bounds.position + Vector2(100, 120), bounds.position + Vector2(280, 180), bounds.position + Vector2(480, 100)]:
+            _draw_dot(flower, 3.0, Color(1.0, 0.85, 0.2))
+            _draw_dot(flower + Vector2(6.0, 6.0), 2.0, Color(1.0, 0.55, 0.35))
