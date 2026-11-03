@@ -37,6 +37,8 @@ var level_attack_pct: float = 0.0
 var level_hp_pct: float = 0.0
 var move_input: Vector2 = Vector2.ZERO
 var formation_offset: Vector2 = Vector2.ZERO
+# Presentation-only spacing; never participates in movement or combat.
+var visual_formation_offset: Vector2 = Vector2.ZERO
 var captain_ref: Hero = null
 var attack_timer: float = 0.0
 var skill_cooldown_total: float = 5.0
@@ -255,7 +257,8 @@ func use_skill() -> bool:
 func _draw() -> void:
     if dead:
         return
-    var projection_offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
+    var visual_world_position: Vector2 = global_position + visual_formation_offset
+    var projection_offset: Vector2 = WorldProjectionScript.world_to_screen(visual_world_position) - global_position
     # Keep the ground shadow projected while the sprite remains upright.
     draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.42))
     draw_circle(Vector2.ZERO, 14.0, Color(0.05, 0.18, 0.05, 0.28))
