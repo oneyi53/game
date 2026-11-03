@@ -22,6 +22,8 @@ extends Node2D
 # 8/6 kill quests were only completable by save/reload farming, since
 # only 4 monsters spawned per run and nothing respawned.
 
+const Projection = preload("res://scripts/core/world_projection.gd")
+
 const MAP_WIDTH: int = 1600
 const MAP_HEIGHT: int = 1200
 const MAX_UNITS: int = 12
@@ -470,13 +472,32 @@ func _tick_respawns(delta: float) -> void:
 func _process(delta: float) -> void:
     if config_failed or captain == null:
         return
-    camera.position = captain.global_position
+    _update_world_visuals()
+    camera.position = Projection.world_to_screen(captain.global_position)
     hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
     var input_vec: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
         input_vec = joystick.vector
     captain.move_input = input_vec
     _tick_respawns(delta)
+
+func _update_world_visuals() -> void:
+    # Render-only projection and shared depth ordering. Gameplay nodes
+    # retain their original global_position for physics and combat.
+    for unit in heroes:
+        if is_instance_valid(unit):
+            unit.z_index = clampi(int(Projection.screen_depth(unit.global_position) / 4.0), 0, 1024)
+            unit.queue_redraw()
+    for unit in enemies:
+        if is_instance_valid(unit):
+            unit.z_index = clampi(int(Projection.screen_depth(unit.global_position) / 4.0), 0, 1024)
+            unit.queue_redraw()
+    if chest_node != null:
+        chest_node.z_index = clampi(int(Projection.screen_depth(chest_node.global_position) / 4.0), 0, 1024)
+        chest_node.queue_redraw()
+    if campfire_node != null and is_instance_valid(campfire_node):
+        campfire_node.z_index = clampi(int(Projection.screen_depth(campfire_node.global_position) / 4.0), 0, 1024)
+        campfire_node.queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
     if config_failed:
