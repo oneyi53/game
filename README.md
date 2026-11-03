@@ -1,4 +1,4 @@
-# Hero World（百炼英雄单机版，正式名；原工作名 bailian-hero-singleplayer）
+# Hero World
 
 > 原创小队放置 RPG 学习与开发仓库。只学对标游戏的玩法结构与工程思路，
 > 不抄原游戏美术、文案、具体英雄名与立绘，不碰第三方修改菜单、
