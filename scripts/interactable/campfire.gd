@@ -1,7 +1,7 @@
 class_name Campfire
 extends Node2D
 
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjection = preload("res://scripts/core/world_projection.gd")
 
 # Placeholder campfire marker, drawn in code like the map: an orange
 # circle with a flame dot. No art asset, no gameplay logic here;
@@ -9,7 +9,7 @@ const Projection = preload("res://scripts/core/world_projection.gd")
 # exactly like the chest, so this node can never lock a zone.
 
 func _draw() -> void:
-    draw_set_transform(Projection.world_to_screen(global_position) - global_position)
+    draw_set_transform(WorldProjection.world_to_screen(global_position) - global_position)
     # Visual only: same footprint, no gameplay logic here.
     draw_circle(Vector2.ZERO, 22.0, Color(0.35, 0.25, 0.15, 0.6))
     draw_line(Vector2(-12.0, 8.0), Vector2(12.0, -8.0), Color(0.45, 0.3, 0.15), 3.0)
