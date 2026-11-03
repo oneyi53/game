@@ -177,8 +177,13 @@ func _draw() -> void:
             draw_line(Vector2.ZERO, Vector2(cos(angle), sin(angle)) * 95.0, Color(1.0, 0.18, 0.18, 0.65), 1.5, true)
     draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
     draw_circle(Vector2.ZERO, 27.0, Color(0.05, 0.18, 0.05, 0.3))
-    draw_set_transform(offset)
-    draw_colored_polygon(PackedVector2Array([Vector2(-18.0, -5.0), Vector2(-22.0, -30.0), Vector2(-15.0, -55.0), Vector2(15.0, -55.0), Vector2(22.0, -30.0), Vector2(18.0, -5.0)]), boss_color)
+    # Boss artwork is rendered at twice the ordinary hero scale.
+    # Gameplay coordinates, collision, reach and attack radii are untouched.
+    draw_set_transform(offset, 0.0, Vector2(2.0, 2.0))
+    var boss_body := PackedVector2Array([Vector2(-18.0, -5.0), Vector2(-22.0, -30.0), Vector2(-15.0, -55.0), Vector2(15.0, -55.0), Vector2(22.0, -30.0), Vector2(18.0, -5.0)])
+    draw_colored_polygon(boss_body, boss_color)
+    boss_body.append(boss_body[0])
+    draw_polyline(boss_body, Color(0.1, 0.15, 0.16), 2.0, true)
     draw_line(Vector2(-16.0, -35.0), Vector2(-34.0, -51.0), Color(0.38, 0.26, 0.14), 7.0)
     draw_line(Vector2(16.0, -35.0), Vector2(34.0, -51.0), Color(0.38, 0.26, 0.14), 7.0)
     draw_circle(Vector2(-34.0, -51.0), 5.0, Color(0.45, 0.65, 0.3))
