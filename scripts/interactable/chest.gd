@@ -1,6 +1,8 @@
 class_name Chest
 extends Area2D
 
+const Projection = preload("res://scripts/core/world_projection.gd")
+
 # A chest that opens once. Opening gives gold and emits "opened",
 # which the main scene uses to update gold and auto-save.
 
@@ -23,6 +25,7 @@ func try_open() -> int:
     return reward_gold
 
 func _draw() -> void:
+    draw_set_transform(Projection.world_to_screen(global_position) - global_position)
     # Visual only: same 28x20 box, same open/closed logic.
     if is_open:
         draw_rect(Rect2(-14.0, -10.0, 28.0, 20.0), Color(0.5, 0.35, 0.1))
