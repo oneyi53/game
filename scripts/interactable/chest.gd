@@ -25,7 +25,10 @@ func try_open() -> int:
     return reward_gold
 
 func _draw() -> void:
-    draw_set_transform(Projection.world_to_screen(global_position) - global_position)
+    var projection_offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
+    draw_circle(Vector2.ZERO, 13.0, Color(0.05, 0.18, 0.05, 0.25))
+    draw_set_transform(projection_offset + Vector2(0.0, -10.0))
     # Visual only: same 28x20 box, same open/closed logic.
     if is_open:
         draw_rect(Rect2(-14.0, -10.0, 28.0, 20.0), Color(0.5, 0.35, 0.1))
