@@ -248,43 +248,66 @@ func _draw() -> void:
     if dead:
         return
     var projection_offset: Vector2 = Projection.world_to_screen(global_position) - global_position
-    # A flattened ground shadow keeps the foot point visually grounded.
-    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
+    # Flattened shadow stays on the projected ground; the character is
+    # drawn upright above the foot anchor to create visible 2.5D height.
+    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.42))
     draw_circle(Vector2.ZERO, 14.0, Color(0.05, 0.18, 0.05, 0.28))
-    # Raise the upright character body from its ground anchor.
-    draw_set_transform(projection_offset + Vector2(0.0, -16.0))
-    # Visual only: body circle radius, hp bar and all gameplay values
-    # are unchanged. Per-hero details are small _draw() marks inside
-    # or beside the same 16 px body, following the Q-style bright
-    # palette (grass green / sky blue / warm yellow / coral orange).
-    draw_circle(Vector2.ZERO, 16.0, hero_color)
-    draw_circle(Vector2(0.0, -4.0), 5.0, Color.WHITE)
+    draw_set_transform(projection_offset)
+    # Boots and legs.
+    draw_line(Vector2(-5.0, -5.0), Vector2(-6.0, 0.0), Color(0.22, 0.2, 0.16), 4.0)
+    draw_line(Vector2(5.0, -5.0), Vector2(6.0, 0.0), Color(0.22, 0.2, 0.16), 4.0)
+    draw_line(Vector2(-6.0, 0.0), Vector2(-8.0, 1.0), Color(0.38, 0.25, 0.16), 3.0)
+    draw_line(Vector2(6.0, 0.0), Vector2(8.0, 1.0), Color(0.38, 0.25, 0.16), 3.0)
+    # Compact tunic and shoulders.
+    draw_colored_polygon(
+        PackedVector2Array([
+            Vector2(-8.0, -25.0), Vector2(8.0, -25.0),
+            Vector2(11.0, -8.0), Vector2(6.0, -5.0),
+            Vector2(-6.0, -5.0), Vector2(-11.0, -8.0)
+        ]),
+        hero_color
+    )
+    draw_line(Vector2(-9.0, -21.0), Vector2(-14.0, -12.0), hero_color.lightened(0.15), 4.0)
+    draw_line(Vector2(9.0, -21.0), Vector2(14.0, -12.0), hero_color.lightened(0.15), 4.0)
+    # Head, hair cap and simple readable face.
+    draw_circle(Vector2(0.0, -32.0), 9.0, Color(1.0, 0.78, 0.58))
+    draw_arc(Vector2(0.0, -34.0), 9.0, PI, TAU, 16, Color(0.28, 0.2, 0.16), 3.0)
+    draw_circle(Vector2(-3.0, -31.0), 1.0, Color(0.15, 0.15, 0.15))
+    draw_circle(Vector2(3.0, -31.0), 1.0, Color(0.15, 0.15, 0.15))
+    draw_line(Vector2(-3.0, -25.0), Vector2(3.0, -25.0), Color(0.72, 0.32, 0.28), 1.0)
+    # Small role-specific silhouettes; all marks are visual only.
     match hero_id:
         "captain":
-            # Captain belt: warm-yellow band + sword line at the side.
-            draw_rect(Rect2(-13.0, 2.0, 26.0, 4.0), Color(1.0, 0.8, 0.2))
-            draw_line(Vector2(14.0, -12.0), Vector2(20.0, 6.0), Color(0.95, 0.95, 0.95), 2.0)
+            draw_rect(Rect2(-9.0, -17.0, 18.0, 3.0), Color(1.0, 0.78, 0.2))
+            draw_line(Vector2(13.0, -19.0), Vector2(20.0, -4.0), Color(0.9, 0.95, 1.0), 2.5)
+            draw_line(Vector2(11.0, -20.0), Vector2(15.0, -18.0), Color(0.65, 0.42, 0.2), 2.0)
         "archer":
-            # Bow arc + arrow, sky-blue trim.
-            draw_arc(Vector2(12.0, 0.0), 10.0, -1.2, 1.2, 12, Color(0.2, 0.8, 1.0), 2.0)
-            draw_line(Vector2(12.0, 0.0), Vector2(22.0, 0.0), Color(0.9, 0.9, 0.9), 1.5)
+            draw_arc(Vector2(15.0, -17.0), 8.0, -1.2, 1.2, 12, Color(0.35, 0.22, 0.12), 2.0)
+            draw_line(Vector2(15.0, -25.0), Vector2(15.0, -9.0), Color(0.95, 0.9, 0.7), 1.0)
         "guardian":
-            # Thick shield in front of the body.
-            draw_rect(Rect2(8.0, -12.0, 8.0, 24.0), Color(0.4, 0.7, 0.4))
-            draw_circle(Vector2(12.0, 0.0), 3.0, Color(1.0, 0.8, 0.2))
+            draw_colored_polygon(
+                PackedVector2Array([Vector2(10.0, -24.0), Vector2(18.0, -21.0), Vector2(18.0, -9.0), Vector2(10.0, -7.0)]),
+                Color(0.35, 0.65, 0.42)
+            )
+            draw_circle(Vector2(14.0, -16.0), 2.0, Color(1.0, 0.8, 0.2))
         "mage":
-            # Staff line + star sparkle, soft blue-green glow dot.
-            draw_line(Vector2(-16.0, -10.0), Vector2(-16.0, 12.0), Color(0.55, 0.4, 0.8), 2.0)
-            draw_circle(Vector2(-16.0, -13.0), 3.5, Color(0.6, 0.95, 0.85))
+            draw_line(Vector2(-14.0, -27.0), Vector2(-14.0, -2.0), Color(0.38, 0.25, 0.16), 2.5)
+            draw_circle(Vector2(-14.0, -29.0), 4.0, Color(0.65, 0.9, 1.0))
+            draw_colored_polygon(
+                PackedVector2Array([Vector2(-9.0, -39.0), Vector2(0.0, -48.0), Vector2(9.0, -39.0)]),
+                Color(0.42, 0.3, 0.68)
+            )
         "healer":
-            # Water-drop glow + leaf ornaments at the shoulders.
-            draw_circle(Vector2(0.0, -18.0), 4.0, Color(0.65, 0.95, 0.9))
-            draw_circle(Vector2(-13.0, -8.0), 2.5, Color(0.35, 0.8, 0.45))
-            draw_circle(Vector2(13.0, -8.0), 2.5, Color(0.35, 0.8, 0.45))
+            draw_circle(Vector2(0.0, -45.0), 3.0, Color(0.65, 0.98, 0.9))
+            draw_circle(Vector2(-10.0, -22.0), 2.5, Color(0.35, 0.8, 0.45))
+            draw_circle(Vector2(10.0, -22.0), 2.5, Color(0.35, 0.8, 0.45))
         "assassin":
-            # Forward-lean marker: coral-orange dash + belt dot.
-            draw_line(Vector2(10.0, -2.0), Vector2(20.0, -2.0), Color(1.0, 0.45, 0.25), 2.5)
-            draw_circle(Vector2(0.0, 6.0), 2.5, Color(1.0, 0.45, 0.25))
-    draw_rect(Rect2(-18.0, -30.0, 36.0, 6.0), Color.BLACK)
+            draw_colored_polygon(
+                PackedVector2Array([Vector2(-8.0, -25.0), Vector2(0.0, -29.0), Vector2(8.0, -25.0), Vector2(0.0, -21.0)]),
+                Color(0.25, 0.22, 0.32)
+            )
+            draw_line(Vector2(12.0, -14.0), Vector2(21.0, -20.0), Color(1.0, 0.48, 0.3), 2.5)
+    # HP bar remains attached above the character, not to the ground.
+    draw_rect(Rect2(-18.0, -51.0, 36.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
     var fill: float = 36.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-18.0, -30.0, fill, 6.0), Color(0.2, 0.9, 0.3))
+    draw_rect(Rect2(-18.0, -51.0, fill, 5.0), Color(0.2, 0.9, 0.3))
