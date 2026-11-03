@@ -4,9 +4,9 @@ extends RefCounted
 # Owns world-map identity and unlock rules. Existing combat, quest and
 # reward systems remain authoritative; this class only routes the player
 # between the safe town and the three progression regions.
-# Progression order follows the original campaign gates:
-# Moss Crown follows the main boss; Fallen Leaf follows the elite boss;
-# Morning Dew follows the valley puppet quest.
+# The first field is always available. The original main-boss gate is
+# retained as an internal progression milestone, not a gate to the whole
+# starter region. Later regions preserve the campaign's elite/quest gates.
 
 const TOWN := "town"
 const MOSS_CROWN := "moss_crown"
@@ -22,8 +22,8 @@ const MAPS := {
     },
     MOSS_CROWN: {
         "name": "苔冠空地",
-        "bounds": Rect2(200.0, 40.0, 1200.0, 280.0),
-        "spawn": Vector2(800.0, 180.0),
+        "bounds": Rect2(0.0, 0.0, 1600.0, 1200.0),
+        "spawn": Vector2(800.0, 600.0),
         "safe": false
     },
     FALLEN_LEAF: {
@@ -60,7 +60,7 @@ func is_unlocked(map_id: String, boss_defeated: bool, elite_defeated: bool, vall
         TOWN:
             return true
         MOSS_CROWN:
-            return boss_defeated
+            return true
         FALLEN_LEAF:
             return elite_defeated
         MORNING_DEW:
