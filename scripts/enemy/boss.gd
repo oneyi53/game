@@ -149,6 +149,8 @@ func _retarget() -> void:
             continue
         if bool(hero.get("dead")):
             continue
+        if str(hero.get("world_map_id")) != str(get_meta("world_map_id", "")):
+            continue
         var dist: float = global_position.distance_to(hero.global_position)
         if dist <= best_dist:
             best_dist = dist
