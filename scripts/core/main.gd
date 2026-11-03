@@ -286,6 +286,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
             continue
         var hero = HERO_SCENE.instantiate()
         hero.setup(hero_data, hero_id == "captain")
+        hero.world_map_id = active_map_id
         hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
         hero.reset_to_base_stats()
         hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
@@ -322,6 +323,7 @@ func _spawn_recruited_hero(hero_id: String) -> bool:
     var index: int = heroes.size()
     var hero = HERO_SCENE.instantiate()
     hero.setup(hero_data, false)
+    hero.world_map_id = active_map_id
     hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
     hero.reset_to_base_stats()
     hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero_id))
