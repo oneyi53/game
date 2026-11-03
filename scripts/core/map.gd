@@ -46,16 +46,6 @@ func _draw_ground_tile(x: int, y: int, color: Color) -> void:
 func _draw_dot(world_position: Vector2, radius: float, color: Color) -> void:
     draw_circle(_project(world_position), radius, color)
 
-func _draw_tree(world_position: Vector2) -> void:
-    # The trunk is anchored at the projected ground point. Tree depth
-    # sorting with mobile actors is handled by the shared render layer
-    # in the next implementation stage.
-    var foot: Vector2 = _project(world_position)
-    draw_rect(Rect2(foot.x - 3.0, foot.y - 17.0, 6.0, 17.0), Color(0.45, 0.3, 0.15))
-    draw_circle(foot + Vector2(0.0, -26.0), 18.0, Color(0.15, 0.55, 0.25))
-    draw_circle(foot + Vector2(-9.0, -20.0), 10.0, Color(0.2, 0.62, 0.3))
-    draw_circle(foot + Vector2(9.0, -33.0), 7.0, Color(0.25, 0.68, 0.35))
-
 func _draw() -> void:
     # 1600x1200 logical map -> 1400x700 projected ground diamond.
     # Each 64x64 logical tile becomes a 64x32 screen-space diamond.
