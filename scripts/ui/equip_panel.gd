@@ -20,6 +20,33 @@ var dynamic_mode: bool = false
 var scroll: ScrollContainer = null
 var list_box: VBoxContainer = null
 
+const EQUIPMENT_ICONS: Dictionary = {
+    "dawn_vanguard": {
+        "weapon": preload("res://assets/art-v1/sprites/equipment_sets/dawn_vanguard_weapon.png"),
+        "helmet": preload("res://assets/art-v1/sprites/equipment_sets/dawn_vanguard_helmet.png"),
+        "chest": preload("res://assets/art-v1/sprites/equipment_sets/dawn_vanguard_chest.png"),
+        "gloves": preload("res://assets/art-v1/sprites/equipment_sets/dawn_vanguard_gloves.png"),
+        "boots": preload("res://assets/art-v1/sprites/equipment_sets/dawn_vanguard_boots.png"),
+        "accessory": preload("res://assets/art-v1/sprites/equipment_sets/dawn_vanguard_accessory.png")
+    },
+    "forest_bulwark": {
+        "weapon": preload("res://assets/art-v1/sprites/equipment_sets/forest_bulwark_weapon.png"),
+        "helmet": preload("res://assets/art-v1/sprites/equipment_sets/forest_bulwark_helmet.png"),
+        "chest": preload("res://assets/art-v1/sprites/equipment_sets/forest_bulwark_chest.png"),
+        "gloves": preload("res://assets/art-v1/sprites/equipment_sets/forest_bulwark_gloves.png"),
+        "boots": preload("res://assets/art-v1/sprites/equipment_sets/forest_bulwark_boots.png"),
+        "accessory": preload("res://assets/art-v1/sprites/equipment_sets/forest_bulwark_accessory.png")
+    },
+    "starfeather_hunt": {
+        "weapon": preload("res://assets/art-v1/sprites/equipment_sets/starfeather_hunt_weapon.png"),
+        "helmet": preload("res://assets/art-v1/sprites/equipment_sets/starfeather_hunt_helmet.png"),
+        "chest": preload("res://assets/art-v1/sprites/equipment_sets/starfeather_hunt_chest.png"),
+        "gloves": preload("res://assets/art-v1/sprites/equipment_sets/starfeather_hunt_gloves.png"),
+        "boots": preload("res://assets/art-v1/sprites/equipment_sets/starfeather_hunt_boots.png"),
+        "accessory": preload("res://assets/art-v1/sprites/equipment_sets/starfeather_hunt_accessory.png")
+    }
+}
+
 func set_data(p_heroes: Array, p_manager: EquipmentManager) -> void:
     heroes = p_heroes
     manager = p_manager
@@ -114,7 +141,7 @@ func _add_set_visual(set_id: String) -> void:
     }
     for slot in manager.SLOTS:
         var tile: PanelContainer = PanelContainer.new()
-        tile.custom_minimum_size = Vector2(0.0, 58.0)
+        tile.custom_minimum_size = Vector2(0.0, 82.0)
         var style: StyleBoxFlat = StyleBoxFlat.new()
         style.bg_color = Color(accent.r, accent.g, accent.b, 0.12)
         style.border_color = Color(accent.r, accent.g, accent.b, 0.9)
@@ -125,19 +152,30 @@ func _add_set_visual(set_id: String) -> void:
         style.content_margin_top = 5.0
         style.content_margin_bottom = 5.0
         tile.add_theme_stylebox_override("panel", style)
-        var content: VBoxContainer = VBoxContainer.new()
-        content.add_theme_constant_override("separation", 1)
+        var content: HBoxContainer = HBoxContainer.new()
+        content.add_theme_constant_override("separation", 7)
         tile.add_child(content)
+        var icon: TextureRect = TextureRect.new()
+        var set_icons: Dictionary = EQUIPMENT_ICONS.get(set_id, {})
+        icon.texture = set_icons.get(slot) as Texture2D
+        icon.custom_minimum_size = Vector2(52.0, 52.0)
+        icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+        icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+        content.add_child(icon)
+        var text_column: VBoxContainer = VBoxContainer.new()
+        text_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        text_column.add_theme_constant_override("separation", 3)
+        content.add_child(text_column)
         var slot_label: Label = Label.new()
         slot_label.text = str(slot_names.get(slot, slot))
         slot_label.add_theme_font_size_override("font_size", 11)
         slot_label.add_theme_color_override("font_color", accent.lightened(0.35))
-        content.add_child(slot_label)
+        text_column.add_child(slot_label)
         var item_label: Label = Label.new()
         item_label.text = str(pieces.get(slot, "未配置"))
         item_label.add_theme_font_size_override("font_size", 13)
         item_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        content.add_child(item_label)
+        text_column.add_child(item_label)
         grid.add_child(tile)
 
 func _set_accent(set_id: String) -> Color:
