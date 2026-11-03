@@ -37,10 +37,21 @@ func _ensure_dynamic() -> void:
         scroll.visible = true
         return
     scroll = ScrollContainer.new()
-    scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+    scroll.position = Vector2(72.0, 0.0)
+    scroll.size = Vector2(576.0, 240.0)
+    scroll.set_anchors_preset(Control.PRESET_CENTER)
+    scroll.position = Vector2(-288.0, -120.0)
+    scroll.size = Vector2(576.0, 240.0)
     add_child(scroll)
+    var backdrop := ColorRect.new()
+    backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+    backdrop.color = Color(0.02, 0.04, 0.03, 0.52)
+    add_child(backdrop)
+    move_child(backdrop, 0)
+    scroll.z_index = 1
     list_box = VBoxContainer.new()
     list_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    list_box.add_theme_constant_override("separation", 10)
     scroll.add_child(list_box)
 
 func _on_confirm_pressed() -> void:
