@@ -168,8 +168,16 @@ func _draw() -> void:
         return
     var projection_offset: Vector2 = Projection.world_to_screen(global_position) - global_position
     if telegraph_active:
+        # The damaging radius stays exactly 95 logical units. This is
+        # purely a clearer ground-plane warning: translucent fill,
+        # strong perimeter and radial markers before the existing hit.
         draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.5))
-        draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.25))
+        draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.22))
+        draw_arc(Vector2.ZERO, 95.0, 0.0, TAU, 48, Color(1.0, 0.12, 0.12, 0.95), 3.0, true)
+        for angle_step in range(8):
+            var angle: float = TAU * float(angle_step) / 8.0
+            var ray_end: Vector2 = Vector2(cos(angle), sin(angle)) * 95.0
+            draw_line(Vector2.ZERO, ray_end, Color(1.0, 0.18, 0.18, 0.65), 1.5, true)
     draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
     draw_circle(Vector2.ZERO, 24.0, Color(0.05, 0.18, 0.05, 0.3))
     draw_set_transform(projection_offset + Vector2(0.0, -28.0))
