@@ -477,7 +477,15 @@ func _process(delta: float) -> void:
     hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
     var input_vec: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
-        input_vec = joystick.vector
+        # The joystick expresses screen-space intent. Convert it back
+        # through the inverse isometric projection so dragging right/down
+        # moves the captain toward the corresponding visible direction.
+        var screen_input: Vector2 = joystick.vector
+        var world_input: Vector2 = Vector2(
+            screen_input.x + 2.0 * screen_input.y,
+            -screen_input.x + 2.0 * screen_input.y
+        )
+        input_vec = world_input.normalized()
     captain.move_input = input_vec
     _tick_respawns(delta)
 
