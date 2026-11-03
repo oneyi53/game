@@ -92,9 +92,12 @@ func take_damage(amount: int) -> void:
         queue_free()
 
 func _draw() -> void:
-    draw_set_transform(Projection.world_to_screen(global_position) - global_position)
     if dead:
         return
+    var projection_offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
+    draw_circle(Vector2.ZERO, 12.0, Color(0.05, 0.18, 0.05, 0.25))
+    draw_set_transform(projection_offset + Vector2(0.0, -14.0))
     # Visual only: body circle radius, hp bar and all stats are
     # unchanged. Details are small marks inside the same 14 px body.
     # A-H art placeholders are mapped by theme here, not by letter:
