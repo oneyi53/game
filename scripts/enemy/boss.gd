@@ -164,11 +164,15 @@ func take_damage(amount: int) -> void:
         queue_free()
 
 func _draw() -> void:
-    draw_set_transform(Projection.world_to_screen(global_position) - global_position)
     if dead:
         return
+    var projection_offset: Vector2 = Projection.world_to_screen(global_position) - global_position
     if telegraph_active:
+        draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.5))
         draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.25))
+    draw_set_transform(projection_offset, 0.0, Vector2(1.0, 0.45))
+    draw_circle(Vector2.ZERO, 24.0, Color(0.05, 0.18, 0.05, 0.3))
+    draw_set_transform(projection_offset + Vector2(0.0, -28.0))
     # Visual only: body radius, telegraph radius, hp bar and all
     # stats are unchanged. Phase 2 only brightens the leaf crown.
     draw_circle(Vector2.ZERO, 28.0, boss_color)
