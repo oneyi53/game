@@ -13,7 +13,10 @@ signal recruit_panel_pressed
 @onready var gold_label: Label = $GoldLabel
 @onready var wood_label: Label = $WoodLabel
 @onready var message_label: Label = $MessageLabel
-@onready var quest_label: Label = $QuestLabel
+@onready var quest_label: RichTextLabel = $QuestLabel
+@onready var quest_toggle_button: Button = $QuestToggleButton
+var quest_text_full: String = ""
+var quest_expanded: bool = true
 @onready var skill_button: Button = $SkillButton
 @onready var interact_button: Button = $InteractButton
 @onready var save_button: Button = $SaveButton
@@ -33,6 +36,8 @@ func _ready() -> void:
     camp_button.pressed.connect(_on_camp_button_pressed)
     backpack_button.pressed.connect(_on_backpack_button_pressed)
     recruit_button.pressed.connect(_on_recruit_button_pressed)
+    quest_toggle_button.pressed.connect(_on_quest_toggle_pressed)
+    _apply_quest_display()
 
 func set_gold(amount: int) -> void:
     gold_label.text = "金币：" + str(amount)
@@ -41,7 +46,34 @@ func set_wood(amount: int, cap: int) -> void:
     wood_label.text = "木材：" + str(amount) + "/" + str(cap)
 
 func set_quest_text(text: String) -> void:
-    quest_label.text = text
+    quest_text_full = text
+    _apply_quest_display()
+
+func _apply_quest_display() -> void:
+    if quest_label == null or quest_toggle_button == null:
+        return
+    quest_label.clear()
+    if not quest_expanded:
+        quest_label.append_text("[b]任务追踪[/b]")
+        quest_toggle_button.text = "展开"
+        return
+    var active_lines: Array[String] = []
+    var completed_lines: Array[String] = []
+    for line in quest_text_full.split("\n", false):
+        if str(line).contains("：已完成"):
+            completed_lines.append(str(line))
+        elif str(line) != "":
+            active_lines.append(str(line))
+    quest_label.append_text("[b]任务追踪[/b]\n")
+    for line in active_lines:
+        quest_label.append_text("• " + line + "\n")
+    for line in completed_lines:
+        quest_label.append_text("[color=#aab2a0]✓ " + line + "[/color]\n")
+    quest_toggle_button.text = "收起"
+
+func _on_quest_toggle_pressed() -> void:
+    quest_expanded = not quest_expanded
+    _apply_quest_display()
 
 func show_message(text: String) -> void:
     message_label.text = text
