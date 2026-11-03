@@ -39,7 +39,14 @@ jobs:
           cp -r "$ANDROID_HOME/cmdline-tools/tmp/cmdline-tools/"* "$ANDROID_HOME/cmdline-tools/latest/"
           echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          # NOTE: do NOT run yes|sdkmanager under pipefail: when sdkmanager finishes,
+          # yes gets SIGPIPE and pipefail turns that into exit 1 even on success.
+          # Without pipefail the pipeline status is sdkmanager's own status, so a
+          # real sdkmanager failure still fails the step (set -e), and its output
+          # is kept visible instead of going to /dev/null.
+          set +o pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
+          set -o pipefail
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Generate project icon if missing (push_files cannot carry PNG)
