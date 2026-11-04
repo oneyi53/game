@@ -85,9 +85,10 @@ func reset_to_base_stats() -> void:
 
 func apply_loose_equipment_bonus(bonus: Dictionary) -> void:
     attack += int(bonus.get("attack", 0))
-    max_hp += int(bonus.get("hp", 0))
+    var hp_bonus: int = int(bonus.get("hp", 0))
+    max_hp += hp_bonus
     defense += int(bonus.get("defense", 0))
-    hp = mini(hp, max_hp)
+    hp = mini(max_hp, hp + hp_bonus)
     queue_redraw()
 
 func apply_camp_bonus(attack_pct: float, hp_pct: float) -> void:
