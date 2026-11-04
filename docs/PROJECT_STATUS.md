@@ -96,3 +96,14 @@ main 已包含基础美术资源，但资源存在不等于运行时已经显示
 ## 7. 会话交接
 
 下一步从 `LOCAL_CODE_AUDIT_2026-11-04.md` 的“下一轮交叉审查清单”开始。优先核实怪物刷新、招募碎片、英雄 HP 和 SaveManager 调用链。确认问题后，从最新 main 创建独立 `fix/*` 分支，小步修复并测试；每次变更同步更新 CHANGELOG 和本档案。
+
+
+## 第二轮核心调用链复核（2026-11-04）
+
+- 复核基线：GitHub main（本地审查报告对应 HEAD e194898）；只读读取 Main、Hero、SaveManager、RecruitmentManager、QuestManager、LevelManager、BackpackManager 及相关数据。
+- **已确认缺陷 A：英雄 HP 未恢复。** _save_game() 保存 heroes[{id,hp}]，但 _spawn_heroes() 不读取该数组；Hero.setup() 与 apply_equipment_bonus() 都将 hp 设为 max_hp，重启后受伤英雄满血。
+- **已确认缺陷 B：招募碎片未消费。** _on_recruit_synthesize() 检查数量后直接 recruit()，RecruitmentManager 没有扣除碎片的消费接口。
+- **修正原风险表述：怪物刷新并非满员即丢队列。** _tick_respawns() 满员时 continue，待重生项会保留并在后续帧重试；目前只能确认可能积压/延迟和调度公平性风险，不能断言任务永久卡死。
+- **已确认存档可靠性风险：** 从备份恢复后，若主档仍是损坏文件，下一次 save_game() 会先把损坏主档复制覆盖有效备份；若新主档写入随后失败/中断，可能失去最后有效备份。
+- SaveManager 目前只验证 JSON 根结构和 schema_version，不验证全部业务字段；未来 schema 升级必须有显式迁移。
+- 以上为静态证据，不代表已运行复现。下一步创建独立 fix 分支，先修 HP 恢复、碎片消费和备份保存流程；怪物队列先设计并测试，不贸然修改总量上限。
