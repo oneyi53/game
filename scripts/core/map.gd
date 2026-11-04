@@ -8,19 +8,19 @@ const LANDMARK_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
 const TILE: int = 64
 
 const DECORATIONS := {
-    WorldMaps.TOWN: {
+    "town": {
         "trees": [Vector2(160, 170), Vector2(1040, 170), Vector2(160, 740), Vector2(1040, 740)],
         "landmarks": [{"kind": "fountain", "position": Vector2(600, 450), "radius": 34.0}]
     },
-    WorldMaps.MOSS_CROWN: {
+    "moss_crown": {
         "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820)],
         "landmarks": [{"kind": "tower", "position": Vector2(260, 300), "radius": 30.0}, {"kind": "fountain", "position": Vector2(920, 500), "radius": 28.0}]
     },
-    WorldMaps.FALLEN_LEAF: {
+    "fallen_leaf": {
         "trees": [Vector2(110, 130), Vector2(310, 110), Vector2(1080, 150), Vector2(980, 760), Vector2(140, 760), Vector2(420, 800), Vector2(180, 500), Vector2(1040, 560)],
         "landmarks": [{"kind": "tree_cluster", "position": Vector2(620, 280), "radius": 36.0}]
     },
-    WorldMaps.MORNING_DEW: {
+    "morning_dew": {
         "trees": [Vector2(100, 160), Vector2(300, 140), Vector2(1080, 140), Vector2(980, 220), Vector2(140, 760), Vector2(420, 790), Vector2(1080, 740), Vector2(900, 800)],
         "landmarks": [{"kind": "tree_cluster", "position": Vector2(600, 450), "radius": 36.0}]
     }
