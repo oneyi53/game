@@ -31,6 +31,7 @@ const HERO_SCENE: PackedScene = preload("res://scenes/hero.tscn")
 const ENEMY_SCENE: PackedScene = preload("res://scenes/enemy.tscn")
 const BOSS_SCENE: PackedScene = preload("res://scenes/boss.tscn")
 const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
+const TELEPORT_PANEL_SCENE: PackedScene = preload("res://scenes/teleport_panel.tscn")
 const EFFECT_PLAYER = preload("res://scripts/fx/effect_player.gd")
 const EFFECT_ATLAS: Texture2D = preload("res://effect_atlas.png")
 
@@ -43,6 +44,7 @@ const EFFECT_ATLAS: Texture2D = preload("res://effect_atlas.png")
 @onready var hero_panel: HeroPanel = $UI/HeroPanel
 @onready var equip_panel: EquipPanel = $UI/EquipPanel
 @onready var camp_panel: CampPanel = $UI/CampPanel
+@onready var teleport_panel: TeleportPanel = $UI/TeleportPanel
 @onready var backpack_panel: BackpackPanel = $UI/BackpackPanel
 @onready var offline_panel: OfflinePanel = $UI/OfflinePanel
 @onready var recruit_panel: RecruitPanel = $UI/RecruitPanel
@@ -225,9 +227,13 @@ func _ready() -> void:
     hud.camp_panel_pressed.connect(_on_camp_panel_pressed)
     hud.backpack_panel_pressed.connect(_on_backpack_panel_pressed)
     hud.recruit_panel_pressed.connect(_on_recruit_panel_pressed)
+    hud.teleport_pressed.connect(_on_teleport_pressed)
     recruit_panel.set_data(recruitment_manager, level_manager, data_loader.heroes)
     recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
     recruit_panel.visible = false
+    teleport_panel.destination_requested.connect(_on_teleport_requested)
+    teleport_panel.close_requested.connect(_on_teleport_panel_close)
+    teleport_panel.visible = false
     backpack_panel.set_manager(backpack_manager)
     backpack_panel.decompose_requested.connect(_on_backpack_decompose)
     backpack_panel.claim_requested.connect(_on_backpack_claim)
@@ -553,6 +559,7 @@ func _on_campfire_interact(entry: Dictionary) -> void:
     var campfire_id: String = str(entry["id"])
     if camp_manager.is_campfire_unlocked(campfire_id):
         hud.show_message(str(entry["intro"]) + " " + str(entry["teleport_intro"]))
+        _open_teleport_panel()
         return
     var cost: int = int(entry["cost_wood"])
     if wood < cost:
@@ -563,15 +570,63 @@ func _on_campfire_interact(entry: Dictionary) -> void:
     hud.set_wood(wood, wood_cap)
     hud.show_message(str(entry["dispel_prompt"]))
     _save_game()
+    _open_teleport_panel()
 
 # Only one full-screen menu/settlement panel may be visible at a time.
 # Tapping the active menu button closes it; tapping another switches panels.
 func _toggle_menu_panel(target: Control) -> void:
     var should_open: bool = not target.visible
-    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel, teleport_panel]
     for panel in panels:
         panel.visible = false
     target.visible = should_open
+
+func _on_teleport_pressed() -> void:
+    if camp_manager == null or camp_manager.campfire_order.is_empty():
+        hud.show_message("当前没有可用的传送锚点")
+        return
+    var campfire_id: String = str(camp_manager.campfire_order[0])
+    if not camp_manager.is_campfire_unlocked(campfire_id):
+        hud.show_message("先找到森林营火并投入木材，激活传送阵")
+        return
+    _open_teleport_panel()
+
+func _open_teleport_panel() -> void:
+    _refresh_teleport_destinations()
+    _toggle_menu_panel(teleport_panel)
+
+func _on_teleport_panel_close() -> void:
+    teleport_panel.visible = false
+
+func _refresh_teleport_destinations() -> void:
+    var destinations: Array[Dictionary] = [
+        {"id": "camp", "name": "森林营地", "position": Vector2(800.0, 600.0), "unlocked": true, "hint": "冒险起点"},
+        {"id": "moss_crown", "name": "苔冠空地", "position": Vector2(600.0, 350.0), "unlocked": boss_defeated, "hint": "击败森林首领后开放"},
+        {"id": "fallen_leaf", "name": "落叶幽谷", "position": Vector2(680.0, 900.0), "unlocked": elite_defeated, "hint": "击败精英首领后开放"},
+        {"id": "morning_dew", "name": "朝露林地", "position": Vector2(1200.0, 920.0), "unlocked": valley_quest_done, "hint": "完成落叶幽谷主线后开放"}
+    ]
+    teleport_panel.set_destinations(destinations)
+
+func _on_teleport_requested(destination_id: String) -> void:
+    if captain == null:
+        return
+    _refresh_teleport_destinations()
+    for destination in teleport_panel.destinations:
+        if str(destination.get("id", "")) != destination_id:
+            continue
+        if not bool(destination.get("unlocked", false)):
+            hud.show_message(str(destination.get("hint", "该区域尚未开放")))
+            return
+        var target: Vector2 = destination.get("position", Vector2(800.0, 600.0))
+        captain.move_input = Vector2.ZERO
+        captain.velocity = Vector2.ZERO
+        captain.global_position = target
+        camera.position = target
+        teleport_panel.visible = false
+        hud.show_message("已传送至 " + str(destination.get("name", "目的地")))
+        _save_game()
+        return
+    hud.show_message("传送失败：未知目的地")
 
 func _on_backpack_panel_pressed() -> void:
     _toggle_menu_panel(backpack_panel)
