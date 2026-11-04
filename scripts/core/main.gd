@@ -294,7 +294,7 @@ func _ready() -> void:
     camera.make_current()
     if captain != null:
         camera.position = _projected_camera_position(captain.global_position)
-    if world_state_migrated and had_save:
+    if world_state_migrated and had_save and not bool(pending_offline.get("eligible", false)):
         # SaveManager preserves the previous valid save as backup before
         # replacing it with the map-local format.
         _save_game()
