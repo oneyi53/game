@@ -87,9 +87,23 @@ func _load_definitions(task_definitions: Array, stage_definitions: Array) -> boo
     return true
 
 func _is_valid_day_key(value: String) -> bool:
-    var regex := RegEx.new()
-    regex.compile("^\\d{4}-\\d{2}-\\d{2}$")
-    return regex.search(value) != null
+    if value.length() != 10 or value.substr(4, 1) != "-" or value.substr(7, 1) != "-":
+        return false
+    var year_text: String = value.substr(0, 4)
+    var month_text: String = value.substr(5, 2)
+    var day_text: String = value.substr(8, 2)
+    if not year_text.is_valid_int() or not month_text.is_valid_int() or not day_text.is_valid_int():
+        return false
+    var year: int = int(year_text)
+    var month: int = int(month_text)
+    var day: int = int(day_text)
+    if year <= 0 or month < 1 or month > 12 or day < 1:
+        return false
+    var days_in_month: Array = [31, 29 if _is_leap_year(year) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    return day <= int(days_in_month[month - 1])
+
+func _is_leap_year(year: int) -> bool:
+    return year % 400 == 0 or (year % 4 == 0 and year % 100 != 0)
 
 func _reset_daily_state() -> void:
     _task_states.clear()

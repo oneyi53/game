@@ -56,6 +56,7 @@ func _test_invalid_definitions_are_rejected() -> void:
     assert(manager.error_message != "")
     assert(not manager.initialize([], [{"id": "bad", "threshold": 10}], "2026-11-04"))
     assert(not manager.initialize([], [], "04-11-2026"))
+    assert(not manager.initialize([], [], "2026-02-30"))
 
 func _test_matching_event_updates_only_matching_tasks() -> void:
     var manager = _new_manager()
@@ -130,8 +131,9 @@ func _test_same_day_does_not_reset() -> void:
 
 func _test_day_rollover_resets_daily_state() -> void:
     var manager = _new_manager()
-    manager.record_event("enemy_killed", "before-rollover", {"enemy_id": "slime"})
-    manager.claim_stage("stage_10", Callable(self, "_grant_reward"))
+    manager.record_event("enemy_killed", "before-rollover", {"enemy_id": "slime"}, 2)
+    var claim: Dictionary = manager.claim_stage("stage_10", Callable(self, "_grant_reward"))
+    assert(claim["ok"])
     assert(manager.advance_day("2026-11-05"))
     var snapshot: Dictionary = manager.get_snapshot()
     assert(snapshot["day_key"] == "2026-11-05")
@@ -146,6 +148,9 @@ func _test_clock_rollback_is_rejected() -> void:
     assert(not manager.advance_day("2026-11-03"))
     assert(manager.get_snapshot()["day_key"] == "2026-11-04")
     assert(manager.get_snapshot()["tasks"]["slime_hunt"]["progress"] == 1)
+    var restored_on_earlier_clock = _new_manager(manager.save_state(), "2026-11-03")
+    assert(restored_on_earlier_clock.get_snapshot()["day_key"] == "2026-11-04")
+    assert(restored_on_earlier_clock.get_snapshot()["tasks"]["slime_hunt"]["progress"] == 1)
 
 func _test_stage_claim_requires_unlock_and_successful_grant() -> void:
     var manager = _new_manager()

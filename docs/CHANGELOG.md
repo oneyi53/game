@@ -1,5 +1,15 @@
 # 开发变更日志
 
+## 2026-11-04 — 每日活跃度核心数据层（开发中）
+
+- 分支：`feat/daily-activity-core-2026-11-04`，基于 main `c0c5f2e`。
+- 新增 `DailyActivityManager`：通过外部定义注入每日任务、事件类型、过滤条件、目标数量、积分、阶段门槛和奖励 ID；不写死尚未确认的产品规则。
+- 支持事件 occurrence ID 去重、单次事件推进多个任务、进度封顶、完成积分只计算一次、阶段锁定/可领取/已领取状态、奖励回调失败不标记领取。
+- 日期由调用方注入；同日不重置、日期单调前进时重置、回拨拒绝。状态独立序列化，尚未接入 Main/SaveManager，不改 schema。
+- 新增 14 项 headless 回归测试，并接入 Godot 4.7.2 cloud validation。CI 结果待本分支 workflow 实际运行后记录。
+- 尚未接入每日任务配置、真实事件、每日面板或红点业务；奖励发放与存档原子性需在 Main 集成前完成设计。
+
+
 ## 2026-11-04 — 主城建筑实体入口（PR #41 已合并）
 
 - PR：[#41](https://github.com/oneyi53/game/pull/41)，分支：`feat/town-building-entrances-2026-11-04`。
