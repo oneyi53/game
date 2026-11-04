@@ -1,0 +1,3059 @@
+{
+  "source": "effect_atlas.png",
+  "source_size": [
+    1024,
+    1024
+  ],
+  "alpha_threshold": 24,
+  "connectivity": 8,
+  "minimum_alpha_pixels": 100,
+  "component_count": 145,
+  "components": [
+    {
+      "id": "fx_001",
+      "file": "components/fx_001.png",
+      "bbox_xyxy": [
+        152,
+        4,
+        294,
+        26
+      ],
+      "crop_xyxy": [
+        142,
+        0,
+        304,
+        36
+      ],
+      "size": [
+        142,
+        22
+      ],
+      "alpha_pixels": 1906
+    },
+    {
+      "id": "fx_002",
+      "file": "components/fx_002.png",
+      "bbox_xyxy": [
+        306,
+        6,
+        445,
+        24
+      ],
+      "crop_xyxy": [
+        296,
+        0,
+        455,
+        34
+      ],
+      "size": [
+        139,
+        18
+      ],
+      "alpha_pixels": 1134
+    },
+    {
+      "id": "fx_003",
+      "file": "components/fx_003.png",
+      "bbox_xyxy": [
+        456,
+        6,
+        591,
+        86
+      ],
+      "crop_xyxy": [
+        446,
+        0,
+        601,
+        96
+      ],
+      "size": [
+        135,
+        80
+      ],
+      "alpha_pixels": 7467
+    },
+    {
+      "id": "fx_004",
+      "file": "components/fx_004.png",
+      "bbox_xyxy": [
+        607,
+        7,
+        731,
+        85
+      ],
+      "crop_xyxy": [
+        597,
+        0,
+        741,
+        95
+      ],
+      "size": [
+        124,
+        78
+      ],
+      "alpha_pixels": 6865
+    },
+    {
+      "id": "fx_005",
+      "file": "components/fx_005.png",
+      "bbox_xyxy": [
+        753,
+        8,
+        869,
+        84
+      ],
+      "crop_xyxy": [
+        743,
+        0,
+        879,
+        94
+      ],
+      "size": [
+        116,
+        76
+      ],
+      "alpha_pixels": 6695
+    },
+    {
+      "id": "fx_006",
+      "file": "components/fx_006.png",
+      "bbox_xyxy": [
+        900,
+        11,
+        1013,
+        104
+      ],
+      "crop_xyxy": [
+        890,
+        1,
+        1023,
+        114
+      ],
+      "size": [
+        113,
+        93
+      ],
+      "alpha_pixels": 8402
+    },
+    {
+      "id": "fx_007",
+      "file": "components/fx_007.png",
+      "bbox_xyxy": [
+        14,
+        12,
+        136,
+        64
+      ],
+      "crop_xyxy": [
+        4,
+        2,
+        146,
+        74
+      ],
+      "size": [
+        122,
+        52
+      ],
+      "alpha_pixels": 3319
+    },
+    {
+      "id": "fx_008",
+      "file": "components/fx_008.png",
+      "bbox_xyxy": [
+        156,
+        36,
+        291,
+        116
+      ],
+      "crop_xyxy": [
+        146,
+        26,
+        301,
+        126
+      ],
+      "size": [
+        135,
+        80
+      ],
+      "alpha_pixels": 7467
+    },
+    {
+      "id": "fx_009",
+      "file": "components/fx_009.png",
+      "bbox_xyxy": [
+        307,
+        37,
+        432,
+        115
+      ],
+      "crop_xyxy": [
+        297,
+        27,
+        442,
+        125
+      ],
+      "size": [
+        125,
+        78
+      ],
+      "alpha_pixels": 6916
+    },
+    {
+      "id": "fx_010",
+      "file": "components/fx_010.png",
+      "bbox_xyxy": [
+        6,
+        85,
+        141,
+        159
+      ],
+      "crop_xyxy": [
+        0,
+        75,
+        151,
+        169
+      ],
+      "size": [
+        135,
+        74
+      ],
+      "alpha_pixels": 7133
+    },
+    {
+      "id": "fx_011",
+      "file": "components/fx_011.png",
+      "bbox_xyxy": [
+        751,
+        99,
+        873,
+        176
+      ],
+      "crop_xyxy": [
+        741,
+        89,
+        883,
+        186
+      ],
+      "size": [
+        122,
+        77
+      ],
+      "alpha_pixels": 6638
+    },
+    {
+      "id": "fx_012",
+      "file": "components/fx_012.png",
+      "bbox_xyxy": [
+        452,
+        106,
+        573,
+        147
+      ],
+      "crop_xyxy": [
+        442,
+        96,
+        583,
+        157
+      ],
+      "size": [
+        121,
+        41
+      ],
+      "alpha_pixels": 2837
+    },
+    {
+      "id": "fx_013",
+      "file": "components/fx_013.png",
+      "bbox_xyxy": [
+        606,
+        110,
+        717,
+        207
+      ],
+      "crop_xyxy": [
+        596,
+        100,
+        727,
+        217
+      ],
+      "size": [
+        111,
+        97
+      ],
+      "alpha_pixels": 6793
+    },
+    {
+      "id": "fx_014",
+      "file": "components/fx_014.png",
+      "bbox_xyxy": [
+        891,
+        122,
+        1016,
+        205
+      ],
+      "crop_xyxy": [
+        881,
+        112,
+        1024,
+        215
+      ],
+      "size": [
+        125,
+        83
+      ],
+      "alpha_pixels": 6360
+    },
+    {
+      "id": "fx_015",
+      "file": "components/fx_015.png",
+      "bbox_xyxy": [
+        157,
+        131,
+        276,
+        210
+      ],
+      "crop_xyxy": [
+        147,
+        121,
+        286,
+        220
+      ],
+      "size": [
+        119,
+        79
+      ],
+      "alpha_pixels": 6613
+    },
+    {
+      "id": "fx_016",
+      "file": "components/fx_016.png",
+      "bbox_xyxy": [
+        305,
+        133,
+        432,
+        188
+      ],
+      "crop_xyxy": [
+        295,
+        123,
+        442,
+        198
+      ],
+      "size": [
+        127,
+        55
+      ],
+      "alpha_pixels": 4193
+    },
+    {
+      "id": "fx_017",
+      "file": "components/fx_017.png",
+      "bbox_xyxy": [
+        577,
+        163,
+        594,
+        243
+      ],
+      "crop_xyxy": [
+        567,
+        153,
+        604,
+        253
+      ],
+      "size": [
+        17,
+        80
+      ],
+      "alpha_pixels": 833
+    },
+    {
+      "id": "fx_018",
+      "file": "components/fx_018.png",
+      "bbox_xyxy": [
+        9,
+        171,
+        128,
+        250
+      ],
+      "crop_xyxy": [
+        0,
+        161,
+        138,
+        260
+      ],
+      "size": [
+        119,
+        79
+      ],
+      "alpha_pixels": 6613
+    },
+    {
+      "id": "fx_019",
+      "file": "components/fx_019.png",
+      "bbox_xyxy": [
+        455,
+        171,
+        555,
+        217
+      ],
+      "crop_xyxy": [
+        445,
+        161,
+        565,
+        227
+      ],
+      "size": [
+        100,
+        46
+      ],
+      "alpha_pixels": 3584
+    },
+    {
+      "id": "fx_020",
+      "file": "components/fx_020.png",
+      "bbox_xyxy": [
+        751,
+        192,
+        874,
+        269
+      ],
+      "crop_xyxy": [
+        741,
+        182,
+        884,
+        279
+      ],
+      "size": [
+        123,
+        77
+      ],
+      "alpha_pixels": 6695
+    },
+    {
+      "id": "fx_021",
+      "file": "components/fx_021.png",
+      "bbox_xyxy": [
+        293,
+        206,
+        403,
+        263
+      ],
+      "crop_xyxy": [
+        283,
+        196,
+        413,
+        273
+      ],
+      "size": [
+        110,
+        57
+      ],
+      "alpha_pixels": 2952
+    },
+    {
+      "id": "fx_022",
+      "file": "components/fx_022.png",
+      "bbox_xyxy": [
+        603,
+        216,
+        732,
+        243
+      ],
+      "crop_xyxy": [
+        593,
+        206,
+        742,
+        253
+      ],
+      "size": [
+        129,
+        27
+      ],
+      "alpha_pixels": 1779
+    },
+    {
+      "id": "fx_023",
+      "file": "components/fx_023.png",
+      "bbox_xyxy": [
+        891,
+        216,
+        1016,
+        299
+      ],
+      "crop_xyxy": [
+        881,
+        206,
+        1024,
+        309
+      ],
+      "size": [
+        125,
+        83
+      ],
+      "alpha_pixels": 6360
+    },
+    {
+      "id": "fx_024",
+      "file": "components/fx_024.png",
+      "bbox_xyxy": [
+        145,
+        223,
+        255,
+        281
+      ],
+      "crop_xyxy": [
+        135,
+        213,
+        265,
+        291
+      ],
+      "size": [
+        110,
+        58
+      ],
+      "alpha_pixels": 3077
+    },
+    {
+      "id": "fx_025",
+      "file": "components/fx_025.png",
+      "bbox_xyxy": [
+        552,
+        228,
+        569,
+        245
+      ],
+      "crop_xyxy": [
+        542,
+        218,
+        579,
+        255
+      ],
+      "size": [
+        17,
+        17
+      ],
+      "alpha_pixels": 231
+    },
+    {
+      "id": "fx_026",
+      "file": "components/fx_026.png",
+      "bbox_xyxy": [
+        431,
+        238,
+        516,
+        289
+      ],
+      "crop_xyxy": [
+        421,
+        228,
+        526,
+        299
+      ],
+      "size": [
+        85,
+        51
+      ],
+      "alpha_pixels": 3251
+    },
+    {
+      "id": "fx_027",
+      "file": "components/fx_027.png",
+      "bbox_xyxy": [
+        562,
+        254,
+        585,
+        334
+      ],
+      "crop_xyxy": [
+        552,
+        244,
+        595,
+        344
+      ],
+      "size": [
+        23,
+        80
+      ],
+      "alpha_pixels": 1064
+    },
+    {
+      "id": "fx_028",
+      "file": "components/fx_028.png",
+      "bbox_xyxy": [
+        610,
+        261,
+        695,
+        312
+      ],
+      "crop_xyxy": [
+        600,
+        251,
+        705,
+        322
+      ],
+      "size": [
+        85,
+        51
+      ],
+      "alpha_pixels": 3251
+    },
+    {
+      "id": "fx_029",
+      "file": "components/fx_029.png",
+      "bbox_xyxy": [
+        9,
+        262,
+        120,
+        319
+      ],
+      "crop_xyxy": [
+        0,
+        252,
+        130,
+        329
+      ],
+      "size": [
+        111,
+        57
+      ],
+      "alpha_pixels": 3041
+    },
+    {
+      "id": "fx_030",
+      "file": "components/fx_030.png",
+      "bbox_xyxy": [
+        861,
+        280,
+        882,
+        310
+      ],
+      "crop_xyxy": [
+        851,
+        270,
+        892,
+        320
+      ],
+      "size": [
+        21,
+        30
+      ],
+      "alpha_pixels": 467
+    },
+    {
+      "id": "fx_031",
+      "file": "components/fx_031.png",
+      "bbox_xyxy": [
+        739,
+        282,
+        839,
+        337
+      ],
+      "crop_xyxy": [
+        729,
+        272,
+        849,
+        347
+      ],
+      "size": [
+        100,
+        55
+      ],
+      "alpha_pixels": 3552
+    },
+    {
+      "id": "fx_032",
+      "file": "components/fx_032.png",
+      "bbox_xyxy": [
+        286,
+        283,
+        394,
+        317
+      ],
+      "crop_xyxy": [
+        276,
+        273,
+        404,
+        327
+      ],
+      "size": [
+        108,
+        34
+      ],
+      "alpha_pixels": 2375
+    },
+    {
+      "id": "fx_033",
+      "file": "components/fx_033.png",
+      "bbox_xyxy": [
+        145,
+        293,
+        262,
+        332
+      ],
+      "crop_xyxy": [
+        135,
+        283,
+        272,
+        342
+      ],
+      "size": [
+        117,
+        39
+      ],
+      "alpha_pixels": 2217
+    },
+    {
+      "id": "fx_034",
+      "file": "components/fx_034.png",
+      "bbox_xyxy": [
+        891,
+        309,
+        995,
+        339
+      ],
+      "crop_xyxy": [
+        881,
+        299,
+        1005,
+        349
+      ],
+      "size": [
+        104,
+        30
+      ],
+      "alpha_pixels": 1949
+    },
+    {
+      "id": "fx_035",
+      "file": "components/fx_035.png",
+      "bbox_xyxy": [
+        414,
+        313,
+        520,
+        404
+      ],
+      "crop_xyxy": [
+        404,
+        303,
+        530,
+        414
+      ],
+      "size": [
+        106,
+        91
+      ],
+      "alpha_pixels": 7823
+    },
+    {
+      "id": "fx_036",
+      "file": "components/fx_036.png",
+      "bbox_xyxy": [
+        859,
+        316,
+        884,
+        348
+      ],
+      "crop_xyxy": [
+        849,
+        306,
+        894,
+        358
+      ],
+      "size": [
+        25,
+        32
+      ],
+      "alpha_pixels": 536
+    },
+    {
+      "id": "fx_037",
+      "file": "components/fx_037.png",
+      "bbox_xyxy": [
+        10,
+        331,
+        102,
+        370
+      ],
+      "crop_xyxy": [
+        0,
+        321,
+        112,
+        380
+      ],
+      "size": [
+        92,
+        39
+      ],
+      "alpha_pixels": 1844
+    },
+    {
+      "id": "fx_038",
+      "file": "components/fx_038.png",
+      "bbox_xyxy": [
+        617,
+        342,
+        716,
+        398
+      ],
+      "crop_xyxy": [
+        607,
+        332,
+        726,
+        408
+      ],
+      "size": [
+        99,
+        56
+      ],
+      "alpha_pixels": 3896
+    },
+    {
+      "id": "fx_039",
+      "file": "components/fx_039.png",
+      "bbox_xyxy": [
+        271,
+        347,
+        378,
+        394
+      ],
+      "crop_xyxy": [
+        261,
+        337,
+        388,
+        404
+      ],
+      "size": [
+        107,
+        47
+      ],
+      "alpha_pixels": 3767
+    },
+    {
+      "id": "fx_040",
+      "file": "components/fx_040.png",
+      "bbox_xyxy": [
+        736,
+        349,
+        848,
+        377
+      ],
+      "crop_xyxy": [
+        726,
+        339,
+        858,
+        387
+      ],
+      "size": [
+        112,
+        28
+      ],
+      "alpha_pixels": 1509
+    },
+    {
+      "id": "fx_041",
+      "file": "components/fx_041.png",
+      "bbox_xyxy": [
+        891,
+        349,
+        1007,
+        370
+      ],
+      "crop_xyxy": [
+        881,
+        339,
+        1017,
+        380
+      ],
+      "size": [
+        116,
+        21
+      ],
+      "alpha_pixels": 1300
+    },
+    {
+      "id": "fx_042",
+      "file": "components/fx_042.png",
+      "bbox_xyxy": [
+        536,
+        351,
+        594,
+        377
+      ],
+      "crop_xyxy": [
+        526,
+        341,
+        604,
+        387
+      ],
+      "size": [
+        58,
+        26
+      ],
+      "alpha_pixels": 933
+    },
+    {
+      "id": "fx_043",
+      "file": "components/fx_043.png",
+      "bbox_xyxy": [
+        854,
+        357,
+        884,
+        461
+      ],
+      "crop_xyxy": [
+        844,
+        347,
+        894,
+        471
+      ],
+      "size": [
+        30,
+        104
+      ],
+      "alpha_pixels": 1548
+    },
+    {
+      "id": "fx_044",
+      "file": "components/fx_044.png",
+      "bbox_xyxy": [
+        140,
+        360,
+        243,
+        407
+      ],
+      "crop_xyxy": [
+        130,
+        350,
+        253,
+        417
+      ],
+      "size": [
+        103,
+        47
+      ],
+      "alpha_pixels": 3637
+    },
+    {
+      "id": "fx_045",
+      "file": "components/fx_045.png",
+      "bbox_xyxy": [
+        891,
+        383,
+        999,
+        406
+      ],
+      "crop_xyxy": [
+        881,
+        373,
+        1009,
+        416
+      ],
+      "size": [
+        108,
+        23
+      ],
+      "alpha_pixels": 1498
+    },
+    {
+      "id": "fx_046",
+      "file": "components/fx_046.png",
+      "bbox_xyxy": [
+        730,
+        387,
+        846,
+        408
+      ],
+      "crop_xyxy": [
+        720,
+        377,
+        856,
+        418
+      ],
+      "size": [
+        116,
+        21
+      ],
+      "alpha_pixels": 1297
+    },
+    {
+      "id": "fx_047",
+      "file": "components/fx_047.png",
+      "bbox_xyxy": [
+        533,
+        391,
+        596,
+        426
+      ],
+      "crop_xyxy": [
+        523,
+        381,
+        606,
+        436
+      ],
+      "size": [
+        63,
+        35
+      ],
+      "alpha_pixels": 1179
+    },
+    {
+      "id": "fx_048",
+      "file": "components/fx_048.png",
+      "bbox_xyxy": [
+        13,
+        392,
+        105,
+        444
+      ],
+      "crop_xyxy": [
+        3,
+        382,
+        115,
+        454
+      ],
+      "size": [
+        92,
+        52
+      ],
+      "alpha_pixels": 3439
+    },
+    {
+      "id": "fx_049",
+      "file": "components/fx_049.png",
+      "bbox_xyxy": [
+        730,
+        419,
+        834,
+        438
+      ],
+      "crop_xyxy": [
+        720,
+        409,
+        844,
+        448
+      ],
+      "size": [
+        104,
+        19
+      ],
+      "alpha_pixels": 991
+    },
+    {
+      "id": "fx_050",
+      "file": "components/fx_050.png",
+      "bbox_xyxy": [
+        273,
+        423,
+        365,
+        475
+      ],
+      "crop_xyxy": [
+        263,
+        413,
+        375,
+        485
+      ],
+      "size": [
+        92,
+        52
+      ],
+      "alpha_pixels": 3439
+    },
+    {
+      "id": "fx_051",
+      "file": "components/fx_051.png",
+      "bbox_xyxy": [
+        908,
+        430,
+        993,
+        515
+      ],
+      "crop_xyxy": [
+        898,
+        420,
+        1003,
+        525
+      ],
+      "size": [
+        85,
+        85
+      ],
+      "alpha_pixels": 5646
+    },
+    {
+      "id": "fx_052",
+      "file": "components/fx_052.png",
+      "bbox_xyxy": [
+        407,
+        434,
+        491,
+        521
+      ],
+      "crop_xyxy": [
+        397,
+        424,
+        501,
+        531
+      ],
+      "size": [
+        84,
+        87
+      ],
+      "alpha_pixels": 5319
+    },
+    {
+      "id": "fx_053",
+      "file": "components/fx_053.png",
+      "bbox_xyxy": [
+        141,
+        435,
+        242,
+        487
+      ],
+      "crop_xyxy": [
+        131,
+        425,
+        252,
+        497
+      ],
+      "size": [
+        101,
+        52
+      ],
+      "alpha_pixels": 3305
+    },
+    {
+      "id": "fx_054",
+      "file": "components/fx_054.png",
+      "bbox_xyxy": [
+        617,
+        435,
+        714,
+        495
+      ],
+      "crop_xyxy": [
+        607,
+        425,
+        724,
+        505
+      ],
+      "size": [
+        97,
+        60
+      ],
+      "alpha_pixels": 4104
+    },
+    {
+      "id": "fx_055",
+      "file": "components/fx_055.png",
+      "bbox_xyxy": [
+        521,
+        441,
+        585,
+        491
+      ],
+      "crop_xyxy": [
+        511,
+        431,
+        595,
+        501
+      ],
+      "size": [
+        64,
+        50
+      ],
+      "alpha_pixels": 2359
+    },
+    {
+      "id": "fx_056",
+      "file": "components/fx_056.png",
+      "bbox_xyxy": [
+        729,
+        460,
+        846,
+        486
+      ],
+      "crop_xyxy": [
+        719,
+        450,
+        856,
+        496
+      ],
+      "size": [
+        117,
+        26
+      ],
+      "alpha_pixels": 1332
+    },
+    {
+      "id": "fx_057",
+      "file": "components/fx_057.png",
+      "bbox_xyxy": [
+        12,
+        466,
+        113,
+        518
+      ],
+      "crop_xyxy": [
+        2,
+        456,
+        123,
+        528
+      ],
+      "size": [
+        101,
+        52
+      ],
+      "alpha_pixels": 3305
+    },
+    {
+      "id": "fx_058",
+      "file": "components/fx_058.png",
+      "bbox_xyxy": [
+        854,
+        470,
+        882,
+        554
+      ],
+      "crop_xyxy": [
+        844,
+        460,
+        892,
+        564
+      ],
+      "size": [
+        28,
+        84
+      ],
+      "alpha_pixels": 1136
+    },
+    {
+      "id": "fx_059",
+      "file": "components/fx_059.png",
+      "bbox_xyxy": [
+        262,
+        497,
+        371,
+        596
+      ],
+      "crop_xyxy": [
+        252,
+        487,
+        381,
+        606
+      ],
+      "size": [
+        109,
+        99
+      ],
+      "alpha_pixels": 6135
+    },
+    {
+      "id": "fx_060",
+      "file": "components/fx_060.png",
+      "bbox_xyxy": [
+        730,
+        503,
+        839,
+        610
+      ],
+      "crop_xyxy": [
+        720,
+        493,
+        849,
+        620
+      ],
+      "size": [
+        109,
+        107
+      ],
+      "alpha_pixels": 5892
+    },
+    {
+      "id": "fx_061",
+      "file": "components/fx_061.png",
+      "bbox_xyxy": [
+        137,
+        507,
+        210,
+        551
+      ],
+      "crop_xyxy": [
+        127,
+        497,
+        220,
+        561
+      ],
+      "size": [
+        73,
+        44
+      ],
+      "alpha_pixels": 2190
+    },
+    {
+      "id": "fx_062",
+      "file": "components/fx_062.png",
+      "bbox_xyxy": [
+        521,
+        513,
+        585,
+        564
+      ],
+      "crop_xyxy": [
+        511,
+        503,
+        595,
+        574
+      ],
+      "size": [
+        64,
+        51
+      ],
+      "alpha_pixels": 2370
+    },
+    {
+      "id": "fx_063",
+      "file": "components/fx_063.png",
+      "bbox_xyxy": [
+        616,
+        528,
+        700,
+        615
+      ],
+      "crop_xyxy": [
+        606,
+        518,
+        710,
+        625
+      ],
+      "size": [
+        84,
+        87
+      ],
+      "alpha_pixels": 5319
+    },
+    {
+      "id": "fx_064",
+      "file": "components/fx_064.png",
+      "bbox_xyxy": [
+        13,
+        538,
+        115,
+        568
+      ],
+      "crop_xyxy": [
+        3,
+        528,
+        125,
+        578
+      ],
+      "size": [
+        102,
+        30
+      ],
+      "alpha_pixels": 1655
+    },
+    {
+      "id": "fx_065",
+      "file": "components/fx_065.png",
+      "bbox_xyxy": [
+        891,
+        538,
+        1001,
+        643
+      ],
+      "crop_xyxy": [
+        881,
+        528,
+        1011,
+        653
+      ],
+      "size": [
+        110,
+        105
+      ],
+      "alpha_pixels": 6172
+    },
+    {
+      "id": "fx_066",
+      "file": "components/fx_066.png",
+      "bbox_xyxy": [
+        383,
+        545,
+        481,
+        577
+      ],
+      "crop_xyxy": [
+        373,
+        535,
+        491,
+        587
+      ],
+      "size": [
+        98,
+        32
+      ],
+      "alpha_pixels": 2295
+    },
+    {
+      "id": "fx_067",
+      "file": "components/fx_067.png",
+      "bbox_xyxy": [
+        238,
+        563,
+        255,
+        610
+      ],
+      "crop_xyxy": [
+        228,
+        553,
+        265,
+        620
+      ],
+      "size": [
+        17,
+        47
+      ],
+      "alpha_pixels": 453
+    },
+    {
+      "id": "fx_068",
+      "file": "components/fx_068.png",
+      "bbox_xyxy": [
+        853,
+        569,
+        880,
+        642
+      ],
+      "crop_xyxy": [
+        843,
+        559,
+        890,
+        652
+      ],
+      "size": [
+        27,
+        73
+      ],
+      "alpha_pixels": 1479
+    },
+    {
+      "id": "fx_069",
+      "file": "components/fx_069.png",
+      "bbox_xyxy": [
+        128,
+        570,
+        202,
+        615
+      ],
+      "crop_xyxy": [
+        118,
+        560,
+        212,
+        625
+      ],
+      "size": [
+        74,
+        45
+      ],
+      "alpha_pixels": 2183
+    },
+    {
+      "id": "fx_070",
+      "file": "components/fx_070.png",
+      "bbox_xyxy": [
+        499,
+        578,
+        594,
+        677
+      ],
+      "crop_xyxy": [
+        489,
+        568,
+        604,
+        687
+      ],
+      "size": [
+        95,
+        99
+      ],
+      "alpha_pixels": 7024
+    },
+    {
+      "id": "fx_071",
+      "file": "components/fx_071.png",
+      "bbox_xyxy": [
+        385,
+        593,
+        483,
+        631
+      ],
+      "crop_xyxy": [
+        375,
+        583,
+        493,
+        641
+      ],
+      "size": [
+        98,
+        38
+      ],
+      "alpha_pixels": 2172
+    },
+    {
+      "id": "fx_072",
+      "file": "components/fx_072.png",
+      "bbox_xyxy": [
+        20,
+        598,
+        109,
+        674
+      ],
+      "crop_xyxy": [
+        10,
+        588,
+        119,
+        684
+      ],
+      "size": [
+        89,
+        76
+      ],
+      "alpha_pixels": 4752
+    },
+    {
+      "id": "fx_073",
+      "file": "components/fx_073.png",
+      "bbox_xyxy": [
+        266,
+        610,
+        362,
+        651
+      ],
+      "crop_xyxy": [
+        256,
+        600,
+        372,
+        661
+      ],
+      "size": [
+        96,
+        41
+      ],
+      "alpha_pixels": 2762
+    },
+    {
+      "id": "fx_074",
+      "file": "components/fx_074.png",
+      "bbox_xyxy": [
+        238,
+        614,
+        255,
+        661
+      ],
+      "crop_xyxy": [
+        228,
+        604,
+        265,
+        671
+      ],
+      "size": [
+        17,
+        47
+      ],
+      "alpha_pixels": 453
+    },
+    {
+      "id": "fx_075",
+      "file": "components/fx_075.png",
+      "bbox_xyxy": [
+        731,
+        630,
+        817,
+        715
+      ],
+      "crop_xyxy": [
+        721,
+        620,
+        827,
+        725
+      ],
+      "size": [
+        86,
+        85
+      ],
+      "alpha_pixels": 5638
+    },
+    {
+      "id": "fx_076",
+      "file": "components/fx_076.png",
+      "bbox_xyxy": [
+        600,
+        631,
+        715,
+        666
+      ],
+      "crop_xyxy": [
+        590,
+        621,
+        725,
+        676
+      ],
+      "size": [
+        115,
+        35
+      ],
+      "alpha_pixels": 1234
+    },
+    {
+      "id": "fx_077",
+      "file": "components/fx_077.png",
+      "bbox_xyxy": [
+        135,
+        642,
+        226,
+        718
+      ],
+      "crop_xyxy": [
+        125,
+        632,
+        236,
+        728
+      ],
+      "size": [
+        91,
+        76
+      ],
+      "alpha_pixels": 4712
+    },
+    {
+      "id": "fx_078",
+      "file": "components/fx_078.png",
+      "bbox_xyxy": [
+        382,
+        647,
+        479,
+        684
+      ],
+      "crop_xyxy": [
+        372,
+        637,
+        489,
+        694
+      ],
+      "size": [
+        97,
+        37
+      ],
+      "alpha_pixels": 2172
+    },
+    {
+      "id": "fx_079",
+      "file": "components/fx_079.png",
+      "bbox_xyxy": [
+        896,
+        659,
+        999,
+        721
+      ],
+      "crop_xyxy": [
+        886,
+        649,
+        1009,
+        731
+      ],
+      "size": [
+        103,
+        62
+      ],
+      "alpha_pixels": 4007
+    },
+    {
+      "id": "fx_080",
+      "file": "components/fx_080.png",
+      "bbox_xyxy": [
+        236,
+        667,
+        252,
+        727
+      ],
+      "crop_xyxy": [
+        226,
+        657,
+        262,
+        737
+      ],
+      "size": [
+        16,
+        60
+      ],
+      "alpha_pixels": 507
+    },
+    {
+      "id": "fx_081",
+      "file": "components/fx_081.png",
+      "bbox_xyxy": [
+        265,
+        667,
+        362,
+        704
+      ],
+      "crop_xyxy": [
+        255,
+        657,
+        372,
+        714
+      ],
+      "size": [
+        97,
+        37
+      ],
+      "alpha_pixels": 2170
+    },
+    {
+      "id": "fx_082",
+      "file": "components/fx_082.png",
+      "bbox_xyxy": [
+        847,
+        671,
+        876,
+        750
+      ],
+      "crop_xyxy": [
+        837,
+        661,
+        886,
+        760
+      ],
+      "size": [
+        29,
+        79
+      ],
+      "alpha_pixels": 1686
+    },
+    {
+      "id": "fx_083",
+      "file": "components/fx_083.png",
+      "bbox_xyxy": [
+        605,
+        675,
+        705,
+        713
+      ],
+      "crop_xyxy": [
+        595,
+        665,
+        715,
+        723
+      ],
+      "size": [
+        100,
+        38
+      ],
+      "alpha_pixels": 2178
+    },
+    {
+      "id": "fx_084",
+      "file": "components/fx_084.png",
+      "bbox_xyxy": [
+        496,
+        686,
+        592,
+        750
+      ],
+      "crop_xyxy": [
+        486,
+        676,
+        602,
+        760
+      ],
+      "size": [
+        96,
+        64
+      ],
+      "alpha_pixels": 4225
+    },
+    {
+      "id": "fx_085",
+      "file": "components/fx_085.png",
+      "bbox_xyxy": [
+        9,
+        702,
+        104,
+        743
+      ],
+      "crop_xyxy": [
+        0,
+        692,
+        114,
+        753
+      ],
+      "size": [
+        95,
+        41
+      ],
+      "alpha_pixels": 3039
+    },
+    {
+      "id": "fx_086",
+      "file": "components/fx_086.png",
+      "bbox_xyxy": [
+        392,
+        710,
+        482,
+        786
+      ],
+      "crop_xyxy": [
+        382,
+        700,
+        492,
+        796
+      ],
+      "size": [
+        90,
+        76
+      ],
+      "alpha_pixels": 4670
+    },
+    {
+      "id": "fx_087",
+      "file": "components/fx_087.png",
+      "bbox_xyxy": [
+        263,
+        716,
+        367,
+        764
+      ],
+      "crop_xyxy": [
+        253,
+        706,
+        377,
+        774
+      ],
+      "size": [
+        104,
+        48
+      ],
+      "alpha_pixels": 3612
+    },
+    {
+      "id": "fx_088",
+      "file": "components/fx_088.png",
+      "bbox_xyxy": [
+        607,
+        726,
+        696,
+        748
+      ],
+      "crop_xyxy": [
+        597,
+        716,
+        706,
+        758
+      ],
+      "size": [
+        89,
+        22
+      ],
+      "alpha_pixels": 1004
+    },
+    {
+      "id": "fx_089",
+      "file": "components/fx_089.png",
+      "bbox_xyxy": [
+        713,
+        735,
+        765,
+        751
+      ],
+      "crop_xyxy": [
+        703,
+        725,
+        775,
+        761
+      ],
+      "size": [
+        52,
+        16
+      ],
+      "alpha_pixels": 462
+    },
+    {
+      "id": "fx_090",
+      "file": "components/fx_090.png",
+      "bbox_xyxy": [
+        769,
+        735,
+        816,
+        753
+      ],
+      "crop_xyxy": [
+        759,
+        725,
+        826,
+        763
+      ],
+      "size": [
+        47,
+        18
+      ],
+      "alpha_pixels": 421
+    },
+    {
+      "id": "fx_091",
+      "file": "components/fx_091.png",
+      "bbox_xyxy": [
+        891,
+        739,
+        998,
+        841
+      ],
+      "crop_xyxy": [
+        881,
+        729,
+        1008,
+        851
+      ],
+      "size": [
+        107,
+        102
+      ],
+      "alpha_pixels": 6164
+    },
+    {
+      "id": "fx_092",
+      "file": "components/fx_092.png",
+      "bbox_xyxy": [
+        1008,
+        739,
+        1019,
+        812
+      ],
+      "crop_xyxy": [
+        998,
+        729,
+        1024,
+        822
+      ],
+      "size": [
+        11,
+        73
+      ],
+      "alpha_pixels": 729
+    },
+    {
+      "id": "fx_093",
+      "file": "components/fx_093.png",
+      "bbox_xyxy": [
+        236,
+        743,
+        253,
+        803
+      ],
+      "crop_xyxy": [
+        226,
+        733,
+        263,
+        813
+      ],
+      "size": [
+        17,
+        60
+      ],
+      "alpha_pixels": 513
+    },
+    {
+      "id": "fx_094",
+      "file": "components/fx_094.png",
+      "bbox_xyxy": [
+        128,
+        746,
+        223,
+        773
+      ],
+      "crop_xyxy": [
+        118,
+        736,
+        233,
+        783
+      ],
+      "size": [
+        95,
+        27
+      ],
+      "alpha_pixels": 1383
+    },
+    {
+      "id": "fx_095",
+      "file": "components/fx_095.png",
+      "bbox_xyxy": [
+        2,
+        758,
+        106,
+        779
+      ],
+      "crop_xyxy": [
+        0,
+        748,
+        116,
+        789
+      ],
+      "size": [
+        104,
+        21
+      ],
+      "alpha_pixels": 1602
+    },
+    {
+      "id": "fx_096",
+      "file": "components/fx_096.png",
+      "bbox_xyxy": [
+        601,
+        761,
+        684,
+        800
+      ],
+      "crop_xyxy": [
+        591,
+        751,
+        694,
+        810
+      ],
+      "size": [
+        83,
+        39
+      ],
+      "alpha_pixels": 1201
+    },
+    {
+      "id": "fx_097",
+      "file": "components/fx_097.png",
+      "bbox_xyxy": [
+        497,
+        763,
+        582,
+        797
+      ],
+      "crop_xyxy": [
+        487,
+        753,
+        592,
+        807
+      ],
+      "size": [
+        85,
+        34
+      ],
+      "alpha_pixels": 2055
+    },
+    {
+      "id": "fx_098",
+      "file": "components/fx_098.png",
+      "bbox_xyxy": [
+        702,
+        763,
+        767,
+        796
+      ],
+      "crop_xyxy": [
+        692,
+        753,
+        777,
+        806
+      ],
+      "size": [
+        65,
+        33
+      ],
+      "alpha_pixels": 1578
+    },
+    {
+      "id": "fx_099",
+      "file": "components/fx_099.png",
+      "bbox_xyxy": [
+        788,
+        765,
+        826,
+        833
+      ],
+      "crop_xyxy": [
+        778,
+        755,
+        836,
+        843
+      ],
+      "size": [
+        38,
+        68
+      ],
+      "alpha_pixels": 1875
+    },
+    {
+      "id": "fx_100",
+      "file": "components/fx_100.png",
+      "bbox_xyxy": [
+        842,
+        773,
+        878,
+        839
+      ],
+      "crop_xyxy": [
+        832,
+        763,
+        888,
+        849
+      ],
+      "size": [
+        36,
+        66
+      ],
+      "alpha_pixels": 1314
+    },
+    {
+      "id": "fx_101",
+      "file": "components/fx_101.png",
+      "bbox_xyxy": [
+        267,
+        776,
+        362,
+        813
+      ],
+      "crop_xyxy": [
+        257,
+        766,
+        372,
+        823
+      ],
+      "size": [
+        95,
+        37
+      ],
+      "alpha_pixels": 2236
+    },
+    {
+      "id": "fx_102",
+      "file": "components/fx_102.png",
+      "bbox_xyxy": [
+        122,
+        791,
+        225,
+        816
+      ],
+      "crop_xyxy": [
+        112,
+        781,
+        235,
+        826
+      ],
+      "size": [
+        103,
+        25
+      ],
+      "alpha_pixels": 1817
+    },
+    {
+      "id": "fx_103",
+      "file": "components/fx_103.png",
+      "bbox_xyxy": [
+        10,
+        798,
+        107,
+        860
+      ],
+      "crop_xyxy": [
+        0,
+        788,
+        117,
+        870
+      ],
+      "size": [
+        97,
+        62
+      ],
+      "alpha_pixels": 4166
+    },
+    {
+      "id": "fx_104",
+      "file": "components/fx_104.png",
+      "bbox_xyxy": [
+        716,
+        812,
+        774,
+        905
+      ],
+      "crop_xyxy": [
+        706,
+        802,
+        784,
+        915
+      ],
+      "size": [
+        58,
+        93
+      ],
+      "alpha_pixels": 3945
+    },
+    {
+      "id": "fx_105",
+      "file": "components/fx_105.png",
+      "bbox_xyxy": [
+        236,
+        817,
+        253,
+        913
+      ],
+      "crop_xyxy": [
+        226,
+        807,
+        263,
+        923
+      ],
+      "size": [
+        17,
+        96
+      ],
+      "alpha_pixels": 1108
+    },
+    {
+      "id": "fx_106",
+      "file": "components/fx_106.png",
+      "bbox_xyxy": [
+        1005,
+        822,
+        1022,
+        874
+      ],
+      "crop_xyxy": [
+        995,
+        812,
+        1024,
+        884
+      ],
+      "size": [
+        17,
+        52
+      ],
+      "alpha_pixels": 453
+    },
+    {
+      "id": "fx_107",
+      "file": "components/fx_107.png",
+      "bbox_xyxy": [
+        391,
+        823,
+        470,
+        899
+      ],
+      "crop_xyxy": [
+        381,
+        813,
+        480,
+        909
+      ],
+      "size": [
+        79,
+        76
+      ],
+      "alpha_pixels": 4490
+    },
+    {
+      "id": "fx_108",
+      "file": "components/fx_108.png",
+      "bbox_xyxy": [
+        504,
+        823,
+        578,
+        901
+      ],
+      "crop_xyxy": [
+        494,
+        813,
+        588,
+        911
+      ],
+      "size": [
+        74,
+        78
+      ],
+      "alpha_pixels": 4532
+    },
+    {
+      "id": "fx_109",
+      "file": "components/fx_109.png",
+      "bbox_xyxy": [
+        617,
+        823,
+        692,
+        899
+      ],
+      "crop_xyxy": [
+        607,
+        813,
+        702,
+        909
+      ],
+      "size": [
+        75,
+        76
+      ],
+      "alpha_pixels": 4433
+    },
+    {
+      "id": "fx_110",
+      "file": "components/fx_110.png",
+      "bbox_xyxy": [
+        262,
+        826,
+        307,
+        911
+      ],
+      "crop_xyxy": [
+        252,
+        816,
+        317,
+        921
+      ],
+      "size": [
+        45,
+        85
+      ],
+      "alpha_pixels": 1338
+    },
+    {
+      "id": "fx_111",
+      "file": "components/fx_111.png",
+      "bbox_xyxy": [
+        319,
+        826,
+        348,
+        916
+      ],
+      "crop_xyxy": [
+        309,
+        816,
+        358,
+        926
+      ],
+      "size": [
+        29,
+        90
+      ],
+      "alpha_pixels": 1691
+    },
+    {
+      "id": "fx_112",
+      "file": "components/fx_112.png",
+      "bbox_xyxy": [
+        210,
+        827,
+        227,
+        865
+      ],
+      "crop_xyxy": [
+        200,
+        817,
+        237,
+        875
+      ],
+      "size": [
+        17,
+        38
+      ],
+      "alpha_pixels": 552
+    },
+    {
+      "id": "fx_113",
+      "file": "components/fx_113.png",
+      "bbox_xyxy": [
+        121,
+        832,
+        198,
+        909
+      ],
+      "crop_xyxy": [
+        111,
+        822,
+        208,
+        919
+      ],
+      "size": [
+        77,
+        77
+      ],
+      "alpha_pixels": 4354
+    },
+    {
+      "id": "fx_114",
+      "file": "components/fx_114.png",
+      "bbox_xyxy": [
+        784,
+        850,
+        871,
+        915
+      ],
+      "crop_xyxy": [
+        774,
+        840,
+        881,
+        925
+      ],
+      "size": [
+        87,
+        65
+      ],
+      "alpha_pixels": 3129
+    },
+    {
+      "id": "fx_115",
+      "file": "components/fx_115.png",
+      "bbox_xyxy": [
+        892,
+        857,
+        989,
+        910
+      ],
+      "crop_xyxy": [
+        882,
+        847,
+        999,
+        920
+      ],
+      "size": [
+        97,
+        53
+      ],
+      "alpha_pixels": 3766
+    },
+    {
+      "id": "fx_116",
+      "file": "components/fx_116.png",
+      "bbox_xyxy": [
+        211,
+        875,
+        226,
+        901
+      ],
+      "crop_xyxy": [
+        201,
+        865,
+        236,
+        911
+      ],
+      "size": [
+        15,
+        26
+      ],
+      "alpha_pixels": 304
+    },
+    {
+      "id": "fx_117",
+      "file": "components/fx_117.png",
+      "bbox_xyxy": [
+        11,
+        879,
+        84,
+        912
+      ],
+      "crop_xyxy": [
+        1,
+        869,
+        94,
+        922
+      ],
+      "size": [
+        73,
+        33
+      ],
+      "alpha_pixels": 1053
+    },
+    {
+      "id": "fx_118",
+      "file": "components/fx_118.png",
+      "bbox_xyxy": [
+        999,
+        882,
+        1020,
+        909
+      ],
+      "crop_xyxy": [
+        989,
+        872,
+        1024,
+        919
+      ],
+      "size": [
+        21,
+        27
+      ],
+      "alpha_pixels": 331
+    },
+    {
+      "id": "fx_119",
+      "file": "components/fx_119.png",
+      "bbox_xyxy": [
+        208,
+        909,
+        229,
+        943
+      ],
+      "crop_xyxy": [
+        198,
+        899,
+        239,
+        953
+      ],
+      "size": [
+        21,
+        34
+      ],
+      "alpha_pixels": 484
+    },
+    {
+      "id": "fx_120",
+      "file": "components/fx_120.png",
+      "bbox_xyxy": [
+        999,
+        918,
+        1020,
+        944
+      ],
+      "crop_xyxy": [
+        989,
+        908,
+        1024,
+        954
+      ],
+      "size": [
+        21,
+        26
+      ],
+      "alpha_pixels": 399
+    },
+    {
+      "id": "fx_121",
+      "file": "components/fx_121.png",
+      "bbox_xyxy": [
+        715,
+        919,
+        773,
+        1012
+      ],
+      "crop_xyxy": [
+        705,
+        909,
+        783,
+        1022
+      ],
+      "size": [
+        58,
+        93
+      ],
+      "alpha_pixels": 3940
+    },
+    {
+      "id": "fx_122",
+      "file": "components/fx_122.png",
+      "bbox_xyxy": [
+        637,
+        922,
+        706,
+        1000
+      ],
+      "crop_xyxy": [
+        627,
+        912,
+        716,
+        1010
+      ],
+      "size": [
+        69,
+        78
+      ],
+      "alpha_pixels": 3897
+    },
+    {
+      "id": "fx_123",
+      "file": "components/fx_123.png",
+      "bbox_xyxy": [
+        784,
+        922,
+        808,
+        1019
+      ],
+      "crop_xyxy": [
+        774,
+        912,
+        818,
+        1024
+      ],
+      "size": [
+        24,
+        97
+      ],
+      "alpha_pixels": 1558
+    },
+    {
+      "id": "fx_124",
+      "file": "components/fx_124.png",
+      "bbox_xyxy": [
+        5,
+        923,
+        70,
+        1006
+      ],
+      "crop_xyxy": [
+        0,
+        913,
+        80,
+        1016
+      ],
+      "size": [
+        65,
+        83
+      ],
+      "alpha_pixels": 3057
+    },
+    {
+      "id": "fx_125",
+      "file": "components/fx_125.png",
+      "bbox_xyxy": [
+        81,
+        923,
+        146,
+        1009
+      ],
+      "crop_xyxy": [
+        71,
+        913,
+        156,
+        1019
+      ],
+      "size": [
+        65,
+        86
+      ],
+      "alpha_pixels": 3206
+    },
+    {
+      "id": "fx_126",
+      "file": "components/fx_126.png",
+      "bbox_xyxy": [
+        302,
+        923,
+        339,
+        1018
+      ],
+      "crop_xyxy": [
+        292,
+        913,
+        349,
+        1024
+      ],
+      "size": [
+        37,
+        95
+      ],
+      "alpha_pixels": 1945
+    },
+    {
+      "id": "fx_127",
+      "file": "components/fx_127.png",
+      "bbox_xyxy": [
+        597,
+        923,
+        629,
+        1017
+      ],
+      "crop_xyxy": [
+        587,
+        913,
+        639,
+        1024
+      ],
+      "size": [
+        32,
+        94
+      ],
+      "alpha_pixels": 1580
+    },
+    {
+      "id": "fx_128",
+      "file": "components/fx_128.png",
+      "bbox_xyxy": [
+        451,
+        924,
+        472,
+        1010
+      ],
+      "crop_xyxy": [
+        441,
+        914,
+        482,
+        1020
+      ],
+      "size": [
+        21,
+        86
+      ],
+      "alpha_pixels": 1149
+    },
+    {
+      "id": "fx_129",
+      "file": "components/fx_129.png",
+      "bbox_xyxy": [
+        482,
+        924,
+        502,
+        1013
+      ],
+      "crop_xyxy": [
+        472,
+        914,
+        512,
+        1023
+      ],
+      "size": [
+        20,
+        89
+      ],
+      "alpha_pixels": 1137
+    },
+    {
+      "id": "fx_130",
+      "file": "components/fx_130.png",
+      "bbox_xyxy": [
+        512,
+        924,
+        533,
+        1013
+      ],
+      "crop_xyxy": [
+        502,
+        914,
+        543,
+        1023
+      ],
+      "size": [
+        21,
+        89
+      ],
+      "alpha_pixels": 1161
+    },
+    {
+      "id": "fx_131",
+      "file": "components/fx_131.png",
+      "bbox_xyxy": [
+        422,
+        925,
+        438,
+        1015
+      ],
+      "crop_xyxy": [
+        412,
+        915,
+        448,
+        1024
+      ],
+      "size": [
+        16,
+        90
+      ],
+      "alpha_pixels": 1013
+    },
+    {
+      "id": "fx_132",
+      "file": "components/fx_132.png",
+      "bbox_xyxy": [
+        160,
+        927,
+        199,
+        1016
+      ],
+      "crop_xyxy": [
+        150,
+        917,
+        209,
+        1024
+      ],
+      "size": [
+        39,
+        89
+      ],
+      "alpha_pixels": 2269
+    },
+    {
+      "id": "fx_133",
+      "file": "components/fx_133.png",
+      "bbox_xyxy": [
+        240,
+        927,
+        285,
+        989
+      ],
+      "crop_xyxy": [
+        230,
+        917,
+        295,
+        999
+      ],
+      "size": [
+        45,
+        62
+      ],
+      "alpha_pixels": 2161
+    },
+    {
+      "id": "fx_134",
+      "file": "components/fx_134.png",
+      "bbox_xyxy": [
+        354,
+        927,
+        373,
+        1009
+      ],
+      "crop_xyxy": [
+        344,
+        917,
+        383,
+        1019
+      ],
+      "size": [
+        19,
+        82
+      ],
+      "alpha_pixels": 764
+    },
+    {
+      "id": "fx_135",
+      "file": "components/fx_135.png",
+      "bbox_xyxy": [
+        388,
+        927,
+        407,
+        1009
+      ],
+      "crop_xyxy": [
+        378,
+        917,
+        417,
+        1019
+      ],
+      "size": [
+        19,
+        82
+      ],
+      "alpha_pixels": 764
+    },
+    {
+      "id": "fx_136",
+      "file": "components/fx_136.png",
+      "bbox_xyxy": [
+        544,
+        928,
+        582,
+        1015
+      ],
+      "crop_xyxy": [
+        534,
+        918,
+        592,
+        1024
+      ],
+      "size": [
+        38,
+        87
+      ],
+      "alpha_pixels": 2239
+    },
+    {
+      "id": "fx_137",
+      "file": "components/fx_137.png",
+      "bbox_xyxy": [
+        910,
+        928,
+        986,
+        1009
+      ],
+      "crop_xyxy": [
+        900,
+        918,
+        996,
+        1019
+      ],
+      "size": [
+        76,
+        81
+      ],
+      "alpha_pixels": 4624
+    },
+    {
+      "id": "fx_138",
+      "file": "components/fx_138.png",
+      "bbox_xyxy": [
+        818,
+        933,
+        885,
+        1011
+      ],
+      "crop_xyxy": [
+        808,
+        923,
+        895,
+        1021
+      ],
+      "size": [
+        67,
+        78
+      ],
+      "alpha_pixels": 3068
+    },
+    {
+      "id": "fx_139",
+      "file": "components/fx_139.png",
+      "bbox_xyxy": [
+        208,
+        947,
+        229,
+        969
+      ],
+      "crop_xyxy": [
+        198,
+        937,
+        239,
+        979
+      ],
+      "size": [
+        21,
+        22
+      ],
+      "alpha_pixels": 364
+    },
+    {
+      "id": "fx_140",
+      "file": "components/fx_140.png",
+      "bbox_xyxy": [
+        999,
+        953,
+        1020,
+        979
+      ],
+      "crop_xyxy": [
+        989,
+        943,
+        1024,
+        989
+      ],
+      "size": [
+        21,
+        26
+      ],
+      "alpha_pixels": 399
+    },
+    {
+      "id": "fx_141",
+      "file": "components/fx_141.png",
+      "bbox_xyxy": [
+        208,
+        973,
+        229,
+        995
+      ],
+      "crop_xyxy": [
+        198,
+        963,
+        239,
+        1005
+      ],
+      "size": [
+        21,
+        22
+      ],
+      "alpha_pixels": 387
+    },
+    {
+      "id": "fx_142",
+      "file": "components/fx_142.png",
+      "bbox_xyxy": [
+        999,
+        988,
+        1020,
+        1009
+      ],
+      "crop_xyxy": [
+        989,
+        978,
+        1024,
+        1019
+      ],
+      "size": [
+        21,
+        21
+      ],
+      "alpha_pixels": 353
+    },
+    {
+      "id": "fx_143",
+      "file": "components/fx_143.png",
+      "bbox_xyxy": [
+        255,
+        991,
+        269,
+        1014
+      ],
+      "crop_xyxy": [
+        245,
+        981,
+        279,
+        1024
+      ],
+      "size": [
+        14,
+        23
+      ],
+      "alpha_pixels": 195
+    },
+    {
+      "id": "fx_144",
+      "file": "components/fx_144.png",
+      "bbox_xyxy": [
+        208,
+        999,
+        229,
+        1021
+      ],
+      "crop_xyxy": [
+        198,
+        989,
+        239,
+        1024
+      ],
+      "size": [
+        21,
+        22
+      ],
+      "alpha_pixels": 321
+    },
+    {
+      "id": "fx_145",
+      "file": "components/fx_145.png",
+      "bbox_xyxy": [
+        635,
+        1004,
+        682,
+        1022
+      ],
+      "crop_xyxy": [
+        625,
+        994,
+        692,
+        1024
+      ],
+      "size": [
+        47,
+        18
+      ],
+      "alpha_pixels": 421
+    }
+  ],
+  "warning": "Connected alpha regions are geometric candidates, not guaranteed animation frames. Review the contact sheet before wiring any crop into gameplay."
+}
