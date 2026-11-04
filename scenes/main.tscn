@@ -136,6 +136,13 @@ offset_right = 708.0
 offset_bottom = 1270.0
 text = "招募"
 
+[node name="MapButton" type="Button" parent="UI/HUD"]
+offset_left = 540.0
+offset_top = 16.0
+offset_right = 700.0
+offset_bottom = 72.0
+text = "传送"
+
 [node name="CooldownLabel" type="Label" parent="UI/HUD"]
 offset_left = 530.0
 offset_top = 870.0
