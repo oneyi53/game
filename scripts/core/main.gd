@@ -272,7 +272,7 @@ func _ready() -> void:
     recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
     recruit_panel.visible = false
     backpack_panel.set_manager(backpack_manager, heroes)
-    backpack_panel.set_hero_roster(formation_manager.owned_ids, data_loader.heroes)
+    backpack_panel.set_hero_roster(formation_manager.owned_ids, data_loader.heroes, formation_manager.active_ids)
     backpack_panel.equip_requested.connect(_on_backpack_equip)
     backpack_panel.decompose_requested.connect(_on_backpack_decompose)
     backpack_panel.claim_requested.connect(_on_backpack_claim)
