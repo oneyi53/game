@@ -252,6 +252,7 @@ func _ready() -> void:
     _spawn_enemies()
     _spawn_campfire()
     $Map.set_active_map(active_map_id)
+    $Map.building_pressed.connect(_on_town_building_pressed)
     _apply_active_map_visibility()
     var chest_loot: Dictionary = data_loader.items["chest_loot"]
     chest_node.setup(int(chest_loot["gold"]), chest_opened)
@@ -1072,6 +1073,25 @@ func _rebuild_party_runtime() -> void:
     equip_panel.set_data(heroes, equipment_manager)
     backpack_panel.set_manager(backpack_manager, heroes)
     _save_game()
+
+func _on_town_building_pressed(building_id: String) -> void:
+    if active_map_id != WorldMapManagerScript.TOWN:
+        return
+    match building_id:
+        "recruit":
+            _on_recruit_panel_pressed()
+            hud.show_message("已进入英雄招募所")
+        "camp":
+            _on_camp_panel_pressed()
+            hud.show_message("已进入营地工坊")
+        "equipment":
+            _on_equip_panel_pressed()
+            hud.show_message("已进入装备工坊")
+        "backpack":
+            _on_backpack_panel_pressed()
+            hud.show_message("已打开仓库")
+        _:
+            return
 
 func _on_hero_panel_pressed() -> void:
     _toggle_menu_panel(hero_panel)

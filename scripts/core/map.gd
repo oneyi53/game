@@ -5,7 +5,10 @@ const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
 const TREE_SCRIPT = preload("res://scripts/core/tree_visual.gd")
 const LANDMARK_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
+const TOWN_BUILDINGS = preload("res://scripts/core/town_building_registry.gd")
 const TILE: int = 64
+
+signal building_pressed(building_id: String)
 
 const DECORATIONS := {
     "town": {
@@ -134,6 +137,7 @@ func _draw() -> void:
     if town:
         for point in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
             _draw_ground_tile(int(point.x), int(point.y), Color(0.82, 0.75, 0.61))
+        _draw_town_buildings()
     elif active_map_id == WorldMaps.FALLEN_LEAF:
         for point in [Vector2(240, 240), Vector2(420, 300), Vector2(760, 260), Vector2(940, 620)]:
             _draw_dot(point, 5.0, Color(0.84, 0.65, 0.27))
@@ -143,3 +147,44 @@ func _draw() -> void:
     else:
         for point in [Vector2(260, 480), Vector2(500, 620), Vector2(900, 480), Vector2(1100, 700)]:
             _draw_dot(point, 4.0, Color(1.0, 0.85, 0.2))
+
+func _draw_town_buildings() -> void:
+    var font = ThemeDB.fallback_font
+    for item in TOWN_BUILDINGS.entries():
+        var center: Vector2 = WorldProjectionScript.world_to_screen(item["world_position"])
+        var building_color: Color = item["color"]
+        draw_circle(center + Vector2(0.0, 8.0), 34.0, Color(0.08, 0.12, 0.08, 0.28))
+        draw_circle(center, 30.0, Color(0.12, 0.2, 0.16, 0.92))
+        draw_circle(center, 25.0, building_color)
+        var roof := PackedVector2Array([
+            center + Vector2(-17.0, -5.0),
+            center + Vector2(0.0, -22.0),
+            center + Vector2(17.0, -5.0)
+        ])
+        draw_colored_polygon(roof, Color(0.28, 0.2, 0.14))
+        draw_rect(Rect2(center + Vector2(-11.0, -5.0), Vector2(22.0, 17.0)), Color(0.9, 0.82, 0.62))
+        draw_rect(Rect2(center + Vector2(-3.0, 2.0), Vector2(6.0, 10.0)), Color(0.35, 0.25, 0.18))
+        if font != null:
+            var title: String = str(item["subtitle"])
+            var text_size: Vector2 = font.get_string_size(title, HORIZONTAL_ALIGNMENT_CENTER, -1, 16)
+            draw_rect(Rect2(center.x - text_size.x * 0.5 - 9.0, center.y + 34.0, text_size.x + 18.0, 25.0), Color(0.06, 0.12, 0.09, 0.88))
+            draw_string(font, center + Vector2(0.0, 52.0), title, HORIZONTAL_ALIGNMENT_CENTER, -1, 16, Color(1.0, 0.96, 0.82))
+
+func _unhandled_input(event: InputEvent) -> void:
+    if active_map_id != WorldMaps.TOWN:
+        return
+    var pressed: bool = false
+    var screen_position := Vector2.ZERO
+    if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+        pressed = true
+        screen_position = event.position
+    elif event is InputEventScreenTouch and event.pressed:
+        pressed = true
+        screen_position = event.position
+    if not pressed:
+        return
+    var local_position: Vector2 = make_canvas_position_local(screen_position)
+    var building_id: String = TOWN_BUILDINGS.hit_test(local_position)
+    if building_id != "":
+        building_pressed.emit(building_id)
+        get_viewport().set_input_as_handled()
