@@ -10,6 +10,9 @@
 name: Android 1.0
 
 on:
+  push:
+    branches:
+      - feat/hero-world-art-integration
   workflow_dispatch:
     inputs:
       build_apk:
