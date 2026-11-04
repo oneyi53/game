@@ -5,6 +5,7 @@ extends Control
 # displayed in each set card so all available equipment art is visible.
 signal swap_requested(hero_id, set_id)
 signal unequip_requested(hero_id, slot)
+signal unequip_requested(hero_id, slot)
 
 @onready var panel_label: RichTextLabel = $PanelLabel
 
@@ -41,6 +42,7 @@ var lines: Array = []
 var dynamic_mode: bool = false
 var scroll: ScrollContainer = null
 var list_box: VBoxContainer = null
+var item_definitions: Dictionary = {}
 
 func set_data(p_heroes: Array, p_manager: EquipmentManager) -> void:
     heroes = p_heroes
@@ -49,6 +51,10 @@ func set_data(p_heroes: Array, p_manager: EquipmentManager) -> void:
     if panel_label != null:
         panel_label.visible = false
     _ensure_dynamic()
+    rebuild()
+
+func set_item_definitions(definitions: Dictionary) -> void:
+    item_definitions = definitions
     rebuild()
 
 func set_lines(p_lines: Array) -> void:
@@ -114,6 +120,24 @@ func rebuild() -> void:
                 remove_button.pressed.connect(_on_unequip_button_pressed.bind(hero_id, slot))
                 gear_row.add_child(remove_button)
             list_box.add_child(gear_row)
+        var worn: Dictionary = manager.loose_equipped_for_hero(hero_id)
+        var slot_names: Dictionary = {"weapon": "武器", "chest": "护甲", "gloves": "护腕", "boots": "鞋子", "offhand": "副手"}
+        for slot_value in ["weapon", "chest", "gloves", "boots", "offhand"]:
+            var slot: String = str(slot_value)
+            var gear_row := HBoxContainer.new()
+            gear_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+            var gear_label := Label.new()
+            var item_id: String = str(worn.get(slot, ""))
+            var item_entry: Dictionary = item_definitions.get(item_id, {})
+            gear_label.text = str(slot_names[slot]) + "：" + ("未穿戴" if item_id == "" else str(item_entry.get("name", item_id)))
+            gear_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+            gear_row.add_child(gear_label)
+            if item_id != "":
+                var remove_button := Button.new()
+                remove_button.text = "卸下"
+                remove_button.pressed.connect(_on_unequip_button_pressed.bind(hero_id, slot))
+                gear_row.add_child(remove_button)
+            list_box.add_child(gear_row)
         var sets_row: HBoxContainer = HBoxContainer.new()
         sets_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         list_box.add_child(sets_row)
@@ -151,6 +175,9 @@ var item_definitions: Dictionary = {}
 
 func set_item_definitions(definitions: Dictionary) -> void:
     item_definitions = definitions
+
+func _on_unequip_button_pressed(hero_id: String, slot: String) -> void:
+    unequip_requested.emit(hero_id, slot)
 
 func _on_unequip_button_pressed(hero_id: String, slot: String) -> void:
     unequip_requested.emit(hero_id, slot)
