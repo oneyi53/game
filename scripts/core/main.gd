@@ -327,6 +327,7 @@ func _spawn_recruited_hero(hero_id: String) -> bool:
     if hero_data.is_empty() or captain == null:
         return false
     var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
+    var visual_offsets: Array = [Vector2.ZERO, Vector2(-105.0, 35.0), Vector2(105.0, 35.0), Vector2(0.0, 125.0), Vector2(-105.0, 145.0), Vector2(105.0, 145.0)]
     var index: int = heroes.size()
     var hero = HERO_SCENE.instantiate()
     hero.setup(hero_data, false)
