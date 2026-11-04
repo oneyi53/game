@@ -544,7 +544,10 @@ func _on_map_pressed() -> void:
     popup.add_item("苔冠空地", 1)
     popup.add_item("落叶幽谷", 2)
     popup.add_item("朝露林地", 3)
-    popup.id_pressed.connect(_on_map_selected)
+    popup.id_pressed.connect(func(map_index: int):
+        _on_map_selected(map_index)
+        popup.queue_free()
+    )
     add_child(popup)
     popup.popup_centered()
 
@@ -1206,11 +1209,18 @@ func _on_enemy_died(enemy) -> void:
 
 func _on_hero_died(hero) -> void:
     hud.show_message(str(hero.hero_name) + " 倒下了，3 秒后复活")
-    var respawn_pos: Vector2 = world_map_manager.spawn_position(active_map_id)
+    var death_map_id: String = active_map_id
+    var respawn_pos: Vector2 = world_map_manager.spawn_position(death_map_id)
     if hero != captain and captain != null:
         respawn_pos = captain.global_position + Vector2(0.0, 40.0)
     await get_tree().create_timer(3.0).timeout
-    if hero != null:
+    if hero != null and is_instance_valid(hero):
+        # If the player changed maps during the death delay, respawn
+        # with the party in the new map instead of using stale coordinates.
+        if hero.world_map_id != active_map_id:
+            respawn_pos = world_map_manager.spawn_position(active_map_id)
+        elif hero != captain and captain != null:
+            respawn_pos = captain.global_position + Vector2(0.0, 40.0)
         hero.world_map_id = active_map_id
         hero.respawn(WorldMapManagerScript.clamp_position(respawn_pos))
         if hero_panel.visible:
