@@ -171,3 +171,16 @@
 - 验证：Godot 4.7.2 导入/脚本解析、13 项地图/坐标回归测试、headless 启动通过（PR 分支 run 41820724625）；合并后 main 检查 run 41820854788 正在执行。
 - 未验收：Android 真机触控、竖屏投影画面比例、帧率、长时间战斗、真实旧存档升级和备份恢复。
 - 下一步：PR #32 合并后进行 Android 真机全流程验收，按设备画面调整镜头 zoom 与地图视觉尺寸。
+
+
+### 2026-11-04 — 《百炼英雄》截图拆解补充与系统状态校准
+
+- 分支：`docs/gameplay-ui-system-reference-2026-11-04`。
+- 基线：main 已合并 PR #31（旧坐标迁移）与 PR #32（四地图 2.5D 运行时整合）；PR #32 合并提交 `05ae26f4961a4d2f0b26cf243963b305dce61a60`。
+- 修改文件：`docs/BAILIAN_HERO_REFERENCE_STUDY.md`、`docs/PROJECT_STATUS.md`、`docs/CHANGELOG.md`。
+- 变更说明：补充主城建筑入口、英雄收藏/编队、战力计算、任务活跃度、红点派生、弹窗视觉规范及 H5 技术线索到 Godot 模块的映射；按当前 main 代码区分已实现与待开发。
+- 数据/存档兼容性：仅文档变更，不修改游戏数据、存档字段、schema_version 或运行时代码。
+- 验证环境：GitHub 仓库 main 文件静态核对；检查 `WorldMapManager`、`WorldProjection`、`Main`、`Hero`、`SaveManager` 与现有竞品研究文档。
+- 验证结果：文档静态核对；无 Godot 运行测试（本次未改运行时代码）。
+- 已知问题：英雄编队编辑、统一战力评分、建筑实体入口、红点系统和日常活跃度奖励仍需独立实现；Android 真机验收仍未完成。
+- 下一步：先完成 PR #32 的 Android 真机验收，再按编队/战力、建筑入口、任务红点顺序开发。
