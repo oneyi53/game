@@ -83,6 +83,13 @@ func reset_to_base_stats() -> void:
     attack_speed_pct = 0
     scan_interval = 0.25
 
+func apply_camp_bonus(attack_pct: float, hp_pct: float) -> void:
+    # Camp bonuses are applied after level growth and equipment, never compounded.
+    attack = int(round(float(attack) * (1.0 + attack_pct / 100.0)))
+    max_hp = int(round(float(max_hp) * (1.0 + hp_pct / 100.0)))
+    hp = max_hp
+    queue_redraw()
+
 func apply_equipment_bonus(bonus: Dictionary) -> void:
     max_hp = int(round(float(max_hp) * (1.0 + float(bonus.get("hp_pct", 0)) / 100.0)))
     hp = max_hp
