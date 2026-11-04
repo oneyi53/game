@@ -79,6 +79,17 @@ jobs:
           fi
           grep -q "Reserve hero equipment tests: 4 passed" reserve-hero-equipment-tests.log
 
+      - name: Run hero power calculator tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_hero_power_calculator.gd 2>&1 | tee hero-power-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' hero-power-tests.log; then
+            echo "Hero power tests reported errors."
+            exit 1
+          fi
+          grep -q "Hero power calculator tests: 3 passed" hero-power-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -100,4 +111,5 @@ jobs:
             world-save-migration-tests.log
             hero-formation-tests.log
             reserve-hero-equipment-tests.log
+            hero-power-tests.log
           if-no-files-found: ignore
