@@ -1,7 +1,7 @@
 class_name Boss
 extends CharacterBody2D
 
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
 
 # Boss. Two phases: below half health it moves faster, hits harder
@@ -174,7 +174,7 @@ const BOSS_TEXTURES := {
 func _draw() -> void:
     if dead:
         return
-    var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    var offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
     if telegraph_active:
         draw_set_transform(offset, 0.0, Vector2(0.7071068, 0.3535534))
         draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.22))
