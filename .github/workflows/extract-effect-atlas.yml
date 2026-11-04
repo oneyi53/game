@@ -80,7 +80,7 @@ jobs:
                   for xx in range(x, x+cell_w, 16):
                       if ((xx-x)//16 + (yy-y)//16) % 2 == 0:
                           draw.rectangle((xx, yy, xx+15, yy+15), fill=(58, 63, 72, 255))
-              im = Image.open(crops / rec["file"]).convert("RGBA")
+              im = Image.open(crops / Path(rec["file"]).name).convert("RGBA")
               im.thumbnail((cell_w-20, cell_h-42), Image.Resampling.LANCZOS)
               sheet.alpha_composite(im, (x+(cell_w-im.width)//2, y+5+(cell_h-42-im.height)//2))
               draw.text((x+8, y+cell_h-30), f'{rec["id"]}  {rec["size"][0]}x{rec["size"][1]}', fill=(255,255,255,255))
