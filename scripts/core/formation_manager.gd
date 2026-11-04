@@ -3,10 +3,9 @@ extends RefCounted
 
 # Pure party-formation state. RecruitmentManager remains the source
 # of truth for ownership; this class only controls who is deployed.
-# Runtime spawning/UI integration is intentionally a later step.
+# The first active hero is the current leader; leadership is replaceable.
 
 const DEFAULT_MAX_PARTY_SIZE: int = 4
-const CAPTAIN_ID: String = "captain"
 
 var max_party_size: int = DEFAULT_MAX_PARTY_SIZE
 var owned_ids: Array[String] = []
@@ -25,9 +24,10 @@ func configure(p_owned_ids: Array, p_saved_data = null, p_legacy_active_ids: Arr
             continue
         seen_owned[hero_id] = true
         owned_ids.append(hero_id)
-    if not seen_owned.has(CAPTAIN_ID):
-        error_message = "编队初始化失败：未拥有队长"
+    if owned_ids.is_empty():
+        error_message = "编队初始化失败：没有已拥有的英雄"
         return false
+
     var requested: Array = []
     if p_saved_data is Dictionary and p_saved_data.has("active_ids"):
         var saved_ids = p_saved_data["active_ids"]
@@ -39,6 +39,7 @@ func configure(p_owned_ids: Array, p_saved_data = null, p_legacy_active_ids: Arr
         requested = p_legacy_active_ids
     else:
         requested = owned_ids.duplicate()
+
     var seen_active: Dictionary = {}
     for value in requested:
         var hero_id: String = str(value)
@@ -48,10 +49,8 @@ func configure(p_owned_ids: Array, p_saved_data = null, p_legacy_active_ids: Arr
             break
         seen_active[hero_id] = true
         active_ids.append(hero_id)
-    active_ids.erase(CAPTAIN_ID)
-    active_ids.push_front(CAPTAIN_ID)
-    if active_ids.size() > max_party_size:
-        active_ids.resize(max_party_size)
+    if active_ids.is_empty():
+        active_ids.append(owned_ids[0])
     return true
 
 func add_to_party(hero_id: String) -> bool:
@@ -61,15 +60,30 @@ func add_to_party(hero_id: String) -> bool:
     return true
 
 func remove_from_party(hero_id: String) -> bool:
-    if hero_id == CAPTAIN_ID or not active_ids.has(hero_id):
+    if not active_ids.has(hero_id) or active_ids.size() <= 1:
         return false
     active_ids.erase(hero_id)
+    return true
+
+# Promote an active or reserve hero. If the party is full, the previous
+# leader moves to reserve automatically rather than increasing party size.
+func set_leader(hero_id: String) -> bool:
+    if not owned_ids.has(hero_id):
+        return false
+    if active_ids.has(hero_id):
+        active_ids.erase(hero_id)
+        active_ids.push_front(hero_id)
+        return true
+    if active_ids.size() >= max_party_size:
+        active_ids[0] = hero_id
+    else:
+        active_ids.push_front(hero_id)
     return true
 
 func swap_slots(first_index: int, second_index: int) -> bool:
     if first_index < 0 or second_index < 0 or first_index >= active_ids.size() or second_index >= active_ids.size():
         return false
-    if first_index == second_index or first_index == 0 or second_index == 0:
+    if first_index == second_index:
         return false
     var temp: String = active_ids[first_index]
     active_ids[first_index] = active_ids[second_index]
@@ -78,6 +92,9 @@ func swap_slots(first_index: int, second_index: int) -> bool:
 
 func is_active(hero_id: String) -> bool:
     return active_ids.has(hero_id)
+
+func is_leader(hero_id: String) -> bool:
+    return not active_ids.is_empty() and active_ids[0] == hero_id
 
 func available_ids() -> Array[String]:
     var result: Array[String] = []
@@ -90,7 +107,7 @@ func save_data() -> Dictionary:
     return {"active_ids": active_ids.duplicate()}
 
 func validate() -> bool:
-    if active_ids.is_empty() or active_ids[0] != CAPTAIN_ID or active_ids.size() > max_party_size:
+    if active_ids.is_empty() or active_ids.size() > max_party_size:
         return false
     var seen: Dictionary = {}
     for hero_id in active_ids:
