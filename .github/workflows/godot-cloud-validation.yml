@@ -46,7 +46,7 @@ jobs:
             exit 1
           fi
 
-      - name: Run world save migration tests
+      - name: Run world coordinate regression tests
         shell: bash
         run: |
           set -o pipefail
@@ -55,7 +55,7 @@ jobs:
             echo "World save migration tests reported errors."
             exit 1
           fi
-          grep -q "World save migration tests: 8 passed" world-save-migration-tests.log
+          grep -q "World coordinate tests: 12 passed" world-save-migration-tests.log
 
       - name: Run headless project smoke test
         shell: bash
