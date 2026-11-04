@@ -1,7 +1,7 @@
 # 远程分支总目录
 
 > 核对时间：2026-11-04。仓库：oneyi53/game。初始快照共 42 条；后续 PR #31/#32 新增两条开发分支，盘点基数至少 44 条。
-> 唯一正式主线：main；当前 HEAD 05ae26f4961a4d2f0b26cf243963b305dce61a60。
+> 唯一正式主线：main；最近玩法整合提交 05ae26f4961a4d2f0b26cf243963b305dce61a60（后续文档同步可能更新 main HEAD）。
 > 分支存在不代表已合并；PR 合并状态以 GitHub merged_at 为准。
 
 ## 使用规则
@@ -15,7 +15,7 @@
 ## 当前主线与开放 PR
 | 分支 | 状态 | 用途 |
 |---|---|---|
-| main | 唯一正式主线 | HEAD 05ae26f4961a4d2f0b26cf243963b305dce61a60 |
+| main | 唯一正式主线 | 玩法基线 05ae26f4961a4d2f0b26cf243963b305dce61a60 |
 | ci/godot-cloud-validation-2026-11-04 | PR #9 开放 | Godot 4.7.2 云端验证工作流 |
 | docs/local-code-audit-2026-11-04 | PR #6 开放 | 本地代码审查文档 |
 | feat/equipment-art-ui-2026-11-04 | PR #18 开放 | 装备美术 UI 接入候选 |
