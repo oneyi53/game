@@ -256,7 +256,9 @@ func use_skill() -> bool:
             continue
         if bool(enemy.get("dead")):
             continue
-        if global_position.distance_to(enemy.global_position) <= 140.0:
+        if str(enemy.get_meta("world_map_id", "")) != world_map_id:
+            continue
+        if global_position.distance_to(enemy.global_position) <= 140.0
             if enemy.has_method("take_damage"):
                 enemy.take_damage(attack * 2)
     return true
