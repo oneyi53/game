@@ -124,6 +124,17 @@ jobs:
           fi
           grep -q "Red dot indicator tests: 6 passed" red-dot-indicator-tests.log
 
+      - name: Run red dot service tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_red_dot_service.gd 2>&1 | tee red-dot-service-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' red-dot-service-tests.log; then
+            echo "Red dot service tests reported errors."
+            exit 1
+          fi
+          grep -q "Red dot service tests: 10 passed" red-dot-service-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -149,4 +160,5 @@ jobs:
             town-building-tests.log
             quest-manager-tests.log
             red-dot-indicator-tests.log
+            red-dot-service-tests.log
           if-no-files-found: ignore
