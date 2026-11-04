@@ -1,9 +1,8 @@
 class_name EquipPanel
 extends Control
 
-# Set swapping remains atomic; the original six-piece PNGs are now
-# displayed in each set card so all available equipment art is visible.
 signal swap_requested(hero_id, set_id)
+signal unequip_requested(hero_id, slot)
 
 @onready var panel_label: RichTextLabel = $PanelLabel
 
@@ -36,6 +35,7 @@ const SET_PIECE_TEXTURES := {
 
 var heroes: Array = []
 var manager: EquipmentManager = null
+var item_definitions: Dictionary = {}
 var lines: Array = []
 var dynamic_mode: bool = false
 var scroll: ScrollContainer = null
@@ -48,6 +48,10 @@ func set_data(p_heroes: Array, p_manager: EquipmentManager) -> void:
     if panel_label != null:
         panel_label.visible = false
     _ensure_dynamic()
+    rebuild()
+
+func set_item_definitions(definitions: Dictionary) -> void:
+    item_definitions = definitions
     rebuild()
 
 func set_lines(p_lines: Array) -> void:
@@ -92,34 +96,58 @@ func rebuild() -> void:
             continue
         var hero_id: String = str(hero.hero_id)
         var current: String = manager.equipped_set_id_for_hero(hero_id)
-        var row_label: Label = Label.new()
-        row_label.text = str(hero.hero_name) + ("：未穿戴套装" if current == "" else "：" + manager.set_name(current) + " 6 件")
+        var counts: Dictionary = manager.set_counts_for_hero(hero_id)
+        var current_count: int = int(counts.get(current, 0))
+        var row_label := Label.new()
+        row_label.text = str(hero.hero_name) + ("：未穿戴套装" if current == "" else "：" + manager.set_name(current) + " " + str(current_count) + "/6 件套装部件")
         list_box.add_child(row_label)
-        var sets_row: HBoxContainer = HBoxContainer.new()
+
+        var worn: Dictionary = manager.loose_equipped_for_hero(hero_id)
+        var slot_names: Dictionary = {"weapon": "武器", "chest": "护甲", "gloves": "护腕", "boots": "鞋子", "offhand": "副手"}
+        for slot_value in ["weapon", "chest", "gloves", "boots", "offhand"]:
+            var slot: String = str(slot_value)
+            var gear_row := HBoxContainer.new()
+            gear_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+            var gear_label := Label.new()
+            var item_id: String = str(worn.get(slot, ""))
+            var item_entry: Dictionary = item_definitions.get(item_id, {})
+            gear_label.text = str(slot_names[slot]) + "：" + ("未穿戴" if item_id == "" else str(item_entry.get("name", item_id)))
+            gear_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+            gear_row.add_child(gear_label)
+            if item_id != "":
+                var remove_button := Button.new()
+                remove_button.text = "卸下"
+                remove_button.pressed.connect(_on_unequip_button_pressed.bind(hero_id, slot))
+                gear_row.add_child(remove_button)
+            list_box.add_child(gear_row)
+
+        var sets_row := HBoxContainer.new()
         sets_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         list_box.add_child(sets_row)
         for set_value in manager.set_ids():
             var set_id: String = str(set_value)
-            var card: VBoxContainer = VBoxContainer.new()
+            var card := VBoxContainer.new()
             card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
             sets_row.add_child(card)
-            var icons: HBoxContainer = HBoxContainer.new()
+            var icons := HBoxContainer.new()
             icons.add_theme_constant_override("separation", 1)
             card.add_child(icons)
-            var textures: Array = SET_PIECE_TEXTURES.get(set_id, [])
-            for texture in textures:
-                var icon: TextureRect = TextureRect.new()
+            for texture in SET_PIECE_TEXTURES.get(set_id, []):
+                var icon := TextureRect.new()
                 icon.texture = texture
                 icon.custom_minimum_size = Vector2(26.0, 26.0)
                 icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
                 icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
                 icons.add_child(icon)
-            var button: Button = Button.new()
+            var button := Button.new()
             button.text = manager.set_name(set_id)
             button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
             button.disabled = (set_id == current)
             button.pressed.connect(_on_set_button_pressed.bind(hero_id, set_id))
             card.add_child(button)
+
+func _on_unequip_button_pressed(hero_id: String, slot: String) -> void:
+    unequip_requested.emit(hero_id, slot)
 
 func _on_set_button_pressed(hero_id: String, set_id: String) -> void:
     swap_requested.emit(hero_id, set_id)

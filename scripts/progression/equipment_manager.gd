@@ -24,6 +24,15 @@ const PRESET_EQUIPPED: Dictionary = {
 var error_message: String = ""
 var sets: Dictionary = {}
 var equipped: Dictionary = {}
+var loose_equipped: Dictionary = {}
+const LOOSE_SLOT_BY_ID: Dictionary = {
+    "worn_iron_sword": "weapon",
+    "rusty_dagger": "weapon",
+    "rough_cloth_armor": "chest",
+    "cracked_wooden_shield": "offhand",
+    "worn_leather_boots": "boots",
+    "vine_bracer": "gloves"
+}
 
 func load_sets() -> bool:
     var path: String = "res://data/equipment.json"
@@ -105,6 +114,59 @@ func load_equipped(saved) -> void:
         if sets.has(set_id):
             equip_set_for_hero(str(hero_id), set_id)
 
+func load_loose_equipped(saved, item_defs: Dictionary) -> void:
+    loose_equipped.clear()
+    if not (saved is Dictionary):
+        return
+    for hero_value in saved.keys():
+        var hero_id: String = str(hero_value)
+        var slots = saved[hero_value]
+        if not (slots is Dictionary):
+            continue
+        for slot_value in slots.keys():
+            var slot: String = str(slot_value)
+            var item_id: String = str(slots[slot_value])
+            if LOOSE_SLOT_BY_ID.get(item_id, "") != slot or not item_defs.has(item_id):
+                continue
+            if not loose_equipped.has(hero_id):
+                loose_equipped[hero_id] = {}
+            loose_equipped[hero_id][slot] = item_id
+
+func equip_loose_item(hero_id: String, item_id: String, item_defs: Dictionary) -> Dictionary:
+    var slot: String = str(LOOSE_SLOT_BY_ID.get(item_id, ""))
+    if slot == "" or not item_defs.has(item_id):
+        return {"ok": false, "replaced": ""}
+    if not loose_equipped.has(hero_id):
+        loose_equipped[hero_id] = {}
+    var replaced: String = str(loose_equipped[hero_id].get(slot, ""))
+    loose_equipped[hero_id][slot] = item_id
+    return {"ok": true, "slot": slot, "replaced": replaced}
+
+func unequip_loose_item(hero_id: String, slot: String) -> String:
+    if not loose_equipped.has(hero_id) or not loose_equipped[hero_id].has(slot):
+        return ""
+    var item_id: String = str(loose_equipped[hero_id][slot])
+    loose_equipped[hero_id].erase(slot)
+    if loose_equipped[hero_id].is_empty():
+        loose_equipped.erase(hero_id)
+    return item_id
+
+func loose_equipped_for_hero(hero_id: String) -> Dictionary:
+    return loose_equipped.get(hero_id, {}).duplicate()
+
+func save_loose_equipped() -> Dictionary:
+    return loose_equipped.duplicate(true)
+
+func loose_bonus_for_hero(hero_id: String, item_defs: Dictionary) -> Dictionary:
+    var total: Dictionary = {"attack": 0, "hp": 0, "defense": 0}
+    for item_id in loose_equipped_for_hero(hero_id).values():
+        var entry = item_defs.get(str(item_id), null)
+        if entry == null:
+            continue
+        for key in entry.get("stats", {}).keys():
+            total[str(key)] = int(total.get(str(key), 0)) + int(entry["stats"][key])
+    return total
+
 func save_equipped() -> Dictionary:
     var out: Dictionary = {}
     for hero_id in equipped.keys():
@@ -115,8 +177,11 @@ func set_counts_for_hero(hero_id: String) -> Dictionary:
     var counts: Dictionary = {}
     if not equipped.has(hero_id):
         return counts
-    for set_id in equipped[hero_id].values():
-        var key: String = str(set_id)
+    var loose_slots: Dictionary = loose_equipped_for_hero(hero_id)
+    for slot in equipped[hero_id].keys():
+        if loose_slots.has(str(slot)):
+            continue
+        var key: String = str(equipped[hero_id][slot])
         counts[key] = int(counts.get(key, 0)) + 1
     return counts
 

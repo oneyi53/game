@@ -5,6 +5,7 @@ extends Control
 # Decompose confirmation and mailbox claim behavior are unchanged.
 signal decompose_requested(index)
 signal claim_requested(index)
+signal equip_requested(index, hero_id)
 
 @onready var panel_label: RichTextLabel = $PanelLabel
 
@@ -18,12 +19,14 @@ const ITEM_TEXTURES := {
 }
 
 var manager: BackpackManager = null
+var heroes: Array = []
 var scroll: ScrollContainer = null
 var list_box: VBoxContainer = null
 var pending_decompose: int = -1
 
-func set_manager(p_manager: BackpackManager) -> void:
+func set_manager(p_manager: BackpackManager, p_heroes: Array = []) -> void:
     manager = p_manager
+    heroes = p_heroes
     if panel_label != null:
         panel_label.visible = false
     _ensure_dynamic()
@@ -81,6 +84,23 @@ func rebuild() -> void:
         if entry == null:
             continue
         list_box.add_child(_make_item_row(item_id, str(entry["name"]), manager.stats_text(item_id)))
+        var action_row := HBoxContainer.new()
+        action_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        var target := OptionButton.new()
+        target.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        for hero in heroes:
+            if hero != null:
+                target.add_item(str(hero.hero_name))
+                target.set_item_metadata(target.item_count - 1, str(hero.hero_id))
+        if target.item_count > 0:
+            target.select(0)
+        action_row.add_child(target)
+        var wear_button := Button.new()
+        wear_button.text = "穿戴"
+        wear_button.disabled = target.item_count == 0
+        wear_button.pressed.connect(_on_equip_button_pressed.bind(i, target))
+        action_row.add_child(wear_button)
+        list_box.add_child(action_row)
         var button: Button = Button.new()
         button.text = "确认分解？" if i == pending_decompose else "分解（+" + str(manager.decompose_gold) + " 金币）"
         button.pressed.connect(_on_decompose_button_pressed.bind(i))
@@ -111,3 +131,8 @@ func _on_decompose_button_pressed(index: int) -> void:
 
 func _on_claim_button_pressed(index: int) -> void:
     claim_requested.emit(index)
+
+func _on_equip_button_pressed(index: int, target: OptionButton) -> void:
+    if target == null or target.item_count == 0:
+        return
+    equip_requested.emit(index, str(target.get_item_metadata(target.selected)) )

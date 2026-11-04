@@ -11,12 +11,9 @@ extends RefCounted
 # moves the item into the backpack only when there is a free slot,
 # otherwise it stays in the mailbox with a HUD prompt. That claim
 # flow is this block's assumption, not an outline quote.
-# Loose items are single pieces: they never count toward any set,
-# never trigger set bonuses, and are never worn, upgraded or
-# combined in this block. They are only collected, viewed and
-# decomposed. Save field "backpack": {"items": [...], "mailbox": [...]}.
-# An old save without that field defaults to both lists empty.
-# Unknown ids in a save are ignored, never a crash.
+# Loose items remain outside set membership and set bonuses. Backpack storage
+# keeps only unequipped items; worn items are stored by EquipmentManager in
+# the optional "loose_equipment" save field. Unknown saved ids are ignored.
 
 var error_message: String = ""
 var backpack_cap: int = 250

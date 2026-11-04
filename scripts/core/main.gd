@@ -186,6 +186,7 @@ func _ready() -> void:
     elite_defeated = bool(save_data.get("elite_defeated", false))
     quest_manager.load_progress(save_data.get("quests", {}))
     equipment_manager.load_equipped(save_data.get("equipment", {}))
+    equipment_manager.load_loose_equipped(save_data.get("loose_equipment", {}), backpack_manager.items)
     # Fourth zone gate: only after the third-zone quest is done.
     # It reuses the saved quest completion, so no new save field is
     # needed; an old save without that quest entry defaults closed.
@@ -234,7 +235,8 @@ func _ready() -> void:
     recruit_panel.set_data(recruitment_manager, level_manager, data_loader.heroes)
     recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
     recruit_panel.visible = false
-    backpack_panel.set_manager(backpack_manager)
+    backpack_panel.set_manager(backpack_manager, heroes)
+    backpack_panel.equip_requested.connect(_on_backpack_equip)
     backpack_panel.decompose_requested.connect(_on_backpack_decompose)
     backpack_panel.claim_requested.connect(_on_backpack_claim)
     backpack_panel.visible = false
@@ -248,7 +250,9 @@ func _ready() -> void:
     hero_panel.set_heroes(heroes)
     hero_panel.visible = false
     equip_panel.set_data(heroes, equipment_manager)
+    equip_panel.set_item_definitions(backpack_manager.items)
     equip_panel.swap_requested.connect(_on_equip_swap)
+    equip_panel.unequip_requested.connect(_on_loose_unequip)
     equip_panel.visible = false
     offline_panel.visible = false
     if bool(pending_offline.get("eligible", false)):
@@ -719,6 +723,42 @@ func _on_backpack_panel_pressed() -> void:
     if backpack_panel.visible:
         backpack_panel.refresh()
 
+func _on_backpack_equip(index: int, hero_id: String) -> void:
+    if backpack_manager == null or equipment_manager == null or index < 0 or index >= backpack_manager.backpack.size():
+        hud.show_message("穿戴失败：未知散件")
+        return
+    var target_exists: bool = false
+    for party_hero in heroes:
+        if party_hero != null and party_hero.hero_id == hero_id:
+            target_exists = true
+            break
+    if not target_exists:
+        hud.show_message("穿戴失败：英雄不存在")
+        return
+    var item_id: String = str(backpack_manager.backpack[index])
+    var entry = backpack_manager.item(item_id)
+    if entry == null:
+        hud.show_message("穿戴失败：装备数据不存在")
+        return
+    var result: Dictionary = equipment_manager.equip_loose_item(hero_id, item_id, backpack_manager.items)
+    if not bool(result.get("ok", false)):
+        hud.show_message("穿戴失败：该散件没有对应装备槽")
+        return
+    backpack_manager.remove_at(index)
+    var replaced: String = str(result.get("replaced", ""))
+    if replaced != "":
+        backpack_manager.add(replaced)
+    for hero in heroes:
+        if hero != null and hero.hero_id == hero_id:
+            _rebuild_hero_stats(hero, true)
+            break
+    backpack_panel.refresh()
+    equip_panel.refresh()
+    if hero_panel.visible:
+        hero_panel.refresh()
+    hud.show_message("已为 " + str(entry["name"]) + " 穿戴 " + str(hero_id))
+    _save_game()
+
 func _on_backpack_decompose(index: int) -> void:
     if backpack_manager == null or index < 0 or index >= backpack_manager.backpack.size():
         hud.show_message("分解失败：未知散件")
@@ -768,6 +808,7 @@ func _rebuild_hero_stats(hero: Hero, preserve_hp_ratio: bool = true) -> void:
     var camp_attack_pct: float = 5.0 if camp_manager.is_built("blacksmith") else 0.0
     var camp_hp_pct: float = 8.0 if camp_manager.is_built("training_ground") else 0.0
     hero.apply_camp_bonus(camp_attack_pct, camp_hp_pct)
+    hero.apply_loose_equipment_bonus(equipment_manager.loose_bonus_for_hero(hero.hero_id, backpack_manager.items))
     if preserve_hp_ratio:
         hero.hp = clampi(int(round(hp_ratio * float(hero.max_hp))), 1, hero.max_hp)
     hero.queue_redraw()
@@ -873,6 +914,24 @@ func _on_quest_completed(quest_id: String, quest_name: String, complete_line: St
         hud.show_message("新英雄加入：" + hero_name + "！")
     _save_game()
 
+func _on_loose_unequip(hero_id: String, slot: String) -> void:
+    if equipment_manager == null or backpack_manager == null:
+        return
+    var item_id: String = equipment_manager.unequip_loose_item(hero_id, slot)
+    if item_id == "":
+        return
+    var destination: String = backpack_manager.add(item_id)
+    for hero in heroes:
+        if hero != null and hero.hero_id == hero_id:
+            _rebuild_hero_stats(hero, true)
+            break
+    equip_panel.refresh()
+    backpack_panel.refresh()
+    if hero_panel.visible:
+        hero_panel.refresh()
+    hud.show_message("已卸下装备" + ("，背包已满，已寄到邮箱" if destination == "mailbox" else ""))
+    _save_game()
+
 func _on_equip_swap(hero_id: String, set_id: String) -> void:
     if equipment_manager == null or not equipment_manager.equip_set_for_hero(hero_id, set_id):
         hud.show_message("换装失败：未知套装")
@@ -911,6 +970,7 @@ func _save_game() -> void:
         "levels": level_manager.save_data(),
         "quests": quest_manager.save_progress(),
         "equipment": equipment_manager.save_equipped(),
+        "loose_equipment": equipment_manager.save_loose_equipped(),
     }
     if not save_manager.save_game(data):
         hud.show_message("保存失败")
