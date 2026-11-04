@@ -600,7 +600,7 @@ func _on_teleport_panel_close() -> void:
 func _refresh_teleport_destinations() -> void:
     var destinations: Array[Dictionary] = [
         {"id": "camp", "name": "森林营地", "position": Vector2(800.0, 600.0), "unlocked": true, "hint": "冒险起点"},
-        {"id": "moss_crown", "name": "苔冠空地", "position": Vector2(600.0, 350.0), "unlocked": boss_defeated, "hint": "击败森林首领后开放"},
+        {"id": "moss_crown", "name": "苔冠空地", "position": Vector2(600.0, 260.0), "unlocked": boss_defeated, "hint": "击败森林首领后开放"},
         {"id": "fallen_leaf", "name": "落叶幽谷", "position": Vector2(680.0, 900.0), "unlocked": elite_defeated, "hint": "击败精英首领后开放"},
         {"id": "morning_dew", "name": "朝露林地", "position": Vector2(1200.0, 920.0), "unlocked": valley_quest_done, "hint": "完成落叶幽谷主线后开放"}
     ]
