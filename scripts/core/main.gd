@@ -1115,6 +1115,8 @@ func _on_recruit_synthesize(hero_id: String) -> void:
         _spawn_recruited_hero(hero_id)
     recruit_panel.refresh()
     hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager)
+    equip_panel.set_roster(formation_manager.owned_ids, data_loader.heroes, equipment_manager, heroes)
+    backpack_panel.set_hero_roster(formation_manager.owned_ids, data_loader.heroes)
     if deployed:
         hud.show_message("新英雄加入并上阵：" + hero_name + "！")
     else:
