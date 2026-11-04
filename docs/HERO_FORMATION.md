@@ -12,15 +12,14 @@
 
 存档可选字段：
 
-- `formation.max_party_size`：队伍上限，默认 4。
 - `formation.active_ids`：按槽位顺序排列的已拥有英雄 ID 数组；第一个必须是 `captain`。
+- 队伍上限由代码中的 `DEFAULT_MAX_PARTY_SIZE` 配置，当前为 4，不从存档读取。
 
 示例：
 
 ```json
 {
   "formation": {
-    "max_party_size": 4,
     "active_ids": ["captain", "archer", "guardian", "healer"]
   }
 }
