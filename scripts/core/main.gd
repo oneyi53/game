@@ -727,7 +727,12 @@ func _on_backpack_equip(index: int, hero_id: String) -> void:
     if backpack_manager == null or equipment_manager == null or index < 0 or index >= backpack_manager.backpack.size():
         hud.show_message("穿戴失败：未知散件")
         return
-    if not heroes.any(func(hero): return hero != null and hero.hero_id == hero_id):
+    var target_exists: bool = false
+    for party_hero in heroes:
+        if party_hero != null and party_hero.hero_id == hero_id:
+            target_exists = true
+            break
+    if not target_exists:
         hud.show_message("穿戴失败：英雄不存在")
         return
     var item_id: String = str(backpack_manager.backpack[index])
