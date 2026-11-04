@@ -1,20 +1,21 @@
 class_name BackpackPanel
 extends Control
 
-# Backpack panel, reusing the EquipPanel / CampPanel dynamic-list
-# pattern and the same panel background / label style. One row per
-# backpack item (name, stats, decompose button); a mailbox section
-# below it, one claim button per overflow item. Loose items are
-# never worn here: there is no equip button in this block.
-# Decompose asks for confirmation in place: the first tap turns
-# that row's button into "确认分解？", the second tap emits
-# decompose_requested. Main checks the index, removes the item,
-# grants decompose_gold and saves.
-
+# Backpack panel: loose equipment now uses its original item PNG icon.
+# Decompose confirmation and mailbox claim behavior are unchanged.
 signal decompose_requested(index)
 signal claim_requested(index)
 
 @onready var panel_label: RichTextLabel = $PanelLabel
+
+const ITEM_TEXTURES := {
+    "worn_iron_sword": preload("res://assets/art-v1/sprites/equipment/worn_iron_sword.png"),
+    "rough_cloth_armor": preload("res://assets/art-v1/sprites/equipment/rough_cloth_armor.png"),
+    "cracked_wooden_shield": preload("res://assets/art-v1/sprites/equipment/cracked_wooden_shield.png"),
+    "worn_leather_boots": preload("res://assets/art-v1/sprites/equipment/worn_leather_boots.png"),
+    "rusty_dagger": preload("res://assets/art-v1/sprites/equipment/rusty_dagger.png"),
+    "vine_bracer": preload("res://assets/art-v1/sprites/equipment/vine_bracer.png")
+}
 
 var manager: BackpackManager = null
 var scroll: ScrollContainer = null
@@ -42,6 +43,24 @@ func _ensure_dynamic() -> void:
     list_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     scroll.add_child(list_box)
 
+func _make_item_row(item_id: String, item_name: String, stats: String) -> HBoxContainer:
+    var row := HBoxContainer.new()
+    row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    row.add_theme_constant_override("separation", 8)
+    var icon := TextureRect.new()
+    icon.texture = ITEM_TEXTURES.get(item_id)
+    icon.custom_minimum_size = Vector2(48.0, 48.0)
+    icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    row.add_child(icon)
+    var label := Label.new()
+    label.text = item_name + "（" + stats + "）"
+    label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    row.add_child(label)
+    return row
+
 func rebuild() -> void:
     if manager == null or list_box == null:
         return
@@ -61,15 +80,9 @@ func rebuild() -> void:
         var entry = manager.item(item_id)
         if entry == null:
             continue
-        var label: Label = Label.new()
-        label.text = str(entry["name"]) + "（" + manager.stats_text(item_id) + "）"
-        label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        list_box.add_child(label)
+        list_box.add_child(_make_item_row(item_id, str(entry["name"]), manager.stats_text(item_id)))
         var button: Button = Button.new()
-        if i == pending_decompose:
-            button.text = "确认分解？"
-        else:
-            button.text = "分解（+" + str(manager.decompose_gold) + " 金币）"
+        button.text = "确认分解？" if i == pending_decompose else "分解（+" + str(manager.decompose_gold) + " 金币）"
         button.pressed.connect(_on_decompose_button_pressed.bind(i))
         list_box.add_child(button)
     if not manager.mailbox.is_empty():
@@ -82,10 +95,7 @@ func rebuild() -> void:
             var entry = manager.item(item_id)
             if entry == null:
                 continue
-            var label: Label = Label.new()
-            label.text = str(entry["name"]) + "（" + manager.stats_text(item_id) + "）"
-            label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-            list_box.add_child(label)
+            list_box.add_child(_make_item_row(item_id, str(entry["name"]), manager.stats_text(item_id)))
             var button: Button = Button.new()
             button.text = "领取到背包"
             button.pressed.connect(_on_claim_button_pressed.bind(i))
