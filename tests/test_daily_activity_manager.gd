@@ -19,7 +19,8 @@ func _initialize() -> void:
     _test_clock_rollback_is_rejected()
     _test_stage_claim_requires_unlock_and_successful_grant()
     _test_snapshot_is_detached_from_internal_state()
-    print("Daily activity manager tests: 14 passed")
+    _test_failed_reinitialize_preserves_live_configuration()
+    print("Daily activity manager tests: 15 passed")
     quit()
 
 func _task_definitions() -> Array:
@@ -181,3 +182,18 @@ func _test_snapshot_is_detached_from_internal_state() -> void:
     var task_copy: Dictionary = snapshot["tasks"]["slime_hunt"]
     task_copy["progress"] = 99
     assert(manager.get_snapshot()["tasks"]["slime_hunt"]["progress"] == 0)
+
+func _test_failed_reinitialize_preserves_live_configuration() -> void:
+    var manager = _new_manager()
+    manager.record_event("enemy_killed", "atomic-reload-kill", {"enemy_id": "slime"})
+    var before: Dictionary = manager.get_snapshot()
+    assert(not manager.initialize(
+        [{"id": "invalid", "event_type": "kill", "target_count": 0, "points": 1}],
+        [],
+        "2026-11-05"
+    ))
+    var after: Dictionary = manager.get_snapshot()
+    assert(after["day_key"] == before["day_key"])
+    assert(after["tasks"].size() == before["tasks"].size())
+    assert(after["tasks"]["slime_hunt"]["progress"] == 1)
+    assert(after["activity_points"] == before["activity_points"])
