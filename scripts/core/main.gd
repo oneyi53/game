@@ -701,6 +701,7 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
         if hero == null or not is_instance_valid(hero):
             continue
         hero.move_input = Vector2.ZERO
+        hero.velocity = Vector2.ZERO
         hero.global_position = destination + hero.formation_offset
     camera.position = destination
     _close_teleport_panel()
