@@ -31,7 +31,7 @@ static func projected_position(building_id: String) -> Vector2:
 
 static func hit_test(projected_position_value: Vector2) -> String:
     for item in BUILDINGS:
-        var center: Vector2 = Projection.world_to_screen(item["world_position"])
+        var center: Vector2 = WorldProjectionScript.world_to_screen(item["world_position"])
         if projected_position_value.distance_to(center) <= 46.0:
             return str(item["id"])
     return ""
