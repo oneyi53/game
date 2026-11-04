@@ -161,29 +161,25 @@ func take_damage(amount: int) -> void:
         died.emit(self)
         queue_free()
 
+const BOSS_TEXTURES := {
+    "boss_tree": preload("res://assets/art-v1/sprites/bosses/boss_tree.png"),
+    "boss_thorn": preload("res://assets/art-v1/sprites/bosses/boss_thorn.png")
+}
+
 func _draw() -> void:
     if dead:
         return
     if telegraph_active:
         draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.25))
-    # Visual only: body radius, telegraph radius, hp bar and all
-    # stats are unchanged. Phase 2 only brightens the leaf crown.
-    draw_circle(Vector2.ZERO, 28.0, boss_color)
-    var leaf: Color = Color(0.6, 0.95, 0.4) if phase >= 2 else Color(0.6, 0.9, 0.4)
-    draw_circle(Vector2(0.0, -8.0), 8.0, leaf)
-    if enemy_id == "boss_tree":
-        # Leaf crown: broad canopy circles + branch arms.
-        draw_circle(Vector2(-16.0, -18.0), 10.0, leaf)
-        draw_circle(Vector2(16.0, -18.0), 10.0, leaf)
-        draw_circle(Vector2(0.0, -26.0), 11.0, leaf)
-        draw_line(Vector2(-24.0, 2.0), Vector2(-34.0, -6.0), Color(0.4, 0.3, 0.15), 3.0)
-        draw_line(Vector2(24.0, 2.0), Vector2(34.0, -6.0), Color(0.4, 0.3, 0.15), 3.0)
-    elif enemy_id == "boss_thorn":
-        # Thorn king: moss-green + stone-brown patches, thorn spikes.
-        draw_circle(Vector2(-10.0, -12.0), 5.0, Color(0.5, 0.65, 0.4))
-        draw_circle(Vector2(12.0, 8.0), 5.0, Color(0.55, 0.45, 0.3))
-        draw_line(Vector2(-22.0, -10.0), Vector2(-30.0, -16.0), Color(0.2, 0.55, 0.3), 2.0)
-        draw_line(Vector2(22.0, -10.0), Vector2(30.0, -16.0), Color(0.2, 0.55, 0.3), 2.0)
-    draw_rect(Rect2(-30.0, -44.0, 60.0, 7.0), Color.BLACK)
-    var fill: float = 60.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-30.0, -44.0, fill, 7.0), Color(0.9, 0.2, 0.2))
+    draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 34.0, Color(0.04, 0.12, 0.05, 0.3))
+    draw_set_transform(Vector2.ZERO)
+    var texture: Texture2D = BOSS_TEXTURES.get(enemy_id)
+    if texture != null:
+        draw_texture_rect(texture, Rect2(-66.0, -132.0, 132.0, 132.0), false)
+    else:
+        draw_circle(Vector2.ZERO, 28.0, boss_color)
+    draw_rect(Rect2(-34.0, -143.0, 68.0, 7.0), Color.BLACK)
+    var fill: float = 68.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    var phase_color: Color = Color(1.0, 0.62, 0.18) if phase >= 2 else Color(0.9, 0.2, 0.2)
+    draw_rect(Rect2(-34.0, -143.0, fill, 7.0), phase_color)
