@@ -1,6 +1,9 @@
 class_name Boss
 extends CharacterBody2D
 
+const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
+
 # Boss. Two phases: below half health it moves faster, hits harder
 # and telegraphs more often. Every telegraph shows a red ground circle
 # for 0.8 s before damage lands. If the boss is pulled farther than
@@ -74,6 +77,7 @@ func _physics_process(delta: float) -> void:
         else:
             velocity = back_diff.normalized() * move_speed
             move_and_slide()
+            global_position = WorldMaps.clamp_position(global_position)
         return
     if global_position.distance_to(spawn_position) > leash_range:
         returning = true
@@ -104,8 +108,7 @@ func _physics_process(delta: float) -> void:
             attack_timer = attack_cooldown
             if target_hero.has_method("take_damage"):
                 target_hero.take_damage(_effective_attack())
-    global_position.x = clamp(global_position.x, 20.0, 1580.0)
-    global_position.y = clamp(global_position.y, 20.0, 1180.0)
+    global_position = WorldMaps.clamp_position(global_position)
 
 func _update_telegraph(delta: float) -> void:
     if telegraph_active:
@@ -143,6 +146,8 @@ func _retarget() -> void:
             continue
         if bool(hero.get("dead")):
             continue
+        if str(hero.get("world_map_id")) != str(get_meta("world_map_id", WorldMaps.MOSS_CROWN)):
+            continue
         var dist: float = global_position.distance_to(hero.global_position)
         if dist <= best_dist:
             best_dist = dist
@@ -169,17 +174,23 @@ const BOSS_TEXTURES := {
 func _draw() -> void:
     if dead:
         return
+    var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
     if telegraph_active:
-        draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.25))
-    draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.42))
-    draw_circle(Vector2.ZERO, 34.0, Color(0.04, 0.12, 0.05, 0.3))
-    draw_set_transform(Vector2.ZERO)
+        draw_set_transform(offset, 0.0, Vector2(0.7071068, 0.3535534))
+        draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.22))
+        draw_arc(Vector2.ZERO, 95.0, 0.0, TAU, 48, Color(1.0, 0.12, 0.12, 0.95), 3.0, true)
+        for angle_step in range(8):
+            var angle: float = TAU * float(angle_step) / 8.0
+            draw_line(Vector2.ZERO, Vector2(cos(angle), sin(angle)) * 95.0, Color(1.0, 0.18, 0.18, 0.65), 1.5, true)
+    draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 27.0, Color(0.05, 0.18, 0.05, 0.3))
+    draw_set_transform(offset)
     var texture: Texture2D = BOSS_TEXTURES.get(enemy_id)
     if texture != null:
-        draw_texture_rect(texture, Rect2(-66.0, -132.0, 132.0, 132.0), false)
+        draw_texture_rect(texture, Rect2(-96.0, -180.0, 192.0, 192.0), false)
     else:
         draw_circle(Vector2.ZERO, 28.0, boss_color)
-    draw_rect(Rect2(-34.0, -143.0, 68.0, 7.0), Color.BLACK)
-    var fill: float = 68.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    var phase_color: Color = Color(1.0, 0.62, 0.18) if phase >= 2 else Color(0.9, 0.2, 0.2)
-    draw_rect(Rect2(-34.0, -143.0, fill, 7.0), phase_color)
+    draw_rect(Rect2(-42.0, -218.0, 84.0, 9.0), Color(0.04, 0.04, 0.04, 0.98))
+    var fill: float = 84.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    var phase_color: Color = Color(0.98, 0.62, 0.18) if phase >= 2 else Color(0.95, 0.2, 0.18)
+    draw_rect(Rect2(-42.0, -218.0, fill, 9.0), phase_color)
