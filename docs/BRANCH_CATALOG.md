@@ -79,3 +79,52 @@
 2. PR #29 虽已合并且 CI 通过，移动端触控、渲染、帧率与真实存档回归仍未验收。
 3. 森林五个传送点目前仍是同一连续地图内快速移动，不等于独立场景切换。
 4. 美术 PNG 已归档在 assets/art-v1/；避免从旧分支重复搬运已存在素材。
+
+## 远程分支 HEAD SHA 快照
+
+> 除正在更新的 PR #30 分支外，以下 SHA 为本次最初读取远程分支列表时的 HEAD；PR #30 分支记录为本目录整理后的最新提交。后续使用前应重新读取远程 refs。
+
+| 分支 | HEAD SHA |
+|---|---|
+| chore/consolidate-art-assets-2026-11-04 | `fdb30a27130a44d5f1ce3d6ddb9b90b47b9a0dab` |
+| ci/godot-cloud-validation-2026-11-04 | `4b1a3c358ee35208dea86551e963813846c4cf33` |
+| content/area2-dialogues | `cb286b9548cf05f0b3ecdadbe402beecd1335fec` |
+| content/area3-dialogues | `03a9c55da5631815362a5b247ee65a68968eb1ea` |
+| content/area4-dialogues | `af95bab873d32b1c793567d3b4791a5ff270ac77` |
+| content/chat-art-apk-batch | `dbe4e37224164ad790c294ffb595a0304460a779` |
+| content/m1-dialogues | `30b32a422261332ea6bfa1fccb389e016404fc51` |
+| content/m1-text-draft | `6b8241e09ae8137bb26c216eeee48bf34b1f6c05` |
+| content/next-chat-batch | `1e79d4593c0b59f571fcc01163c901c0c60c2e19` |
+| content/system-draft | `2be3b92d6706ac61b63bb9a3af2d59ea83c20049` |
+| docs/audit-merge-sync | `a8da261a09ea36fdb20226b2f64389acf0d58dff` |
+| docs/baillian-reference-study-2026-11-04 | `0527b99c06d512fd7c69b780c46c381e1e4ee07b` |
+| docs/branch-audit | `50e3fdbccb44030b0c4b2b564f2884f20bf1de71` |
+| docs/handoff-sync | `0a2b1a156595cb30f3de2fd5c7c40ae23a8b0e88` |
+| docs/local-code-audit-2026-11-04 | `e19dff60a7759e20eb65cd0dbe19fc612dd3f5c5` |
+| docs/project-governance | `81136b99a5bfc97b1a9f6a0343f70d050b5b03c0` |
+| docs/update-development-records-2026-11-04 | `e477347115dde1a73203dc7438bcdeefadd0b253` |
+| docs/verify-loose-equipment-merge-2026-11-04 | `396acf8f828d30286c7d988d4d6824dfe995daa6` |
+| feat/backpack-equipment-icons-2026-11-04 | `a9848d14cfd5a262f64ce9526aafcbdccadef955` |
+| feat/backpack-item-art-2026-11-04 | `68f6e399348cef4d110e0142f55347d48105a395` |
+| feat/camp-building-party-bonuses | `33b829fbd202a5349d8df4f3385dd0abd83a79b7` |
+| feat/campfire-fast-travel-2026-11-04 | `b2522ef36b0e9f7ab99a829b4e59149a1956d159` |
+| feat/campfire-fast-travel-v2-2026-11-04 | `e17abf761e00b5ce1c051f62f95877f319ad06fb` |
+| feat/complete-art-asset-integration-2026-11-04 | `5b2ede9040d8bbfeae85c41dbe0ef0e0521326dd` |
+| feat/consolidate-existing-art-2026-11-04 | `64ab9b3feec0cd69b194b3da506edefb57cf83f2` |
+| feat/equipment-art-ui-2026-11-04 | `d7b4aeda5b2590b31f961bf015f70ef2693c1de0` |
+| feat/floating-joystick-fullscreen-2026-11-04 | `c197091777cb01b4de2d0938964f4fb7f0d0f4f8` |
+| feat/forest-obstacle-collision-2026-11-04 | `d434069b2035ddd95e4ac2a86f9ec03b01f9e14e` |
+| feat/forest-scene-art-2026-11-04 | `2bc4f151c65ebcb3b037a9a668103cad25e06842` |
+| feat/hero-world-2.5d-boss-p0 | `bf01d75a3ab5fea5ab235de06351a75421c6cd91` |
+| feat/hero-world-art-integration | `dd98b496750c4bbae0930a54c85b58bd27eaee07` |
+| feat/loose-equipment-wearable-loop-2026-11-04 | `ea4d925af8de299276a97ac90d80e4bac3790d06` |
+| feat/original-atlas-skill-vfx-2026-11-04 | `3b0e25d964b6653445d2efb4a98918816c7d4a68` |
+| feat/progression-fast-travel-destinations-2026-11-04 | `6cac863f24dc21c586b5e39de7953b7bec3416d0` |
+| feat/sprite-art-pass-2026-11-04 | `22e348500001c277ace54ad4fb4ea5f54b5518e8` |
+| fix/android-apk-build | `b91d8ff8a7b13329f6cd056c5ce4c0581089ab7b` |
+| fix/core-save-recruitment-2026-11-04 | `2cb9104068a62ae5f258656f43ca3db86c4f312b` |
+| fix/fullscreen-floating-joystick-2026-11-04 | `5ae2eef6dbf494dd40891f56b660c46099ec37ad` |
+| fix/mutually-exclusive-ui-panels-2026-11-04 | `1966912ee7a56edc264b73a5ceeb6563f5840da8` |
+| main | `598216e6f67611b0f3db452718b4aa7cdf57ebb2` |
+| tools/effect-atlas-components-2026-11-04 | `859cd5c2c579ce31fbecfb4297200eab4f68224d` |
+| tools/inspect-effect-atlas-2026-11-04 | `f834d5c6d0900015c0702e4dbc580864ab15c5cb` |
