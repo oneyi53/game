@@ -63,7 +63,8 @@ static func _unlocked_maps(save_data: Dictionary) -> Dictionary:
     var boss_defeated: bool = bool(save_data.get("boss_defeated", false))
     var elite_defeated: bool = bool(save_data.get("elite_defeated", false))
     var quests: Dictionary = save_data.get("quests", {}) if save_data.get("quests", {}) is Dictionary else {}
-    var valley_quest_done: bool = bool(quests.get("side_valley_puppet", false))
+    var completed_quests: Dictionary = quests.get("completed", {}) if quests.get("completed", {}) is Dictionary else {}
+    var valley_quest_done: bool = bool(completed_quests.get("side_valley_puppet", false))
     return {
         TOWN: true,
         MOSS_CROWN: true,
