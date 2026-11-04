@@ -1,0 +1,115 @@
+name: Extract effect atlas components
+on:
+  pull_request:
+    paths:
+      - "effect_atlas.png"
+      - ".github/workflows/extract-effect-atlas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install image tools
+        run: python -m pip install --quiet pillow numpy scipy
+      - name: Extract alpha components and contact sheet
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageDraw, ImageFont
+          import numpy as np
+          from scipy import ndimage
+          from pathlib import Path
+          import json
+
+          source = Image.open("effect_atlas.png").convert("RGBA")
+          rgba = np.asarray(source)
+          alpha = rgba[:, :, 3]
+          # Low-alpha dust is ignored; 8-connectivity keeps diagonal pixels together.
+          mask = alpha >= 24
+          labels, count = ndimage.label(mask, structure=np.ones((3, 3), dtype=np.uint8))
+          slices = ndimage.find_objects(labels)
+          candidates = []
+          for label_id, sl in enumerate(slices, 1):
+              if sl is None:
+                  continue
+              y0, y1 = sl[0].start, sl[0].stop
+              x0, x1 = sl[1].start, sl[1].stop
+              region = labels[sl] == label_id
+              area = int(region.sum())
+              if area < 100:
+                  continue
+              # Ignore components that are almost the entire atlas; they are likely a connected glow/background.
+              if (x1-x0) > source.width * 0.92 and (y1-y0) > source.height * 0.92:
+                  continue
+              candidates.append((y0, x0, y1, x1, area))
+          candidates.sort(key=lambda c: (c[0], c[1], -(c[4])))
+          out = Path("generated/effect-atlas")
+          crops = out / "components"
+          crops.mkdir(parents=True, exist_ok=True)
+          records = []
+          for idx, (y0, x0, y1, x1, area) in enumerate(candidates, 1):
+              pad = 10
+              left, top = max(0, x0-pad), max(0, y0-pad)
+              right, bottom = min(source.width, x1+pad), min(source.height, y1+pad)
+              crop = source.crop((left, top, right, bottom))
+              filename = f"fx_{idx:03d}.png"
+              crop.save(crops / filename, optimize=True)
+              records.append({
+                  "id": f"fx_{idx:03d}", "file": f"components/{filename}",
+                  "bbox_xyxy": [x0, y0, x1, y1], "crop_xyxy": [left, top, right, bottom],
+                  "size": [x1-x0, y1-y0], "alpha_pixels": area
+              })
+          # Contact sheet uses a checkerboard and fixed thumbnail cells; source art is not modified.
+          cell_w, cell_h, cols = 180, 180, 5
+          rows = max(1, (len(records)+cols-1)//cols)
+          sheet = Image.new("RGBA", (cols*cell_w, rows*cell_h), (36, 40, 48, 255))
+          draw = ImageDraw.Draw(sheet)
+          for i, rec in enumerate(records):
+              x, y = (i % cols)*cell_w, (i // cols)*cell_h
+              for yy in range(y, y+cell_h, 16):
+                  for xx in range(x, x+cell_w, 16):
+                      if ((xx-x)//16 + (yy-y)//16) % 2 == 0:
+                          draw.rectangle((xx, yy, xx+15, yy+15), fill=(58, 63, 72, 255))
+              im = Image.open(crops / rec["file"]).convert("RGBA")
+              im.thumbnail((cell_w-20, cell_h-42), Image.Resampling.LANCZOS)
+              sheet.alpha_composite(im, (x+(cell_w-im.width)//2, y+5+(cell_h-42-im.height)//2))
+              draw.text((x+8, y+cell_h-30), f'{rec["id"]}  {rec["size"][0]}x{rec["size"][1]}', fill=(255,255,255,255))
+          sheet.convert("RGB").save(out / "contact_sheet.jpg", quality=90)
+          manifest = {
+              "source": "effect_atlas.png", "source_size": list(source.size),
+              "alpha_threshold": 24, "connectivity": 8, "minimum_alpha_pixels": 100,
+              "component_count": len(records), "components": records,
+              "warning": "Connected alpha regions are geometric candidates, not guaranteed animation frames. Review the contact sheet before wiring any crop into gameplay."
+          }
+          (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+          print(f"Extracted {len(records)} candidate components from {source.width}x{source.height} atlas.")
+          print(f"Output: {out}")
+          PY
+      - name: Commit generated analysis to PR branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add generated/effect-atlas
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+          else
+            git commit -m "tools: add extracted effect atlas components"
+            git push
+          fi
+      - name: Upload extraction artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: effect-atlas-components
+          path: generated/effect-atlas/
+          if-no-files-found: error
