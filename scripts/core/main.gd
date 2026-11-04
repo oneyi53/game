@@ -250,7 +250,9 @@ func _ready() -> void:
     hero_panel.set_heroes(heroes)
     hero_panel.visible = false
     equip_panel.set_data(heroes, equipment_manager)
+    equip_panel.set_item_definitions(backpack_manager.items)
     equip_panel.swap_requested.connect(_on_equip_swap)
+    equip_panel.unequip_requested.connect(_on_loose_unequip)
     equip_panel.visible = false
     offline_panel.visible = false
     if bool(pending_offline.get("eligible", false)):
@@ -905,6 +907,24 @@ func _on_quest_completed(quest_id: String, quest_name: String, complete_line: St
         if hero_panel.visible:
             hero_panel.refresh()
         hud.show_message("新英雄加入：" + hero_name + "！")
+    _save_game()
+
+func _on_loose_unequip(hero_id: String, slot: String) -> void:
+    if equipment_manager == null or backpack_manager == null:
+        return
+    var item_id: String = equipment_manager.unequip_loose_item(hero_id, slot)
+    if item_id == "":
+        return
+    var destination: String = backpack_manager.add(item_id)
+    for hero in heroes:
+        if hero != null and hero.hero_id == hero_id:
+            _rebuild_hero_stats(hero, true)
+            break
+    equip_panel.refresh()
+    backpack_panel.refresh()
+    if hero_panel.visible:
+        hero_panel.refresh()
+    hud.show_message("已卸下装备" + ("，背包已满，已寄到邮箱" if destination == "mailbox" else ""))
     _save_game()
 
 func _on_equip_swap(hero_id: String, set_id: String) -> void:
