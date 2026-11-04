@@ -1,57 +1,77 @@
 class_name MapDrawer
 extends Node2D
 
-# Forest map presentation. Gameplay coordinates remain unchanged.
-const MAP_WIDTH: int = 1600
-const MAP_HEIGHT: int = 1200
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
+const TREE_SCRIPT = preload("res://scripts/core/tree_visual.gd")
+const LANDMARK_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
 const TILE: int = 64
 
-const TREE_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/tree_green.png")
-const GOLDEN_TREE_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/tree_yellow.png")
-const TOWER_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/tower.png")
-const FOUNTAIN_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/fountain.png")
+const DECORATIONS := {
+    "town": {
+        "trees": [Vector2(160, 170), Vector2(1040, 170), Vector2(160, 740), Vector2(1040, 740)],
+        "landmarks": [{"kind": "fountain", "position": Vector2(600, 450), "radius": 34.0}]
+    },
+    "moss_crown": {
+        "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820)],
+        "landmarks": [{"kind": "tower", "position": Vector2(260, 300), "radius": 30.0}, {"kind": "fountain", "position": Vector2(920, 500), "radius": 28.0}]
+    },
+    "fallen_leaf": {
+        "trees": [Vector2(110, 130), Vector2(310, 110), Vector2(1080, 150), Vector2(980, 760), Vector2(140, 760), Vector2(420, 800), Vector2(180, 500), Vector2(1040, 560)],
+        "landmarks": [{"kind": "tree_cluster", "position": Vector2(620, 280), "radius": 36.0}]
+    },
+    "morning_dew": {
+        "trees": [Vector2(100, 160), Vector2(300, 140), Vector2(1080, 140), Vector2(980, 220), Vector2(140, 760), Vector2(420, 790), Vector2(1080, 740), Vector2(900, 800)],
+        "landmarks": [{"kind": "tree_cluster", "position": Vector2(600, 450), "radius": 36.0}]
+    }
+}
 
-var tree_positions: Array = [
-    Vector2(120, 120), Vector2(300, 180), Vector2(1480, 140), Vector2(1320, 220),
-    Vector2(140, 1040), Vector2(420, 1080), Vector2(1500, 1020), Vector2(1240, 1080),
-    Vector2(180, 560), Vector2(1420, 640), Vector2(640, 120), Vector2(980, 1080),
-    Vector2(220, 320), Vector2(1380, 880), Vector2(760, 240), Vector2(520, 920),
-]
+var active_map_id: String = WorldMaps.MOSS_CROWN
+var decoration_nodes: Array[Node2D] = []
+var blocker_nodes: Array[StaticBody2D] = []
+
+func set_active_map(map_id: String) -> void:
+    var manager = WorldMaps.new()
+    if not manager.is_known_map(map_id):
+        push_warning("Unknown map id: " + map_id)
+        return
+    active_map_id = map_id
+    _refresh_decorations()
+    queue_redraw()
+
+func get_active_map_id() -> String:
+    return active_map_id
 
 func _ready() -> void:
-    _spawn_scene_art()
+    _build_decorations()
+    _refresh_decorations()
 
-func _spawn_scene_art() -> void:
-    # Decorative sprites now have matching physical blockers at their trunks.
-    for i in range(tree_positions.size()):
-        var tree := Sprite2D.new()
-        tree.texture = GOLDEN_TREE_TEXTURE if i % 5 == 0 else TREE_TEXTURE
-        tree.centered = false
-        tree.offset = Vector2(-48.0, -96.0)
-        tree.scale = Vector2(0.19, 0.19)
-        tree.position = tree_positions[i]
-        tree.z_index = 0
-        add_child(tree)
-        _add_obstacle(tree_positions[i] + Vector2(0.0, -8.0), 18.0, "TreeBlocker")
+func _build_decorations() -> void:
+    for map_id in DECORATIONS.keys():
+        var spec: Dictionary = DECORATIONS[map_id]
+        for tree_pos in spec["trees"]:
+            var tree := Node2D.new()
+            tree.set_script(TREE_SCRIPT)
+            tree.position = tree_pos
+            tree.set_meta("map_id", str(map_id))
+            add_child(tree)
+            decoration_nodes.append(tree)
+            var blocker := _add_blocker(tree_pos + Vector2(0.0, -8.0), 18.0)
+            blocker.set_meta("map_id", str(map_id))
+        for landmark_spec in spec["landmarks"]:
+            var landmark := Node2D.new()
+            landmark.set_script(LANDMARK_SCRIPT)
+            landmark.position = landmark_spec["position"]
+            landmark.set_meta("map_id", str(map_id))
+            add_child(landmark)
+            landmark.setup(str(landmark_spec["kind"]))
+            decoration_nodes.append(landmark)
+            var landmark_blocker := _add_blocker(landmark_spec["position"] + Vector2(0.0, -8.0), float(landmark_spec["radius"]))
+            landmark_blocker.set_meta("map_id", str(map_id))
 
-    _add_landmark(TOWER_TEXTURE, Vector2(260.0, 300.0), Vector2(0.34, 0.34), Vector2(-72.0, -170.0), 30.0)
-    _add_landmark(FOUNTAIN_TEXTURE, Vector2(920.0, 500.0), Vector2(0.32, 0.32), Vector2(-64.0, -128.0), 28.0)
-
-func _add_landmark(texture: Texture2D, world_position: Vector2, visual_scale: Vector2, visual_offset: Vector2, blocker_radius: float) -> void:
-    var landmark := Sprite2D.new()
-    landmark.texture = texture
-    landmark.centered = false
-    landmark.offset = visual_offset
-    landmark.scale = visual_scale
-    landmark.position = world_position
-    add_child(landmark)
-    _add_obstacle(world_position + Vector2(0.0, -8.0), blocker_radius, "LandmarkBlocker")
-
-func _add_obstacle(world_position: Vector2, radius: float, node_name: String) -> void:
+func _add_blocker(at: Vector2, radius: float) -> StaticBody2D:
     var body := StaticBody2D.new()
-    body.name = node_name
-    body.position = world_position
-    # Hero and enemy CharacterBody2D nodes use the default layer/mask (1).
+    body.position = at
     body.collision_layer = 1
     body.collision_mask = 1
     var shape := CollisionShape2D.new()
@@ -60,36 +80,66 @@ func _add_obstacle(world_position: Vector2, radius: float, node_name: String) ->
     shape.shape = circle
     body.add_child(shape)
     add_child(body)
+    blocker_nodes.append(body)
+    return body
+
+func _refresh_decorations() -> void:
+    for node in decoration_nodes:
+        var belongs: bool = str(node.get_meta("map_id", "")) == active_map_id
+        node.visible = belongs
+        node.process_mode = Node.PROCESS_MODE_INHERIT if belongs else Node.PROCESS_MODE_DISABLED
+    for body in blocker_nodes:
+        var belongs: bool = str(body.get_meta("map_id", "")) == active_map_id
+        body.set_deferred("collision_layer", 1 if belongs else 0)
+        body.set_deferred("collision_mask", 1 if belongs else 0)
+
+func _projected_rect(rect: Rect2) -> PackedVector2Array:
+    return WorldProjectionScript.world_rect_to_screen_polygon(rect)
+
+func _draw_ground_tile(x: int, y: int, color: Color) -> void:
+    draw_colored_polygon(_projected_rect(Rect2(float(x), float(y), float(TILE), float(TILE))), color)
+
+func _draw_dot(world_position: Vector2, radius: float, color: Color) -> void:
+    draw_circle(WorldProjectionScript.world_to_screen(world_position), radius, color)
 
 func _draw() -> void:
-    for xi in range(0, MAP_WIDTH / TILE):
-        for yi in range(0, MAP_HEIGHT / TILE):
-            var odd: bool = (xi + yi) % 2 == 0
-            var tile_color: Color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
-            draw_rect(Rect2(float(xi * TILE), float(yi * TILE), float(TILE), float(TILE)), tile_color)
-    draw_rect(Rect2(0.0, 0.0, float(MAP_WIDTH), float(MAP_HEIGHT)), Color(0.2, 0.45, 0.2), false, 6.0)
-    draw_rect(Rect2(200.0, 40.0, 1200.0, 280.0), Color(0.1, 0.4, 0.2, 0.12))
-    draw_rect(Rect2(200.0, 40.0, 1200.0, 280.0), Color(0.1, 0.4, 0.2), false, 4.0)
-    draw_rect(Rect2(40.0, 880.0, 720.0, 280.0), Color(0.1, 0.35, 0.3, 0.12))
-    draw_rect(Rect2(40.0, 880.0, 720.0, 280.0), Color(0.1, 0.35, 0.3), false, 4.0)
-    draw_rect(Rect2(840.0, 880.0, 720.0, 280.0), Color(0.5, 0.4, 0.1, 0.12))
-    draw_rect(Rect2(840.0, 880.0, 720.0, 280.0), Color(0.5, 0.4, 0.1), false, 4.0)
-    var label_font = ThemeDB.fallback_font
-    if label_font != null:
-        draw_string(label_font, Vector2(220.0, 75.0), "苔冠空地")
-        draw_string(label_font, Vector2(60.0, 915.0), "落叶幽谷")
-        draw_string(label_font, Vector2(860.0, 915.0), "朝露林地")
-    for flower in [Vector2(260.0, 480.0), Vector2(500.0, 620.0), Vector2(900.0, 480.0), Vector2(1100.0, 700.0)]:
-        draw_circle(flower, 4.0, Color(1.0, 0.85, 0.2))
-        draw_circle(flower + Vector2(6.0, 6.0), 3.0, Color(1.0, 0.55, 0.35))
-    for pebble in [Vector2(400.0, 420.0), Vector2(760.0, 760.0), Vector2(1180.0, 520.0)]:
-        draw_circle(pebble, 3.0, Color(0.75, 0.75, 0.7))
-    for stone in [Vector2(320.0, 180.0), Vector2(900.0, 260.0), Vector2(1250.0, 120.0)]:
-        draw_circle(stone, 9.0, Color(0.65, 0.85, 0.7))
-        draw_circle(stone + Vector2(4.0, -4.0), 3.0, Color(0.35, 0.7, 0.4))
-    for leaf_pos in [Vector2(120.0, 960.0), Vector2(300.0, 1040.0), Vector2(520.0, 960.0), Vector2(660.0, 1080.0), Vector2(200.0, 1120.0)]:
-        draw_circle(leaf_pos, 4.0, Color(1.0, 0.75, 0.2))
-        draw_circle(leaf_pos + Vector2(7.0, 3.0), 3.0, Color(1.0, 0.55, 0.3))
-    for puddle in [Vector2(1000.0, 1000.0), Vector2(1300.0, 1120.0), Vector2(1450.0, 960.0)]:
-        draw_circle(puddle, 10.0, Color(0.55, 0.8, 1.0, 0.55))
-    draw_rect(Rect2(1120.0, 1020.0, 60.0, 10.0), Color(0.6, 0.45, 0.25))
+    var manager = WorldMaps.new()
+    var bounds: Rect2 = manager.map_bounds(active_map_id)
+    var town: bool = active_map_id == WorldMaps.TOWN
+    var background: Color = Color(0.22, 0.38, 0.25) if town else Color(0.34, 0.62, 0.34)
+    draw_rect(Rect2(-1000.0, -1000.0, 3400.0, 2700.0), background)
+    for xi in range(0, int(bounds.size.x), TILE):
+        for yi in range(0, int(bounds.size.y), TILE):
+            var odd: bool = (int(xi / TILE) + int(yi / TILE)) % 2 == 0
+            var color: Color
+            if town:
+                color = Color(0.66, 0.59, 0.43) if odd else Color(0.72, 0.65, 0.49)
+            elif active_map_id == WorldMaps.FALLEN_LEAF:
+                color = Color(0.55, 0.58, 0.31) if odd else Color(0.62, 0.61, 0.34)
+            elif active_map_id == WorldMaps.MORNING_DEW:
+                color = Color(0.37, 0.69, 0.55) if odd else Color(0.43, 0.75, 0.61)
+            else:
+                color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
+            _draw_ground_tile(xi, yi, color)
+    var outline := _projected_rect(bounds)
+    outline.append(outline[0])
+    draw_polyline(outline, Color(0.2, 0.35, 0.2), 5.0, true)
+    var title: String = manager.map_name(active_map_id)
+    var font = ThemeDB.fallback_font
+    if font != null:
+        var label_pos: Vector2 = WorldProjectionScript.world_to_screen(bounds.position + Vector2(40.0, 55.0))
+        var label_width: float = font.get_string_size(title).x + 34.0
+        draw_rect(Rect2(label_pos.x - 12.0, label_pos.y - 27.0, label_width, 38.0), Color(0.08, 0.19, 0.12, 0.82))
+        draw_string(font, label_pos, title, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.96, 0.94, 0.78))
+    if town:
+        for point in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
+            _draw_ground_tile(int(point.x), int(point.y), Color(0.82, 0.75, 0.61))
+    elif active_map_id == WorldMaps.FALLEN_LEAF:
+        for point in [Vector2(240, 240), Vector2(420, 300), Vector2(760, 260), Vector2(940, 620)]:
+            _draw_dot(point, 5.0, Color(0.84, 0.65, 0.27))
+    elif active_map_id == WorldMaps.MORNING_DEW:
+        for point in [Vector2(260, 260), Vector2(480, 620), Vector2(860, 280), Vector2(1040, 660)]:
+            _draw_dot(point, 5.0, Color(0.68, 0.9, 0.82))
+    else:
+        for point in [Vector2(260, 480), Vector2(500, 620), Vector2(900, 480), Vector2(1100, 700)]:
+            _draw_dot(point, 4.0, Color(1.0, 0.85, 0.2))

@@ -72,7 +72,7 @@ static func _unlocked_maps(save_data: Dictionary) -> Dictionary:
     return {
         TOWN: true,
         MOSS_CROWN: true,
-        FALLEN_LEAF: boss_defeated,
+        FALLEN_LEAF: elite_defeated,
         MORNING_DEW: elite_defeated and valley_quest_done
     }
 

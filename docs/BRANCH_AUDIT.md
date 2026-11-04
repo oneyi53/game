@@ -7,7 +7,7 @@
 ## 1. 本次使用的准确基线
 
 - 仓库：oneyi53/game
-- 当前正式主线：main；本次新一轮坐标迁移的基线为 78a92e8e7158260cf185388bac3ee6b24a6db1e5（原 97e... SHA 属于更早历史快照）
+- 当前正式主线：main；PR #32 的最新整合基线为 f1cc665815c312106c8e2b46e59556c02f704618（原 97e... SHA 属于更早历史快照）
 - 2.5D 前置分支：feat/hero-world-2.5d-boss-p0
 - 后续美术整合分支：feat/hero-world-art-integration
 
@@ -257,3 +257,16 @@ main.gd 默认 active_map_id 和无 map_id 存档的回退值都是 MOSS_CROWN�
 - 八项 Godot 4.7.2 headless 迁移回归测试、项目启动检查已通过 run 41818333971。
 - 重要边界：该 PR 目前只交付纯迁移层和测试，尚未在 main 主场景加载/保存流程调用；未写入/重写用户存档。
 - 旧审查中 2.5D 分支的 1200×900 / 1600×1200 混用问题仍然存在于历史分支代码；后续接入必须使用此处明确的 map-local 坐标契约，并统一 Hero/Enemy/Boss clamp。
+
+
+## 11. PR #32 运行时整合审查（2026-11-04）
+
+- main 基线：`f1cc665815c312106c8e2b46e59556c02f704618`；本次开发分支：`feat/world-map-local-2-5d-integration-2026-11-04`。
+- 不再整分支合并 `feat/hero-world-art-integration`；本 PR 按文件重建 map-local 坐标、投影和地图切换。
+- 四张地图均为 1200×900 逻辑坐标；`WorldProjection.world_to_screen()` 仅用于渲染，绝不写回单位 global_position。
+- Hero/Enemy/Boss 统一调用 `WorldMapManager.clamp_position()`；目标搜索按 map_id 隔离；地图切换时关闭非活动地图敌人的处理与碰撞。
+- MapDrawer 按 map_id 切换地面主题、树木/地标和碰撞体；营火/宝箱/技能特效与角色使用同一投影。
+- Main 接入存档迁移并写入 `map_id` 与 `map_positions`；schema_version 维持 1；旧存档迁移后保存前由 SaveManager 保留有效旧主档备份。
+- 解锁门槛与现行主线一致：Fallen Leaf = elite_defeated；Morning Dew = elite_defeated + completed side_valley_puppet。旧分支中 Fallen Leaf 只要求 boss_defeated 的逻辑已修正。
+- Godot 4.7.2 import/parse、13 项坐标与地图测试、headless 启动通过 run 41820179346。
+- 仍需设备验证：竖屏 camera zoom/构图、触控摇杆方向、地图切换体验、碰撞手感、战斗帧率、真实旧存档迁移与备份恢复。

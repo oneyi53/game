@@ -1,6 +1,9 @@
 class_name Hero
 extends CharacterBody2D
 
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
+
 # One party member. The captain moves with the joystick or keyboard.
 # Followers move toward a fixed offset from the captain and speed up
 # when they fall behind, so a straggler rejoins the formation on its own.
@@ -9,6 +12,8 @@ extends CharacterBody2D
 signal died(hero)
 signal hp_changed(hero)
 
+var world_map_id: String = WorldMaps.MOSS_CROWN
+var visual_formation_offset: Vector2 = Vector2.ZERO
 var hero_id: String = ""
 var hero_name: String = ""
 var is_captain: bool = false
@@ -137,8 +142,7 @@ func _physics_process(delta: float) -> void:
                 var speed: float = move_speed * 2.0 if diff.length() > 180.0 else move_speed
                 velocity = diff.normalized() * speed
     move_and_slide()
-    global_position.x = clamp(global_position.x, 20.0, 1580.0)
-    global_position.y = clamp(global_position.y, 20.0, 1180.0)
+    global_position = WorldMaps.clamp_position(global_position)
     if dash_timer > 0.0:
         dash_timer -= delta
     if is_healer:
@@ -158,6 +162,8 @@ func _heal_lowest_ally() -> void:
     var best_ratio: float = 1.0
     for ally in get_tree().get_nodes_in_group("heroes"):
         if ally == null or ally == self:
+            continue
+        if str(ally.get("world_map_id")) != world_map_id:
             continue
         if bool(ally.get("dead")):
             continue
@@ -180,6 +186,8 @@ func _scan_and_attack() -> void:
         for enemy in get_tree().get_nodes_in_group("enemies"):
             if enemy == null or bool(enemy.get("dead")):
                 continue
+            if str(enemy.get_meta("world_map_id", WorldMaps.MOSS_CROWN)) != world_map_id:
+                continue
             var dist: float = global_position.distance_to(enemy.global_position)
             if dist <= dash_dist and dist > attack_range:
                 dash_dist = dist
@@ -195,6 +203,8 @@ func _scan_and_attack() -> void:
         if enemy == null:
             continue
         if bool(enemy.get("dead")):
+            continue
+        if str(enemy.get_meta("world_map_id", WorldMaps.MOSS_CROWN)) != world_map_id:
             continue
         var dist: float = global_position.distance_to(enemy.global_position)
         if dist > attack_range:
@@ -252,6 +262,8 @@ func use_skill() -> bool:
             continue
         if bool(enemy.get("dead")):
             continue
+        if str(enemy.get_meta("world_map_id", WorldMaps.MOSS_CROWN)) != world_map_id:
+            continue
         if global_position.distance_to(enemy.global_position) <= 140.0:
             if enemy.has_method("take_damage"):
                 enemy.take_damage(attack * 2)
@@ -269,16 +281,16 @@ const HERO_TEXTURES := {
 func _draw() -> void:
     if dead:
         return
-    # Original art sprites replace the temporary geometric party tokens.
-    # Combat stats, collision, movement and logical world coordinates stay unchanged.
-    draw_set_transform(Vector2(0.0, 0.0), 0.0, Vector2(1.0, 0.42))
-    draw_circle(Vector2.ZERO, 20.0, Color(0.04, 0.12, 0.05, 0.24))
-    draw_set_transform(Vector2.ZERO)
+    var visual_world_position: Vector2 = global_position + visual_formation_offset
+    var offset: Vector2 = WorldProjectionScript.world_to_screen(visual_world_position) - global_position
+    draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 14.0, Color(0.05, 0.18, 0.05, 0.28))
+    draw_set_transform(offset)
     var texture: Texture2D = HERO_TEXTURES.get(hero_id)
     if texture != null:
-        draw_texture_rect(texture, Rect2(-34.0, -72.0, 68.0, 72.0), false)
+        draw_texture_rect(texture, Rect2(-48.0, -90.0, 96.0, 96.0), false)
     else:
-        draw_circle(Vector2.ZERO, 16.0, hero_color)
-    draw_rect(Rect2(-20.0, -82.0, 40.0, 5.0), Color(0.04, 0.06, 0.04, 0.9))
-    var fill: float = 40.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-20.0, -82.0, fill, 5.0), Color(0.2, 0.9, 0.3))
+        draw_circle(Vector2.ZERO, 18.0, hero_color)
+    draw_rect(Rect2(-24.0, -98.0, 48.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
+    var fill: float = 48.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-24.0, -98.0, fill, 5.0), Color(0.2, 0.9, 0.3))

@@ -1,6 +1,9 @@
 class_name Enemy
 extends CharacterBody2D
 
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
+
 # Ordinary monster. It retargets on a 0.5 s timer, never every frame,
 # chases the nearest living party member inside its aggro range and
 # attacks when that member is inside its attack range.
@@ -60,8 +63,7 @@ func _physics_process(delta: float) -> void:
             attack_timer = attack_cooldown
             if target_hero.has_method("take_damage"):
                 target_hero.take_damage(attack)
-    global_position.x = clamp(global_position.x, 20.0, 1580.0)
-    global_position.y = clamp(global_position.y, 20.0, 1180.0)
+    global_position = WorldMaps.clamp_position(global_position)
 
 func _retarget() -> void:
     var best: Node2D = null
@@ -70,6 +72,8 @@ func _retarget() -> void:
         if hero == null:
             continue
         if bool(hero.get("dead")):
+            continue
+        if str(hero.get("world_map_id")) != str(get_meta("world_map_id", WorldMaps.MOSS_CROWN)):
             continue
         var dist: float = global_position.distance_to(hero.global_position)
         if dist <= best_dist:
@@ -105,14 +109,15 @@ const ENEMY_TEXTURES := {
 func _draw() -> void:
     if dead:
         return
-    draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.42))
-    draw_circle(Vector2.ZERO, 18.0, Color(0.04, 0.12, 0.05, 0.24))
-    draw_set_transform(Vector2.ZERO)
+    var offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
+    draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 13.0, Color(0.05, 0.18, 0.05, 0.25))
+    draw_set_transform(offset)
     var texture: Texture2D = ENEMY_TEXTURES.get(enemy_id)
     if texture != null:
-        draw_texture_rect(texture, Rect2(-32.0, -66.0, 64.0, 66.0), false)
+        draw_texture_rect(texture, Rect2(-48.0, -90.0, 96.0, 96.0), false)
     else:
-        draw_circle(Vector2.ZERO, 14.0, enemy_color)
-    draw_rect(Rect2(-18.0, -75.0, 36.0, 5.0), Color(0.04, 0.06, 0.04, 0.9))
-    var fill: float = 36.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-18.0, -75.0, fill, 5.0), Color(0.9, 0.2, 0.2))
+        draw_circle(Vector2.ZERO, 16.0, enemy_color)
+    draw_rect(Rect2(-24.0, -98.0, 48.0, 5.0), Color(0.08, 0.08, 0.08, 0.92))
+    var fill: float = 48.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-24.0, -98.0, fill, 5.0), Color(0.95, 0.22, 0.2))

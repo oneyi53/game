@@ -1,7 +1,7 @@
 # 远程分支总目录
 
 > 核对时间：2026-11-04。仓库：oneyi53/game。快照共 42 条远程分支。
-> 唯一正式主线：main，基线 598216e6f67611b0f3db452718b4aa7cdf57ebb2。
+> 唯一正式主线：main；PR #32 的基线为 f1cc665815c312106c8e2b46e59556c02f704618。
 > 分支存在不代表已合并；PR 合并状态以 GitHub merged_at 为准。
 
 ## 使用规则
@@ -19,13 +19,13 @@
 | docs/verify-loose-equipment-merge-2026-11-04 | PR #30 开放 | 合并/CI 记录与本次项目文档整理 |
 | ci/godot-cloud-validation-2026-11-04 | PR #9 开放 | Godot 4.7.2 云端验证工作流 |
 | docs/local-code-audit-2026-11-04 | PR #6 开放 | 本地代码审查文档 |
-| feat/equipment-art-ui-2026-11-04 | PR #18 开放 | 装备美术 UI 接入候选 |
+| feat/equipment-art-ui-2026-11-04 | PR #18 开放 | 装备美术 UI 接入候选 |\n| feat/world-map-local-2-5d-integration-2026-11-04 | PR #32 开放 | 四地图 2.5D 投影、map-local 坐标与旧存档迁移接入 |
 | feat/world-coordinate-save-migration-2026-11-04 | PR #31 开放 | 旧共享地图坐标迁移与 8 项回归测试 |
 
 ## 已合并 PR 来源
 | PR | 分支 | 主题 |
 |---:|---|---|
-| #29 | feat/loose-equipment-wearable-loop-2026-11-04 | 散件穿戴、属性、套装槽覆盖、存档兼容 |
+| #31 | feat/world-coordinate-save-migration-2026-11-04 | 旧共享地图坐标迁移纯函数与 8 项回归测试 |\n| #30 | docs/verify-loose-equipment-merge-2026-11-04 | 分支盘点、原创 PNG 归档与 Godot 引用更新 |\n| #29 | feat/loose-equipment-wearable-loop-2026-11-04 | 散件穿戴、属性、套装槽覆盖、存档兼容 |
 | #28 | docs/update-development-records-2026-11-04 | 状态/日志同步 |
 | #27 | feat/camp-building-party-bonuses | 营地建筑队伍增益 |
 | #26 | feat/progression-fast-travel-destinations-2026-11-04 | 森林进度门槛传送点 |
@@ -138,3 +138,12 @@
 | feat/world-coordinate-save-migration-2026-11-04 | PR #31 开放 | 当前 HEAD 以 PR #31 页面为准 |
 
 PR #30 已合并至 main；PR #31 尚未合并。此补充不改变前面的 42 条分支固定 SHA 快照。
+
+
+## 盘点后新增 PR #32 分支（2026-11-04）
+
+| 分支 | 状态 | 用途 |
+|---|---|---|
+| feat/world-map-local-2-5d-integration-2026-11-04 | PR #32 开放 | 四地图 2.5D 投影、统一单位边界、map_id/map_positions 存档接入 |
+
+PR #30 与 PR #31 已合并；PR #32 尚未合并。当前远程 refs 请以 GitHub 实时分支列表为准；上文 SHA 表是原始盘点固定快照。
