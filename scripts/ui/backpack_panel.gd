@@ -1,18 +1,21 @@
 class_name BackpackPanel
 extends Control
 
-# Backpack panel, reusing the EquipPanel / CampPanel dynamic-list
-# pattern and the same panel background / label style. One row per
-# backpack item (name, stats, decompose button); a mailbox section
-# below it, one claim button per overflow item. Loose items are
-# never worn here: there is no equip button in this block.
-# Decompose asks for confirmation in place: the first tap turns
-# that row's button into "确认分解？", the second tap emits
-# decompose_requested. Main checks the index, removes the item,
-# grants decompose_gold and saves.
+# Backpack panel with original item sprites. Loose items remain
+# collectable/decomposable only; this visual pass does not make them
+# equippable and does not change inventory or save semantics.
 
 signal decompose_requested(index)
 signal claim_requested(index)
+
+const ITEM_TEXTURES: Dictionary = {
+    "worn_iron_sword": "res://assets/art-v1/sprites/equipment/worn_iron_sword.png",
+    "rough_cloth_armor": "res://assets/art-v1/sprites/equipment/rough_cloth_armor.png",
+    "cracked_wooden_shield": "res://assets/art-v1/sprites/equipment/cracked_wooden_shield.png",
+    "worn_leather_boots": "res://assets/art-v1/sprites/equipment/worn_leather_boots.png",
+    "rusty_dagger": "res://assets/art-v1/sprites/equipment/rusty_dagger.png",
+    "vine_bracer": "res://assets/art-v1/sprites/equipment/vine_bracer.png"
+}
 
 @onready var panel_label: RichTextLabel = $PanelLabel
 
@@ -20,6 +23,7 @@ var manager: BackpackManager = null
 var scroll: ScrollContainer = null
 var list_box: VBoxContainer = null
 var pending_decompose: int = -1
+var texture_cache: Dictionary = {}
 
 func set_manager(p_manager: BackpackManager) -> void:
     manager = p_manager
@@ -42,6 +46,35 @@ func _ensure_dynamic() -> void:
     list_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     scroll.add_child(list_box)
 
+func _item_texture(item_id: String) -> Texture2D:
+    if texture_cache.has(item_id):
+        return texture_cache[item_id] as Texture2D
+    var path: String = str(ITEM_TEXTURES.get(item_id, ""))
+    if path == "":
+        return null
+    var texture := load(path) as Texture2D
+    if texture != null:
+        texture_cache[item_id] = texture
+    return texture
+
+func _add_item_row(item_id: String, item_name: String, stats: String) -> void:
+    var row := HBoxContainer.new()
+    row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    row.add_theme_constant_override("separation", 8)
+    list_box.add_child(row)
+    var icon := TextureRect.new()
+    icon.custom_minimum_size = Vector2(52.0, 52.0)
+    icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    icon.texture = _item_texture(item_id)
+    row.add_child(icon)
+    var label := Label.new()
+    label.text = item_name + "（" + stats + "）"
+    label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    row.add_child(label)
+
 func rebuild() -> void:
     if manager == null or list_box == null:
         return
@@ -61,10 +94,7 @@ func rebuild() -> void:
         var entry = manager.item(item_id)
         if entry == null:
             continue
-        var label: Label = Label.new()
-        label.text = str(entry["name"]) + "（" + manager.stats_text(item_id) + "）"
-        label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        list_box.add_child(label)
+        _add_item_row(item_id, str(entry["name"]), manager.stats_text(item_id))
         var button: Button = Button.new()
         if i == pending_decompose:
             button.text = "确认分解？"
@@ -82,10 +112,7 @@ func rebuild() -> void:
             var entry = manager.item(item_id)
             if entry == null:
                 continue
-            var label: Label = Label.new()
-            label.text = str(entry["name"]) + "（" + manager.stats_text(item_id) + "）"
-            label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-            list_box.add_child(label)
+            _add_item_row(item_id, str(entry["name"]), manager.stats_text(item_id))
             var button: Button = Button.new()
             button.text = "领取到背包"
             button.pressed.connect(_on_claim_button_pressed.bind(i))
