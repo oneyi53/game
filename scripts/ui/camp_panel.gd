@@ -53,8 +53,12 @@ func rebuild() -> void:
         var label: Label = Label.new()
         if manager.is_built(building_id):
             label.text = str(entry["name"]) + "：已建成 — " + str(entry["intro"])
+            if str(building_id) == "blacksmith":
+                label.text += "\n队伍效果：全体英雄攻击力 +5%"
+            elif str(building_id) == "training_ground":
+                label.text += "\n队伍效果：全体英雄最大生命 +8%"
         else:
-            label.text = str(entry["name"]) + "：未建成（" + str(int(entry["cost_wood"])) + " 木材）— " + str(entry["intro"])
+            label.text = str(entry["name"]) + "：未建成（" + str(int(entry["cost_wood"])) + " 木材）— " + str(entry["intro"]) + ("\n建成效果：全体英雄攻击力 +5%" if str(building_id) == "blacksmith" else ("\n建成效果：全体英雄最大生命 +8%" if str(building_id) == "training_ground" else ""))
         label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
         list_box.add_child(label)
         var button: Button = Button.new()
