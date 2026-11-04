@@ -2,6 +2,18 @@
 
 本文件记录可追溯的项目变更。Git commit 是代码事实来源；本日志解释每次变更的目的、范围和验证状态。
 
+## 2026-11-04 — 本地代码与架构静态审查报告
+
+- 分支：`docs/local-code-audit-2026-11-04`
+- 基线：本地 `HeroWorld-clean`，main HEAD `e194898`。
+- 新增文件：`docs/LOCAL_CODE_AUDIT_2026-11-04.md`。
+- 更新文件：`README.md`、`docs/PROJECT_STATUS.md`、`docs/CHANGELOG.md`。
+- 变更说明：记录本地批量只读审查的项目结构、主要系统实现盘点、美术资源引用现状、存档观察、潜在风险及下一轮交叉审查清单。
+- 影响范围：仅文档；没有修改游戏代码、美术资源、Godot 配置或存档结构。
+- 审查方式：Antigravity 批量读取脚本和数据文件，分析汇总输出；报告中的汇总输出行号不等同于源文件行号。
+- 验证结果：文档整理；未执行 Godot headless、功能回归、Android/iOS 导出或真机测试。报告中的疑点仍需逐项核实。
+- 下一步：复核怪物刷新容量、招募碎片扣除、英雄 HP 恢复和 SaveManager 调用链，再决定是否创建代码修复分支。
+
 ## 2026-11-04 — 2.5D 静态审查文档合并至 main
 
 - PR：[#4](https://github.com/oneyi53/game/pull/4)
@@ -67,3 +79,26 @@
 - 验证结果：通过 / 失败 / 未验证
 - 已知问题：
 - 下一步：
+
+
+## 2026-11-04 — 第二轮核心调用链交叉审查
+
+- 分支：docs/local-code-audit-2026-11-04
+- 基线：main / 本地审查记录 HEAD e194898。
+- 更新文件：docs/LOCAL_CODE_AUDIT_2026-11-04.md、docs/PROJECT_STATUS.md、docs/CHANGELOG.md。
+- 变更说明：从 GitHub main 重新读取 Main、Hero、SaveManager、RecruitmentManager、QuestManager、LevelManager、BackpackManager 和相关 JSON，复核英雄 HP、碎片合成、怪物重生与备份恢复调用链。
+- 确认结果：确认英雄 HP 读档未应用；确认碎片合成未消费碎片；确认从有效备份恢复后，后续保存可能先用损坏主档覆盖有效备份。
+- 风险修正：怪物刷新队列在满员时保留到期项并持续重试，因此不能断言任务怪永久丢失；风险调整为队列积压/延迟及公平性待测试。
+- 影响范围：仅文档；未修改游戏代码、资源、配置或存档。
+- 验证：静态调用链复核；未执行 Godot 运行复现、故障注入或设备测试。
+- 下一步：从最新 main 建立独立 fix 分支，修复 HP 恢复、碎片消费和备份保存流程，并补充自动化/手动回归测试。
+
+
+## 2026-11-04 — 首次启动存档状态补充核查
+
+- 分支：docs/local-code-audit-2026-11-04
+- 更新文件：docs/LOCAL_CODE_AUDIT_2026-11-04.md、docs/PROJECT_STATUS.md、docs/CHANGELOG.md。
+- 发现：主存档和备份都不存在时，SaveManager 统一返回 corrupted；Main 因此会把首次启动误报为“存档损坏且无可用备份”。
+- 建议：明确区分无存档的新游戏状态与主备份均损坏状态。
+- 影响范围：仅文档；没有修改游戏代码或存档。
+- 验证：静态调用链复核，未运行 Godot。
