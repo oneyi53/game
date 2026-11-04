@@ -51,6 +51,7 @@ const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
 
 var world_map_manager: WorldMapManager = WorldMapManagerScript.new()
 var active_map_id: String = WorldMapManagerScript.MOSS_CROWN
+var map_positions: Dictionary = {}
 
 var data_loader: DataLoader = null
 var save_manager: SaveManager = null
@@ -228,6 +229,7 @@ func _ready() -> void:
     hud.camp_panel_pressed.connect(_on_camp_panel_pressed)
     hud.backpack_panel_pressed.connect(_on_backpack_panel_pressed)
     hud.recruit_panel_pressed.connect(_on_recruit_panel_pressed)
+    hud.map_pressed.connect(_on_map_pressed)
     recruit_panel.set_data(recruitment_manager, level_manager, data_loader.heroes)
     recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
     recruit_panel.visible = false
@@ -478,13 +480,65 @@ func _tick_respawns(delta: float) -> void:
     var ready: Array = []
     for entry in respawn_queue:
         entry["timer"] = float(entry["timer"]) - delta
-        if float(entry["timer"]) <= 0.0:
+        if float(entry["timer"]) <= 0.0 and world_map_manager.map_for_enemy(str(entry["id"])) == active_map_id:
             ready.append(entry)
     for entry in ready:
         if heroes.size() + enemies.size() >= MAX_UNITS:
             continue
         respawn_queue.erase(entry)
         _spawn_enemy_at(str(entry["id"]), entry["pos"])
+
+func _on_map_pressed() -> void:
+    var popup := PopupMenu.new()
+    popup.add_item("王朝营地（安全区）", 0)
+    popup.add_item("苔冠空地", 1)
+    popup.add_item("落叶幽谷", 2)
+    popup.add_item("朝露林地", 3)
+    popup.id_pressed.connect(_on_map_selected)
+    add_child(popup)
+    popup.position = Vector2i(80, 180)
+    popup.popup()
+
+func _on_map_selected(id: int) -> void:
+    var target := ""
+    match id:
+        0: target = WorldMapManagerScript.TOWN
+        1: target = WorldMapManagerScript.MOSS_CROWN
+        2: target = WorldMapManagerScript.FALLEN_LEAF
+        3: target = WorldMapManagerScript.MORNING_DEW
+    if not world_map_manager.is_unlocked(target, boss_defeated, elite_defeated, valley_quest_done):
+        hud.show_message("该地图尚未解锁，先完成对应首领与任务")
+        return
+    _switch_map(target)
+
+func _switch_map(target_map_id: String) -> void:
+    if target_map_id == active_map_id or not world_map_manager.is_known_map(target_map_id) or captain == null:
+        return
+    map_positions[active_map_id] = captain.global_position
+    for hero in heroes:
+        hero.move_input = Vector2.ZERO
+    active_map_id = target_map_id
+    $Map.set_active_map(active_map_id)
+    var spawn: Vector2 = world_map_manager.spawn_position(active_map_id)
+    for hero in heroes:
+        hero.world_map_id = active_map_id
+        hero.global_position = spawn + hero.formation_offset
+    for enemy in enemies:
+        if not is_instance_valid(enemy):
+            continue
+        var belongs := str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) == active_map_id
+        enemy.visible = belongs
+        enemy.process_mode = Node.PROCESS_MODE_INHERIT if belongs else Node.PROCESS_MODE_DISABLED
+        if enemy is CollisionObject2D:
+            enemy.set_deferred("collision_layer", 1 if belongs else 0)
+            enemy.set_deferred("collision_mask", 1 if belongs else 0)
+    var town := active_map_id == WorldMapManagerScript.TOWN
+    chest_node.visible = not town
+    if campfire_node != null:
+        campfire_node.visible = not town and active_map_id == WorldMapManagerScript.MOSS_CROWN
+    camera.position = _projected_camera_position(captain.global_position)
+    hud.show_message("已传送至：" + world_map_manager.map_name(active_map_id))
+    _save_game()
 
 func _process(delta: float) -> void:
     if config_failed or captain == null:
