@@ -215,9 +215,14 @@ func _ready() -> void:
         error_label.text = "单位数量超过上限：" + str(planned_units)
         push_error(error_label.text)
         return
+    active_map_id = str(save_data.get("map_id", WorldMapManagerScript.MOSS_CROWN))
+    if not world_map_manager.is_known_map(active_map_id) or not world_map_manager.is_unlocked(active_map_id, boss_defeated, elite_defeated, valley_quest_done):
+        active_map_id = WorldMapManagerScript.MOSS_CROWN
     _spawn_heroes(save_data)
     _spawn_enemies()
     _spawn_campfire()
+    $Map.set_active_map(active_map_id)
+    _apply_active_map_visibility()
     var chest_loot: Dictionary = data_loader.items["chest_loot"]
     chest_node.setup(int(chest_loot["gold"]), chest_opened)
     chest_node.opened.connect(_on_chest_opened)
@@ -277,7 +282,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     # growing party never overlaps. The captain is always first.
     var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
     var visual_offsets: Array = [Vector2.ZERO, Vector2(-105.0, 35.0), Vector2(105.0, 35.0), Vector2(0.0, 125.0), Vector2(-105.0, 145.0), Vector2(105.0, 145.0)]
-    var start_pos: Vector2 = Vector2(800.0, 600.0)
+    var start_pos: Vector2 = world_map_manager.spawn_position(active_map_id)
     if save_data.get("player_position") is Dictionary:
         var saved_pos: Dictionary = save_data["player_position"]
         start_pos = Vector2(float(saved_pos.get("x", 800.0)), float(saved_pos.get("y", 600.0)))
@@ -511,6 +516,22 @@ func _on_map_selected(id: int) -> void:
         return
     _switch_map(target)
 
+func _apply_active_map_visibility() -> void:
+    var town := active_map_id == WorldMapManagerScript.TOWN
+    for enemy in enemies:
+        if not is_instance_valid(enemy):
+            continue
+        var belongs := str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) == active_map_id
+        enemy.visible = belongs
+        enemy.process_mode = Node.PROCESS_MODE_INHERIT if belongs else Node.PROCESS_MODE_DISABLED
+        if enemy is CollisionObject2D:
+            enemy.set_deferred("collision_layer", 1 if belongs else 0)
+            enemy.set_deferred("collision_mask", 1 if belongs else 0)
+    if chest_node != null:
+        chest_node.visible = not town and active_map_id == WorldMapManagerScript.MOSS_CROWN
+    if campfire_node != null:
+        campfire_node.visible = not town and active_map_id == WorldMapManagerScript.MOSS_CROWN
+
 func _switch_map(target_map_id: String) -> void:
     if target_map_id == active_map_id or not world_map_manager.is_known_map(target_map_id) or captain == null:
         return
@@ -523,19 +544,7 @@ func _switch_map(target_map_id: String) -> void:
     for hero in heroes:
         hero.world_map_id = active_map_id
         hero.global_position = spawn + hero.formation_offset
-    for enemy in enemies:
-        if not is_instance_valid(enemy):
-            continue
-        var belongs := str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) == active_map_id
-        enemy.visible = belongs
-        enemy.process_mode = Node.PROCESS_MODE_INHERIT if belongs else Node.PROCESS_MODE_DISABLED
-        if enemy is CollisionObject2D:
-            enemy.set_deferred("collision_layer", 1 if belongs else 0)
-            enemy.set_deferred("collision_mask", 1 if belongs else 0)
-    var town := active_map_id == WorldMapManagerScript.TOWN
-    chest_node.visible = not town
-    if campfire_node != null:
-        campfire_node.visible = not town and active_map_id == WorldMapManagerScript.MOSS_CROWN
+    _apply_active_map_visibility()
     camera.position = _projected_camera_position(captain.global_position)
     hud.show_message("已传送至：" + world_map_manager.map_name(active_map_id))
     _save_game()
@@ -838,6 +847,7 @@ func _save_game() -> void:
         "chest_opened": chest_opened,
         "boss_defeated": boss_defeated,
         "elite_defeated": elite_defeated,
+        "map_id": active_map_id,
         "player_position": {"x": captain.global_position.x, "y": captain.global_position.y},
         "heroes": hero_states,
         "recruitment": recruitment_manager.save_data(),
