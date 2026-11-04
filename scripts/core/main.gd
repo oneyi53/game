@@ -70,6 +70,7 @@ var map_positions: Dictionary = {}
 var world_state_migrated: bool = false
 var campfire_node: Node2D = null
 var heroes: Array = []
+var hero_hp_cache: Dictionary = {}
 var enemies: Array = []
 var boss: Boss = null
 var elite_boss: Boss = null
@@ -337,7 +338,10 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     if saved_heroes is Array:
         for saved_hero in saved_heroes:
             if saved_hero is Dictionary and saved_hero.has("id") and saved_hero.has("hp"):
-                saved_hp_by_id[str(saved_hero["id"])] = int(saved_hero["hp"])
+                var saved_hero_id: String = str(saved_hero["id"])
+                var saved_hp_value: int = int(saved_hero["hp"])
+                saved_hp_by_id[saved_hero_id] = saved_hp_value
+                hero_hp_cache[saved_hero_id] = saved_hp_value
     var spawn_index: int = 0
     for hero_id_value in formation_manager.active_ids:
         var hero_id: String = str(hero_id_value)
@@ -359,7 +363,10 @@ func _spawn_heroes(save_data: Dictionary) -> void:
             # A hero saved during the 3-second death delay resumes at the
             # same half-health amount used by the normal respawn routine.
             hero.hp = maxi(1, hero.max_hp / 2) if saved_hp <= 0 else clampi(saved_hp, 1, hero.max_hp)
+            hero_hp_cache[hero_id] = hero.hp
             hero.queue_redraw()
+        else:
+            hero_hp_cache[hero_id] = hero.hp
         hero.global_position = start_pos + offsets[spawn_index]
         hero.formation_offset = offsets[spawn_index]
         heroes_root.add_child(hero)
@@ -1045,15 +1052,17 @@ func _rebuild_party_runtime() -> void:
         return
     var saved_position: Vector2 = captain.global_position if captain != null else world_map_manager.spawn_position(active_map_id)
     map_positions[active_map_id] = saved_position
-    var saved_hero_states: Array = []
     for hero in heroes:
         if hero != null and is_instance_valid(hero):
-            saved_hero_states.append({"id": hero.hero_id, "hp": hero.hp})
+            hero_hp_cache[hero.hero_id] = hero.hp
             hero.remove_from_group("heroes")
             heroes_root.remove_child(hero)
             hero.queue_free()
     heroes.clear()
     captain = null
+    var saved_hero_states: Array = []
+    for cached_hero_id in hero_hp_cache.keys():
+        saved_hero_states.append({"id": str(cached_hero_id), "hp": int(hero_hp_cache[cached_hero_id])})
     var runtime_save: Dictionary = {
         "map_id": active_map_id,
         "player_position": {"x": saved_position.x, "y": saved_position.y},
@@ -1182,7 +1191,11 @@ func _save_game() -> void:
         return
     var hero_states: Array = []
     for hero in heroes:
-        hero_states.append({"id": hero.hero_id, "hp": hero.hp})
+        hero_hp_cache[hero.hero_id] = hero.hp
+    for hero_id_value in recruitment_manager.entry_order:
+        var saved_hero_id: String = str(hero_id_value)
+        if recruitment_manager.is_recruited(saved_hero_id) and hero_hp_cache.has(saved_hero_id):
+            hero_states.append({"id": saved_hero_id, "hp": int(hero_hp_cache[saved_hero_id])})
     var data: Dictionary = {
         "gold": gold,
         "wood": wood,
