@@ -32,7 +32,7 @@ const ENEMY_SCENE: PackedScene = preload("res://scenes/enemy.tscn")
 const BOSS_SCENE: PackedScene = preload("res://scenes/boss.tscn")
 const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
 const EFFECT_PLAYER = preload("res://scripts/fx/effect_player.gd")
-const EFFECT_ATLAS: Texture2D = preload("res://effect_atlas.png")
+const EFFECT_ATLAS: Texture2D = preload("res://assets/art-v1/effects/effect_atlas.png")
 
 @onready var camera: Camera2D = $Camera
 @onready var heroes_root: Node2D = $Heroes
