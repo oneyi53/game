@@ -57,6 +57,17 @@ jobs:
           fi
           grep -q "World coordinate tests: 13 passed" world-save-migration-tests.log
 
+      - name: Run hero formation data tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_formation_manager.gd 2>&1 | tee hero-formation-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' hero-formation-tests.log; then
+            echo "Hero formation tests reported errors."
+            exit 1
+          fi
+          grep -q "Hero formation tests: 10 passed" hero-formation-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -76,4 +87,5 @@ jobs:
             godot-import.log
             godot-runtime.log
             world-save-migration-tests.log
+            hero-formation-tests.log
           if-no-files-found: ignore
