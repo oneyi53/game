@@ -92,6 +92,8 @@ func rebuild() -> void:
             if hero != null:
                 target.add_item(str(hero.hero_name))
                 target.set_item_metadata(target.item_count - 1, str(hero.hero_id))
+        if target.item_count > 0:
+            target.select(0)
         action_row.add_child(target)
         var wear_button := Button.new()
         wear_button.text = "穿戴"
