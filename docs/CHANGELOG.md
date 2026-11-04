@@ -1,14 +1,16 @@
 # 开发变更日志
 
-## 2026-11-04 — 主城建筑实体入口（开发分支，待 CI）
+## 2026-11-04 — 主城建筑实体入口（PR #41 已合并）
 
-- 分支：`feat/town-building-entrances-2026-11-04`，基于 main `765c112d3e9816ec69176b223813cafaf5403c96`。
+- PR：[#41](https://github.com/oneyi53/game/pull/41)，分支：`feat/town-building-entrances-2026-11-04`。
+- 合并提交：`318b11f99c5f807cb1289386849fd43c52ce06c2`。
 - 修改文件：`scripts/core/town_building_registry.gd`、`scripts/core/map.gd`、`scripts/core/main.gd`、`tests/test_town_building_registry.gd`、`.github/workflows/godot-cloud-validation.yml`、本文档与 `docs/PROJECT_STATUS.md`。
 - 变更：在王朝营地地图绘制四个可点击建筑入口；分别打开现有招募、营地、装备和背包面板；支持鼠标点击与 Android 触屏点击；其他地图不响应建筑入口。
 - 设计边界：建筑视觉采用程序绘制的原创简洁图标；命中检测使用 WorldProjection 投影后的屏幕坐标；不改变逻辑坐标、存档结构或现有玩法数据。
 - 测试：新增 4 项注册表/投影/命中检测测试，并接入 Godot 4.7.2 cloud validation workflow。
-- 验证结果：代码已提交至开发分支；CI 尚待 PR 触发，不能标记为通过；Android 真机触控尚未验证。
-- 下一步：检查 PR diff 与 CI，修复问题后再合并 main。
+- 验证结果：Godot 4.7.2 CI run `41830530310` 全部通过，包含资源导入、脚本解析、地图/编队/预备英雄装备/战力/建筑入口回归测试及 headless 启动。此前 CI 检出的 Projection 命名问题已修复后复测通过。
+- 未完成验收：Android 真机触控、画面布局、不同分辨率和帧率仍需设备验证。
+- 下一步：Android 真机验收；之后推进任务活跃度奖励和统一红点派生系统。
 
 
 ## 2026-11-04 — 散件装备穿戴闭环（PR #29 已合并）
