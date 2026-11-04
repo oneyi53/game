@@ -41,8 +41,10 @@ func initialize(task_definitions: Array, stage_definitions: Array, current_day_k
     return true
 
 func _load_definitions(task_definitions: Array, stage_definitions: Array) -> bool:
-    _task_definitions.clear()
-    _stage_definitions.clear()
+    # Build candidate definitions separately so a rejected reconfiguration
+    # cannot leave the live manager with a partially replaced configuration.
+    var next_task_definitions: Dictionary = {}
+    var next_stage_definitions: Dictionary = {}
     for value in task_definitions:
         if not (value is Dictionary):
             error_message = "Every daily task definition must be a Dictionary."
@@ -56,7 +58,7 @@ func _load_definitions(task_definitions: Array, stage_definitions: Array) -> boo
         if task_id == "" or event_type == "" or target_count <= 0 or points < 0 or not (filters is Dictionary):
             error_message = "Invalid daily task definition: " + task_id
             return false
-        if _task_definitions.has(task_id):
+        if next_task_definitions.has(task_id):
             error_message = "Duplicate daily task id: " + task_id
             return false
         task["id"] = task_id
@@ -64,7 +66,7 @@ func _load_definitions(task_definitions: Array, stage_definitions: Array) -> boo
         task["target_count"] = target_count
         task["points"] = points
         task["filters"] = filters.duplicate(true)
-        _task_definitions[task_id] = task
+        next_task_definitions[task_id] = task
 
     for value in stage_definitions:
         if not (value is Dictionary):
@@ -77,13 +79,16 @@ func _load_definitions(task_definitions: Array, stage_definitions: Array) -> boo
         if stage_id == "" or threshold <= 0 or reward_id == "":
             error_message = "Invalid activity stage definition: " + stage_id
             return false
-        if _stage_definitions.has(stage_id):
+        if next_stage_definitions.has(stage_id):
             error_message = "Duplicate activity stage id: " + stage_id
             return false
         stage["id"] = stage_id
         stage["threshold"] = threshold
         stage["reward_id"] = reward_id
-        _stage_definitions[stage_id] = stage
+        next_stage_definitions[stage_id] = stage
+
+    _task_definitions = next_task_definitions
+    _stage_definitions = next_stage_definitions
     return true
 
 func _is_valid_day_key(value: String) -> bool:
@@ -118,7 +123,7 @@ func _restore_progress(saved_state: Dictionary) -> void:
     if saved_progress is Dictionary:
         for task_id_value in saved_progress.keys():
             var task_id: String = str(task_id_value)
-            if not _task_definitions.has(task_id):
+            if not next_task_definitions.has(task_id):
                 continue
             var task: Dictionary = _task_definitions[task_id]
             var progress: int = clampi(int(saved_progress[task_id_value]), 0, int(task["target_count"]))
@@ -128,7 +133,7 @@ func _restore_progress(saved_state: Dictionary) -> void:
     if saved_claims is Array:
         for stage_id_value in saved_claims:
             var stage_id: String = str(stage_id_value)
-            if _stage_definitions.has(stage_id):
+            if next_stage_definitions.has(stage_id):
                 _claimed_stages[stage_id] = true
 
     var saved_occurrences: Variant = saved_state.get("processed_occurrences", [])
@@ -217,7 +222,7 @@ func get_activity_points() -> int:
     return total
 
 func claim_stage(stage_id: String, reward_grant: Callable) -> Dictionary:
-    if not _stage_definitions.has(stage_id):
+    if not next_stage_definitions.has(stage_id):
         return {"ok": false, "reason": "unknown_stage"}
     if _claimed_stages.has(stage_id):
         return {"ok": false, "reason": "already_claimed"}
