@@ -12,7 +12,7 @@
 - `sprites/equipment_sets/`：3 套装备外观，每套 6 个部位，共 18 张独立装备 PNG，另有 1 张套装预览图。
 - `sprites/previews/`：英雄、怪物、Boss、装备和场景预览图。
 - `../heroes-v1.png`、`../monsters-v1.png`、`../bosses-v1.png`、`../equipment-v1.png`、`../scene-v1.png`：原始分类图集。
-- 仓库根目录 `effect_atlas.png`：已保留的特效图集源图；目前不代表特效动画已完成接入。
+- `effects/effect_atlas.png`：用户确认的原创特效图集，已接入技能施放/命中表现；不代表所有技能动画均已完成。
 
 ## 装备套装
 
@@ -27,3 +27,10 @@
 ## 使用约定
 
 优先复用现有 PNG 与预览，不重复生成同类素材。运行时接入时应通过统一资源路径/资源清单引用，并在 Godot 4.7.2 中执行导入和启动验证。
+
+
+## 品牌与特效资源
+
+- `branding/icon.png`：Godot 应用图标，由 `project.godot` 的 `config/icon` 引用。
+- `effects/effect_atlas.png`：原创技能特效图集，由 `scripts/core/main.gd` 引用。
+- 两个文件原先位于仓库根目录，现归档至本目录；移动应保留原始 PNG blob，不改变像素内容。

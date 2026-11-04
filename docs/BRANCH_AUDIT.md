@@ -1,6 +1,6 @@
 # 2.5D / 美术分支静态审查记录
 
-> 审查日期：2026-11-04
+> 审查日期：2026-11-04（历史静态审查；最新基线见第 9 节）
 > 审查方式：GitHub 远程文件读取、递归 Git tree 与 blob SHA 对照、关键脚本静态阅读。
 > 未执行：本机 Godot 导入、运行、Android 导出、设备实测。因此以下属于静态审查结论，不代表运行验证。
 
@@ -238,3 +238,11 @@ main.gd 默认 active_map_id 和无 map_id 存档的回退值都是 MOSS_CROWN�
 7. 在 Godot 4.7.2 完成导入、主场景运行、移动/战斗/传送/存档回归，再做 Android 导出和真机测试。
 
 当前最先要解决的是坐标契约 + 旧存档迁移，不是先把所有 PNG 复制进项目。基础 PNG 已经在 main。
+
+
+## 9. 最新主线与分支快照补充（2026-11-04）
+
+- 当前 main 基线为 `598216e6f67611b0f3db452718b4aa7cdf57ebb2`；PR #29 散件装备已合并，Godot 4.7.2 headless 检查有成功记录。
+- 本文前文记录的旧 main SHA 与 ahead/behind 数字属于当时审查快照，不可作为当前分支提交数；完整远程分支和 PR 状态见 `docs/BRANCH_CATALOG.md`。
+- 2.5D / 美术历史分支仍不得整体 merge。先解决 1200×900 与 1600×1200 边界不一致、旧存档坐标迁移，再按模块迁移。
+- 根目录原创 PNG 归档到 `assets/art-v1/effects/effect_atlas.png` 与 `assets/art-v1/branding/icon.png`；运行时引用同步更新。Godot 新路径导入尚待本次 PR 检查。
