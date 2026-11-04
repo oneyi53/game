@@ -48,6 +48,9 @@ const EFFECT_ATLAS: Texture2D = preload("res://effect_atlas.png")
 @onready var recruit_panel: RecruitPanel = $UI/RecruitPanel
 @onready var error_label: Label = $UI/ErrorLabel
 
+var teleport_panel: PanelContainer = null
+var teleport_list: VBoxContainer = null
+
 var data_loader: DataLoader = null
 var save_manager: SaveManager = null
 var quest_manager: QuestManager = null
@@ -217,6 +220,9 @@ func _ready() -> void:
     var chest_loot: Dictionary = data_loader.items["chest_loot"]
     chest_node.setup(int(chest_loot["gold"]), chest_opened)
     chest_node.opened.connect(_on_chest_opened)
+    _ensure_teleport_panel()
+    hud.teleport_pressed.connect(_on_teleport_pressed)
+    hud.set_teleport_available(_has_unlocked_campfire())
     hud.skill_pressed.connect(_on_skill_pressed)
     hud.interact_pressed.connect(_on_interact_pressed)
     hud.save_pressed.connect(_on_save_pressed)
@@ -552,7 +558,8 @@ func _on_interact_pressed() -> void:
 func _on_campfire_interact(entry: Dictionary) -> void:
     var campfire_id: String = str(entry["id"])
     if camp_manager.is_campfire_unlocked(campfire_id):
-        hud.show_message(str(entry["intro"]) + " " + str(entry["teleport_intro"]))
+        hud.show_message(str(entry["teleport_intro"]))
+        _open_teleport_panel()
         return
     var cost: int = int(entry["cost_wood"])
     if wood < cost:
@@ -561,14 +568,116 @@ func _on_campfire_interact(entry: Dictionary) -> void:
     wood -= cost
     camp_manager.unlock_campfire(campfire_id)
     hud.set_wood(wood, wood_cap)
+    hud.set_teleport_available(true)
     hud.show_message(str(entry["dispel_prompt"]))
     _save_game()
+    _open_teleport_panel()
 
 # Only one full-screen menu/settlement panel may be visible at a time.
 # Tapping the active menu button closes it; tapping another switches panels.
+
+func _has_unlocked_campfire() -> bool:
+    if camp_manager == null:
+        return false
+    for campfire_id in camp_manager.campfire_order:
+        if camp_manager.is_campfire_unlocked(str(campfire_id)):
+            return true
+    return false
+
+func _ensure_teleport_panel() -> void:
+    if teleport_panel != null:
+        return
+    teleport_panel = PanelContainer.new()
+    teleport_panel.name = "TeleportPanel"
+    teleport_panel.set_anchors_preset(Control.PRESET_CENTER)
+    teleport_panel.offset_left = -190.0
+    teleport_panel.offset_top = -170.0
+    teleport_panel.offset_right = 190.0
+    teleport_panel.offset_bottom = 170.0
+    teleport_panel.z_index = 100
+    teleport_panel.visible = false
+    $UI.add_child(teleport_panel)
+    var layout := VBoxContainer.new()
+    layout.add_theme_constant_override("separation", 12)
+    teleport_panel.add_child(layout)
+    var title := Label.new()
+    title.text = "营火传送"
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    layout.add_child(title)
+    var note := Label.new()
+    note.text = "当前为同一片森林地图内的快速移动"
+    note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    layout.add_child(note)
+    teleport_list = VBoxContainer.new()
+    layout.add_child(teleport_list)
+    var entry_button := Button.new()
+    entry_button.text = "森林入口"
+    entry_button.custom_minimum_size = Vector2(0.0, 48.0)
+    entry_button.pressed.connect(_on_teleport_destination_pressed.bind("forest_entry"))
+    teleport_list.add_child(entry_button)
+    var fire_button := Button.new()
+    fire_button.text = "营火据点"
+    fire_button.custom_minimum_size = Vector2(0.0, 48.0)
+    if campfire_node != null:
+        fire_button.pressed.connect(_on_teleport_destination_pressed.bind("campfire"))
+    else:
+        fire_button.disabled = true
+    teleport_list.add_child(fire_button)
+    var close_button := Button.new()
+    close_button.text = "关闭"
+    close_button.pressed.connect(_close_teleport_panel)
+    layout.add_child(close_button)
+
+func _on_teleport_pressed() -> void:
+    if not _has_unlocked_campfire():
+        hud.show_message("先在森林营火处花费木材解锁传送")
+        return
+    if teleport_panel == null:
+        _ensure_teleport_panel()
+    _open_teleport_panel()
+
+func _open_teleport_panel() -> void:
+    if not _has_unlocked_campfire():
+        return
+    if teleport_panel == null:
+        _ensure_teleport_panel()
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    for panel in panels:
+        panel.visible = false
+    teleport_panel.visible = true
+
+func _close_teleport_panel() -> void:
+    if teleport_panel != null:
+        teleport_panel.visible = false
+
+func _on_teleport_destination_pressed(destination_id: String) -> void:
+    if captain == null or not _has_unlocked_campfire():
+        _close_teleport_panel()
+        return
+    var destination := Vector2.ZERO
+    if destination_id == "forest_entry":
+        destination = Vector2(800.0, 600.0)
+    elif destination_id == "campfire" and campfire_node != null:
+        destination = campfire_node.global_position + Vector2(0.0, 96.0)
+    else:
+        hud.show_message("传送失败：目的地尚未开放")
+        return
+    # Move the full party together and preserve each member's formation.
+    for hero in heroes:
+        if hero == null or not is_instance_valid(hero):
+            continue
+        hero.move_input = Vector2.ZERO
+        hero.global_position = destination + hero.formation_offset
+    camera.position = destination
+    _close_teleport_panel()
+    hud.show_message("已传送至" + ("森林入口" if destination_id == "forest_entry" else "营火据点"))
+    _save_game()
+
 func _toggle_menu_panel(target: Control) -> void:
     var should_open: bool = not target.visible
     var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    if teleport_panel != null:
+        panels.append(teleport_panel)
     for panel in panels:
         panel.visible = false
     target.visible = should_open
