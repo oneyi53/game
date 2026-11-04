@@ -22,8 +22,9 @@ extends Node2D
 # 8/6 kill quests were only completable by save/reload farming, since
 # only 4 monsters spawned per run and nothing respawned.
 
-const MAP_WIDTH: int = 1600
-const MAP_HEIGHT: int = 1200
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const WorldMapManagerScript = preload("res://scripts/core/world_map_manager.gd")
+const WorldSaveMigrationScript = preload("res://scripts/core/world_save_migration.gd")
 const MAX_UNITS: int = 12
 const RESPAWN_DELAY: float = 8.0
 
@@ -61,6 +62,10 @@ var offline_manager: OfflineManager = null
 var recruitment_manager: RecruitmentManager = null
 var level_manager: LevelManager = null
 var pending_offline: Dictionary = {}
+var world_map_manager: WorldMapManager = WorldMapManagerScript.new()
+var active_map_id: String = WorldMapManagerScript.MOSS_CROWN
+var map_positions: Dictionary = {}
+var world_state_migrated: bool = false
 var campfire_node: Node2D = null
 var heroes: Array = []
 var enemies: Array = []
@@ -215,14 +220,29 @@ func _ready() -> void:
         error_label.text = "单位数量超过上限：" + str(planned_units)
         push_error(error_label.text)
         return
+    var migration_result: Dictionary = WorldSaveMigrationScript.migrate_save(save_data)
+    save_data = migration_result["data"]
+    world_state_migrated = bool(migration_result.get("migrated", false))
+    active_map_id = str(migration_result.get("map_id", WorldMapManagerScript.MOSS_CROWN))
+    if not world_map_manager.is_unlocked(active_map_id, boss_defeated, elite_defeated, valley_quest_done):
+        active_map_id = WorldMapManagerScript.MOSS_CROWN
+    var saved_map_positions = save_data.get("map_positions", {})
+    if saved_map_positions is Dictionary:
+        for saved_map_id in saved_map_positions:
+            var saved_map_position = saved_map_positions[saved_map_id]
+            if world_map_manager.is_known_map(str(saved_map_id)) and saved_map_position is Dictionary:
+                map_positions[str(saved_map_id)] = Vector2(float(saved_map_position.get("x", 600.0)), float(saved_map_position.get("y", 600.0)))
     _spawn_heroes(save_data)
     _spawn_enemies()
     _spawn_campfire()
+    $Map.set_active_map(active_map_id)
+    _apply_active_map_visibility()
     var chest_loot: Dictionary = data_loader.items["chest_loot"]
     chest_node.setup(int(chest_loot["gold"]), chest_opened)
     chest_node.opened.connect(_on_chest_opened)
     _ensure_teleport_panel()
     hud.teleport_pressed.connect(_on_teleport_pressed)
+    hud.map_pressed.connect(_on_map_pressed)
     hud.set_teleport_available(_has_unlocked_campfire())
     hud.skill_pressed.connect(_on_skill_pressed)
     hud.interact_pressed.connect(_on_interact_pressed)
@@ -273,7 +293,11 @@ func _ready() -> void:
             offline_panel.show_settlement(lines)
     camera.make_current()
     if captain != null:
-        camera.position = captain.global_position
+        camera.position = _projected_camera_position(captain.global_position)
+    if world_state_migrated and had_save:
+        # SaveManager preserves the previous valid save as backup before
+        # replacing it with the map-local format.
+        _save_game()
 
 func _spawn_heroes(save_data: Dictionary) -> void:
     # Only recruited heroes spawn, in heroes.json order, with
@@ -281,10 +305,13 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     # table index) so a 1-person party has no empty slots and a
     # growing party never overlaps. The captain is always first.
     var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
-    var start_pos: Vector2 = Vector2(800.0, 600.0)
-    if save_data.get("player_position") is Dictionary:
+    var start_pos: Vector2 = world_map_manager.spawn_position(active_map_id)
+    if map_positions.has(active_map_id):
+        start_pos = map_positions[active_map_id]
+    elif str(save_data.get("map_id", "")) == active_map_id and save_data.get("player_position") is Dictionary:
         var saved_pos: Dictionary = save_data["player_position"]
-        start_pos = Vector2(float(saved_pos.get("x", 800.0)), float(saved_pos.get("y", 600.0)))
+        start_pos = Vector2(float(saved_pos.get("x", start_pos.x)), float(saved_pos.get("y", start_pos.y)))
+    start_pos = WorldMapManagerScript.clamp_position(start_pos)
     # Restore per-hero HP after level and equipment have rebuilt max_hp.
     # Older saves without a heroes array retain the full-health default.
     var saved_hp_by_id: Dictionary = {}
@@ -300,6 +327,8 @@ func _spawn_heroes(save_data: Dictionary) -> void:
             continue
         var hero = HERO_SCENE.instantiate()
         hero.setup(hero_data, hero_id == "captain")
+        hero.world_map_id = active_map_id
+        hero.visual_formation_offset = offsets[spawn_index] * 2.1
         hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
         _rebuild_hero_stats(hero, false)
         if saved_hp_by_id.has(hero_id):
@@ -340,6 +369,8 @@ func _spawn_recruited_hero(hero_id: String) -> bool:
     var index: int = heroes.size()
     var hero = HERO_SCENE.instantiate()
     hero.setup(hero_data, false)
+    hero.world_map_id = active_map_id
+    hero.visual_formation_offset = offsets[index] * 2.1
     hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
     _rebuild_hero_stats(hero, false)
     hero.global_position = captain.global_position + offsets[index]
@@ -369,7 +400,7 @@ func _grant_party_xp(amount: int) -> void:
     if hero_panel.visible:
         hero_panel.refresh()
 
-func _spawn_enemy_at(enemy_id: String, pos: Vector2) -> bool:
+func _spawn_enemy_at(enemy_id: String, _legacy_pos: Vector2) -> bool:
     var enemy_data = data_loader.get_enemy(enemy_id)
     if enemy_data == null:
         config_failed = true
@@ -378,8 +409,11 @@ func _spawn_enemy_at(enemy_id: String, pos: Vector2) -> bool:
         return false
     var enemy = ENEMY_SCENE.instantiate()
     enemy.setup(enemy_data)
-    enemy.global_position = pos
-    enemy.set_meta("spawn_pos", pos)
+    var enemy_map_id: String = world_map_manager.map_for_enemy(enemy_id)
+    var local_spawn: Vector2 = world_map_manager.enemy_spawn_position(enemy_id)
+    enemy.global_position = local_spawn
+    enemy.set_meta("spawn_pos", local_spawn)
+    enemy.set_meta("world_map_id", enemy_map_id)
     enemies_root.add_child(enemy)
     enemy.add_to_group("enemies")
     enemy.died.connect(_on_enemy_died)
@@ -438,8 +472,9 @@ func _spawn_enemies() -> void:
             return
         boss = BOSS_SCENE.instantiate()
         boss.setup(boss_data)
-        boss.global_position = Vector2(1300.0, 900.0)
-        boss.spawn_position = Vector2(1300.0, 900.0)
+        boss.global_position = world_map_manager.enemy_spawn_position(data_loader.boss_id)
+        boss.spawn_position = boss.global_position
+        boss.set_meta("world_map_id", world_map_manager.map_for_enemy(data_loader.boss_id))
         enemies_root.add_child(boss)
         boss.add_to_group("enemies")
         boss.died.connect(_on_enemy_died)
@@ -453,8 +488,9 @@ func _spawn_enemies() -> void:
             return
         elite_boss = BOSS_SCENE.instantiate()
         elite_boss.setup(elite_data)
-        elite_boss.global_position = Vector2(1000.0, 220.0)
-        elite_boss.spawn_position = Vector2(1000.0, 220.0)
+        elite_boss.global_position = world_map_manager.enemy_spawn_position(data_loader.elite_boss_id)
+        elite_boss.spawn_position = elite_boss.global_position
+        elite_boss.set_meta("world_map_id", world_map_manager.map_for_enemy(data_loader.elite_boss_id))
         enemies_root.add_child(elite_boss)
         elite_boss.add_to_group("enemies")
         elite_boss.died.connect(_on_enemy_died)
@@ -483,7 +519,7 @@ func _tick_respawns(delta: float) -> void:
     var ready: Array = []
     for entry in respawn_queue:
         entry["timer"] = float(entry["timer"]) - delta
-        if float(entry["timer"]) <= 0.0:
+        if float(entry["timer"]) <= 0.0 and world_map_manager.map_for_enemy(str(entry["id"])) == active_map_id:
             ready.append(entry)
     for entry in ready:
         if heroes.size() + enemies.size() >= MAX_UNITS:
@@ -494,12 +530,14 @@ func _tick_respawns(delta: float) -> void:
 func _process(delta: float) -> void:
     if config_failed or captain == null:
         return
-    camera.position = captain.global_position
+    _update_world_visuals()
+    camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
-    var input_vec: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+    var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
-        input_vec = joystick.vector
-    captain.move_input = input_vec
+        screen_input = joystick.vector
+    var world_input := Vector2(screen_input.x + 2.0 * screen_input.y, -screen_input.x + 2.0 * screen_input.y)
+    captain.move_input = world_input.normalized()
     _tick_respawns(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -964,6 +1002,8 @@ func _save_game() -> void:
         "chest_opened": chest_opened,
         "boss_defeated": boss_defeated,
         "elite_defeated": elite_defeated,
+        "map_id": active_map_id,
+        "map_positions": _serialize_map_positions(),
         "player_position": {"x": captain.global_position.x, "y": captain.global_position.y},
         "heroes": hero_states,
         "recruitment": recruitment_manager.save_data(),
@@ -1051,17 +1091,18 @@ func _on_enemy_died(enemy) -> void:
     # Ordinary monsters respawn at their spawn point after a delay,
     # so kill quests stay completable inside one run. Bosses never do.
     var spawn_pos: Vector2 = enemy.get_meta("spawn_pos", Vector2.ZERO) if enemy.has_meta("spawn_pos") else Vector2.ZERO
-    respawn_queue.append({"id": enemy_id, "pos": spawn_pos, "timer": RESPAWN_DELAY})
+    respawn_queue.append({"id": enemy_id, "pos": spawn_pos, "map_id": world_map_manager.map_for_enemy(enemy_id), "timer": RESPAWN_DELAY})
     _save_game()
 
 func _on_hero_died(hero) -> void:
     hud.show_message(str(hero.hero_name) + " 倒下了，3 秒后复活")
-    var respawn_pos: Vector2 = Vector2(800.0, 600.0)
+    var respawn_pos: Vector2 = world_map_manager.spawn_position(active_map_id)
     if hero != captain and captain != null:
         respawn_pos = captain.global_position + Vector2(0.0, 40.0)
     await get_tree().create_timer(3.0).timeout
     if hero != null:
-        hero.respawn(respawn_pos)
+        hero.world_map_id = active_map_id
+        hero.respawn(WorldMapManagerScript.clamp_position(respawn_pos))
         if hero_panel.visible:
             hero_panel.refresh()
 
