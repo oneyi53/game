@@ -676,6 +676,8 @@ func _on_skill_pressed() -> void:
     for enemy in get_tree().get_nodes_in_group("enemies"):
         if enemy == null or bool(enemy.get("dead")):
             continue
+        if str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) != active_map_id:
+            continue
         if captain.global_position.distance_to(enemy.global_position) <= 140.0:
             hit_positions.append(enemy.global_position)
     if captain.use_skill():
@@ -690,12 +692,12 @@ func _on_skill_pressed() -> void:
 func _on_interact_pressed() -> void:
     if captain == null:
         return
-    if campfire_node != null and camp_manager != null and not camp_manager.campfire_order.is_empty():
+    if campfire_node != null and campfire_node.visible and camp_manager != null and not camp_manager.campfire_order.is_empty():
         var entry = camp_manager.campfire(camp_manager.campfire_order[0])
         if entry != null and captain.global_position.distance_to(campfire_node.global_position) < 80.0:
             _on_campfire_interact(entry)
             return
-    if chest_node == null:
+    if chest_node == null or not chest_node.visible:
         return
     if captain.global_position.distance_to(chest_node.global_position) < 80.0:
         var gained: int = chest_node.try_open()
@@ -752,7 +754,7 @@ func _ensure_teleport_panel() -> void:
     title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     layout.add_child(title)
     var note := Label.new()
-    note.text = "当前为同一片森林地图内的快速移动"
+    note.text = "可在已解锁的独立地图之间传送"
     note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     layout.add_child(note)
     teleport_list = VBoxContainer.new()
@@ -771,7 +773,7 @@ func _refresh_teleport_destinations() -> void:
         child.queue_free()
     _add_teleport_destination("forest_entry", "森林入口", true, "冒险起点")
     _add_teleport_destination("campfire", "营火据点", campfire_node != null, "已激活的营火")
-    _add_teleport_destination("moss_crown", "苔冠空地", boss_defeated, "击败森林首领后开放")
+    _add_teleport_destination("moss_crown", "苔冠空地", true, "已开放")
     _add_teleport_destination("fallen_leaf", "落叶幽谷", elite_defeated, "击败精英首领后开放")
     _add_teleport_destination("morning_dew", "朝露林地", valley_quest_done, "完成落叶幽谷主线后开放")
 
@@ -810,11 +812,11 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
     if captain == null or not _has_unlocked_campfire():
         _close_teleport_panel()
         return
-    var destination := Vector2.ZERO
+    var target_map_id: String = WorldMapManagerScript.MOSS_CROWN
+    var destination: Vector2 = world_map_manager.spawn_position(target_map_id)
     var destination_name: String = ""
     match destination_id:
         "forest_entry":
-            destination = Vector2(800.0, 600.0)
             destination_name = "森林入口"
         "campfire":
             if campfire_node == null:
@@ -823,34 +825,34 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
             destination = campfire_node.global_position + Vector2(0.0, 96.0)
             destination_name = "营火据点"
         "moss_crown":
-            if not boss_defeated:
-                hud.show_message("击败森林首领后才能前往苔冠空地")
-                return
-            destination = Vector2(600.0, 260.0)
             destination_name = "苔冠空地"
         "fallen_leaf":
-            if not elite_defeated:
+            target_map_id = WorldMapManagerScript.FALLEN_LEAF
+            if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done):
                 hud.show_message("击败精英首领后才能前往落叶幽谷")
                 return
-            destination = Vector2(720.0, 880.0)
+            destination = world_map_manager.spawn_position(target_map_id)
             destination_name = "落叶幽谷"
         "morning_dew":
-            if not valley_quest_done:
+            target_map_id = WorldMapManagerScript.MORNING_DEW
+            if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done):
                 hud.show_message("完成落叶幽谷主线后才能前往朝露林地")
                 return
-            destination = Vector2(1200.0, 920.0)
+            destination = world_map_manager.spawn_position(target_map_id)
             destination_name = "朝露林地"
         _:
             hud.show_message("传送失败：未知目的地")
             return
-    # Move the full party together and preserve each member's formation.
+    if target_map_id != active_map_id:
+        _switch_map(target_map_id)
     for hero in heroes:
         if hero == null or not is_instance_valid(hero):
             continue
         hero.move_input = Vector2.ZERO
         hero.velocity = Vector2.ZERO
-        hero.global_position = destination + hero.formation_offset
-    camera.position = destination
+        hero.world_map_id = active_map_id
+        hero.global_position = WorldMapManagerScript.clamp_position(destination + hero.formation_offset)
+    camera.position = _projected_camera_position(captain.global_position)
     _close_teleport_panel()
     hud.show_message("已传送至 " + destination_name)
     _save_game()
