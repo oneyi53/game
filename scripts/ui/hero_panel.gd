@@ -26,11 +26,21 @@ func set_formation_data(p_formation_manager, p_hero_definitions: Array, p_level_
 func refresh() -> void:
     if panel_label == null:
         return
+    var summary_lines: Array[String] = ["英雄编队"]
     if formation_manager != null and not formation_manager.active_ids.is_empty():
         var leader_name: String = _hero_name(str(formation_manager.active_ids[0]))
-        panel_label.text = "英雄编队  " + str(formation_manager.active_ids.size()) + "/" + str(formation_manager.max_party_size) + "    当前队长：" + leader_name
-    else:
-        panel_label.text = "英雄编队"
+        summary_lines[0] = "英雄编队  " + str(formation_manager.active_ids.size()) + "/" + str(formation_manager.max_party_size) + "    当前队长：" + leader_name
+    for hero in heroes:
+        if hero == null:
+            continue
+        summary_lines.append(
+            str(hero.hero_name) + "（" + str(hero.data.get("role", "")) + "）"
+            + " Lv." + str(hero.level)
+            + " HP " + str(hero.hp) + "/" + str(hero.max_hp)
+            + " ATK " + str(hero.attack)
+            + " DEF " + str(hero.defense)
+        )
+    panel_label.text = "\n".join(summary_lines)
     if formation_list == null or formation_manager == null:
         return
     for child in formation_list.get_children():
