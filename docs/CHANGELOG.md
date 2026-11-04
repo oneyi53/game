@@ -2,6 +2,18 @@
 
 本文件记录可追溯的项目变更。Git commit 是代码事实来源；本日志解释每次变更的目的、范围和验证状态。
 
+## 2026-11-04 — 本地代码与架构静态审查报告
+
+- 分支：`docs/local-code-audit-2026-11-04`
+- 基线：本地 `HeroWorld-clean`，main HEAD `e194898`。
+- 新增文件：`docs/LOCAL_CODE_AUDIT_2026-11-04.md`。
+- 更新文件：`README.md`、`docs/PROJECT_STATUS.md`、`docs/CHANGELOG.md`。
+- 变更说明：记录本地批量只读审查的项目结构、主要系统实现盘点、美术资源引用现状、存档观察、潜在风险及下一轮交叉审查清单。
+- 影响范围：仅文档；没有修改游戏代码、美术资源、Godot 配置或存档结构。
+- 审查方式：Antigravity 批量读取脚本和数据文件，分析汇总输出；报告中的汇总输出行号不等同于源文件行号。
+- 验证结果：文档整理；未执行 Godot headless、功能回归、Android/iOS 导出或真机测试。报告中的疑点仍需逐项核实。
+- 下一步：复核怪物刷新容量、招募碎片扣除、英雄 HP 恢复和 SaveManager 调用链，再决定是否创建代码修复分支。
+
 ## 2026-11-04 — 2.5D 静态审查文档合并至 main
 
 - PR：[#4](https://github.com/oneyi53/game/pull/4)
