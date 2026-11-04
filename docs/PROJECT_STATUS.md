@@ -160,7 +160,7 @@ main 已经包含基础美术资源文件，但 main 的角色、敌人、地图
 - 当前正式 main 基线：`78a92e8e7158260cf185388bac3ee6b24a6db1e5`（已包含 PR #30 的分支/美术归档整理）。
 - 当前工作分支：`feat/world-coordinate-save-migration-2026-11-04`。
 - 新增纯函数迁移模块：`scripts/core/world_save_migration.gd`；将旧共享地图 1600×1200 的区域坐标转换为新地图 1200×900 的本地坐标。
-- 区域识别依据旧 MapDrawer 的三个真实区域矩形；落叶幽谷要求 Boss 已击败；朝露林地要求精英 Boss 已击败且 `quests.completed.side_valley_puppet` 为 true。
+- 区域识别依据旧 MapDrawer 的三个真实区域矩形；落叶幽谷要求精英 Boss 已击败；朝露林地要求精英 Boss 已击败且 `quests.completed.side_valley_puppet` 为 true。
 - 已有新格式 `map_id` 坐标按本地坐标解释；未知或未解锁地图安全回退到苔冠空地，不再误按旧共享坐标缩放。
 - 新增 8 项 GDScript 回归测试，并将测试命令加入 Godot 4.7.2 CI。
 - 迁移模块目前尚未接入主场景加载/保存；本分支没有改变现有玩家存档、schema_version、经济、装备或战斗数据。
