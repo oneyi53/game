@@ -1,7 +1,7 @@
 class_name Chest
 extends Area2D
 
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const CHEST_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/chest.png")
 
 signal opened(gold_amount)
@@ -23,7 +23,7 @@ func try_open() -> int:
     return reward_gold
 
 func _draw() -> void:
-    var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    var offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
     draw_set_transform(offset, 0.0, Vector2(1.0, 0.45))
     draw_circle(Vector2.ZERO, 13.0, Color(0.05, 0.18, 0.05, 0.25))
     draw_set_transform(offset)
