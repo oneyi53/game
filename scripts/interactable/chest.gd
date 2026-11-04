@@ -3,8 +3,9 @@ extends Area2D
 
 # A chest that opens once. Opening gives gold and emits "opened",
 # which the main scene uses to update gold and auto-save.
-
 signal opened(gold_amount)
+
+const CHEST_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/chest.png")
 
 var is_open: bool = false
 var reward_gold: int = 0
@@ -23,11 +24,6 @@ func try_open() -> int:
     return reward_gold
 
 func _draw() -> void:
-    # Visual only: same 28x20 box, same open/closed logic.
-    if is_open:
-        draw_rect(Rect2(-14.0, -10.0, 28.0, 20.0), Color(0.5, 0.35, 0.1))
-        draw_rect(Rect2(-14.0, -10.0, 28.0, 4.0), Color(0.35, 0.25, 0.08))
-    else:
-        draw_rect(Rect2(-14.0, -10.0, 28.0, 20.0), Color(1.0, 0.8, 0.2))
-        draw_rect(Rect2(-14.0, -10.0, 28.0, 6.0), Color(0.8, 0.6, 0.1))
-        draw_circle(Vector2(0.0, 0.0), 3.0, Color(1.0, 0.9, 0.4))
+    # Reuse the same chest artwork; a muted tint distinguishes claimed chests.
+    var tint: Color = Color(0.55, 0.55, 0.55, 1.0) if is_open else Color.WHITE
+    draw_texture_rect(CHEST_TEXTURE, Rect2(-32.0, -32.0, 64.0, 64.0), false, tint)
