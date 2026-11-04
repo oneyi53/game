@@ -591,9 +591,9 @@ func _ensure_teleport_panel() -> void:
     teleport_panel.name = "TeleportPanel"
     teleport_panel.set_anchors_preset(Control.PRESET_CENTER)
     teleport_panel.offset_left = -190.0
-    teleport_panel.offset_top = -170.0
+    teleport_panel.offset_top = -220.0
     teleport_panel.offset_right = 190.0
-    teleport_panel.offset_bottom = 170.0
+    teleport_panel.offset_bottom = 220.0
     teleport_panel.z_index = 100
     teleport_panel.visible = false
     $UI.add_child(teleport_panel)
@@ -610,23 +610,31 @@ func _ensure_teleport_panel() -> void:
     layout.add_child(note)
     teleport_list = VBoxContainer.new()
     layout.add_child(teleport_list)
-    var entry_button := Button.new()
-    entry_button.text = "森林入口"
-    entry_button.custom_minimum_size = Vector2(0.0, 48.0)
-    entry_button.pressed.connect(_on_teleport_destination_pressed.bind("forest_entry"))
-    teleport_list.add_child(entry_button)
-    var fire_button := Button.new()
-    fire_button.text = "营火据点"
-    fire_button.custom_minimum_size = Vector2(0.0, 48.0)
-    if campfire_node != null:
-        fire_button.pressed.connect(_on_teleport_destination_pressed.bind("campfire"))
-    else:
-        fire_button.disabled = true
-    teleport_list.add_child(fire_button)
+    _refresh_teleport_destinations()
     var close_button := Button.new()
     close_button.text = "关闭"
     close_button.pressed.connect(_close_teleport_panel)
     layout.add_child(close_button)
+
+func _refresh_teleport_destinations() -> void:
+    if teleport_list == null:
+        return
+    for child in teleport_list.get_children():
+        teleport_list.remove_child(child)
+        child.queue_free()
+    _add_teleport_destination("forest_entry", "森林入口", true, "冒险起点")
+    _add_teleport_destination("campfire", "营火据点", campfire_node != null, "已激活的营火")
+    _add_teleport_destination("moss_crown", "苔冠空地", boss_defeated, "击败森林首领后开放")
+    _add_teleport_destination("fallen_leaf", "落叶幽谷", elite_defeated, "击败精英首领后开放")
+    _add_teleport_destination("morning_dew", "朝露林地", valley_quest_done, "完成落叶幽谷主线后开放")
+
+func _add_teleport_destination(destination_id: String, label: String, available: bool, hint: String) -> void:
+    var button := Button.new()
+    button.text = label + ("  ·  " + hint if available else "  ·  未开放（" + hint + "）")
+    button.custom_minimum_size = Vector2(0.0, 48.0)
+    button.disabled = not available
+    button.pressed.connect(_on_teleport_destination_pressed.bind(destination_id))
+    teleport_list.add_child(button)
 
 func _on_teleport_pressed() -> void:
     if not _has_unlocked_campfire():
@@ -641,6 +649,7 @@ func _open_teleport_panel() -> void:
         return
     if teleport_panel == null:
         _ensure_teleport_panel()
+    _refresh_teleport_destinations()
     var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
     for panel in panels:
         panel.visible = false
@@ -655,22 +664,48 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
         _close_teleport_panel()
         return
     var destination := Vector2.ZERO
-    if destination_id == "forest_entry":
-        destination = Vector2(800.0, 600.0)
-    elif destination_id == "campfire" and campfire_node != null:
-        destination = campfire_node.global_position + Vector2(0.0, 96.0)
-    else:
-        hud.show_message("传送失败：目的地尚未开放")
-        return
+    var destination_name: String = ""
+    match destination_id:
+        "forest_entry":
+            destination = Vector2(800.0, 600.0)
+            destination_name = "森林入口"
+        "campfire":
+            if campfire_node == null:
+                hud.show_message("传送失败：营火据点不可用")
+                return
+            destination = campfire_node.global_position + Vector2(0.0, 96.0)
+            destination_name = "营火据点"
+        "moss_crown":
+            if not boss_defeated:
+                hud.show_message("击败森林首领后才能前往苔冠空地")
+                return
+            destination = Vector2(600.0, 260.0)
+            destination_name = "苔冠空地"
+        "fallen_leaf":
+            if not elite_defeated:
+                hud.show_message("击败精英首领后才能前往落叶幽谷")
+                return
+            destination = Vector2(720.0, 880.0)
+            destination_name = "落叶幽谷"
+        "morning_dew":
+            if not valley_quest_done:
+                hud.show_message("完成落叶幽谷主线后才能前往朝露林地")
+                return
+            destination = Vector2(1200.0, 920.0)
+            destination_name = "朝露林地"
+        _:
+            hud.show_message("传送失败：未知目的地")
+            return
     # Move the full party together and preserve each member's formation.
     for hero in heroes:
         if hero == null or not is_instance_valid(hero):
             continue
         hero.move_input = Vector2.ZERO
+        hero.velocity = Vector2.ZERO
         hero.global_position = destination + hero.formation_offset
     camera.position = destination
     _close_teleport_panel()
-    hud.show_message("已传送至" + ("森林入口" if destination_id == "forest_entry" else "营火据点"))
+    hud.show_message("已传送至 " + destination_name)
     _save_game()
 
 func _toggle_menu_panel(target: Control) -> void:
