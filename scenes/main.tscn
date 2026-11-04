@@ -160,21 +160,33 @@ script = ExtResource("4_joy")
 script = ExtResource("5_panel")
 visible = false
 offset_left = 60.0
-offset_top = 520.0
+offset_top = 350.0
 offset_right = 660.0
-offset_bottom = 760.0
+offset_bottom = 710.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/HeroPanel"]
 offset_right = 600.0
-offset_bottom = 240.0
-color = Color(0, 0, 0, 0.7)
+offset_bottom = 360.0
+color = Color(0, 0, 0, 0.82)
 
 [node name="PanelLabel" type="RichTextLabel" parent="UI/HeroPanel"]
 offset_left = 16.0
-offset_top = 16.0
+offset_top = 10.0
 offset_right = 584.0
-offset_bottom = 224.0
+offset_bottom = 70.0
 bbcode_enabled = false
+
+[node name="FormationScroll" type="ScrollContainer" parent="UI/HeroPanel"]
+offset_left = 12.0
+offset_top = 78.0
+offset_right = 588.0
+offset_bottom = 350.0
+horizontal_scroll_mode = 0
+
+[node name="FormationList" type="VBoxContainer" parent="UI/HeroPanel/FormationScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 
 [node name="EquipPanel" type="Control" parent="UI"]
 script = ExtResource("7_equip")
