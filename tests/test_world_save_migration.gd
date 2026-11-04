@@ -39,7 +39,8 @@ func _test_map_unlock_gates() -> void:
     assert(maps.is_unlocked(WorldMaps.TOWN, false, false, false))
     assert(maps.is_unlocked(WorldMaps.MOSS_CROWN, false, false, false))
     assert(not maps.is_unlocked(WorldMaps.FALLEN_LEAF, false, false, false))
-    assert(maps.is_unlocked(WorldMaps.FALLEN_LEAF, true, false, false))
+    assert(not maps.is_unlocked(WorldMaps.FALLEN_LEAF, true, false, false))
+    assert(maps.is_unlocked(WorldMaps.FALLEN_LEAF, false, true, false))
     assert(not maps.is_unlocked(WorldMaps.MORNING_DEW, true, true, false))
     assert(maps.is_unlocked(WorldMaps.MORNING_DEW, true, true, true))
 
@@ -137,7 +138,8 @@ func _test_existing_map_local_save_is_preserved() -> void:
     var input := {
         "map_id": Migration.FALLEN_LEAF,
         "player_position": {"x": 420.0, "y": 500.0},
-        "boss_defeated": true
+        "boss_defeated": true,
+        "elite_defeated": true
     }
     var result: Dictionary = Migration.migrate_save(input)
     assert(result["migrated"] == false)
