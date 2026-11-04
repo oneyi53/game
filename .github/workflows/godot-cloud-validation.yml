@@ -90,6 +90,17 @@ jobs:
           fi
           grep -q "Hero power calculator tests: 3 passed" hero-power-tests.log
 
+      - name: Run town building entrance tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_town_building_registry.gd 2>&1 | tee town-building-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' town-building-tests.log; then
+            echo "Town building entrance tests reported errors."
+            exit 1
+          fi
+          grep -q "Town building entrance tests: 4 passed" town-building-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -112,4 +123,5 @@ jobs:
             hero-formation-tests.log
             reserve-hero-equipment-tests.log
             hero-power-tests.log
+            town-building-tests.log
           if-no-files-found: ignore
