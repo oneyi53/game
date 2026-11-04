@@ -196,3 +196,13 @@
 - 验证结果：等待 PR CI；包含 10 项编队规则测试、既有 13 项地图/坐标测试和 headless 启动。
 - 已知问题：编队数据层尚未接入运行时与 UI；非上阵英雄的装备/等级管理将在下一阶段统一处理。
 - 下一步：CI 通过后审查合并，再实现英雄收藏与编队编辑界面及队伍生成接入。
+
+
+## 2026-11-04 — 英雄编队规则调整：队长可更换（PR #35 更新中）
+
+- 分支：`feat/hero-formation-data-layer-2026-11-04`。
+- 修改文件：`scripts/core/formation_manager.gd`、`tests/test_formation_manager.gd`、`docs/HERO_FORMATION.md`、`docs/PROJECT_STATUS.md`、`docs/CHANGELOG.md`、`.github/workflows/godot-cloud-validation.yml`。
+- 变更：取消固定 `captain` ID 和首槽锁定；任意已拥有英雄均可成为队长。预备英雄提拔时，满编队伍会将原队长移入预备名单；下阵队长时下一位队员接任；任意槽位可交换；队伍至少保留一名出战英雄。
+- 存档兼容：`formation.active_ids` 仍是有序 ID 数组，首位即队长；旧存档中 `captain` 若仍在队伍会按原顺序保留，但不再享有不可替换特权；不改 schema_version。
+- 验证：原 PR CI run 41823230083 通过的是旧规则；本次新增 13 项测试，等待更新后 Godot 4.7.2 CI 复验。
+- 下一步：检查新 CI 结果，通过后再合并 PR #35；随后进入 UI/运行时接入阶段。
