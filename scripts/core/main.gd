@@ -805,10 +805,10 @@ func _rebuild_hero_stats(hero: Hero, preserve_hp_ratio: bool = true) -> void:
     var hp_ratio: float = float(hero.hp) / float(hero.max_hp) if hero.max_hp > 0 else 1.0
     hero.reset_to_base_stats()
     hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
-    hero.apply_loose_equipment_bonus(equipment_manager.loose_bonus_for_hero(hero.hero_id, backpack_manager.items))
     var camp_attack_pct: float = 5.0 if camp_manager.is_built("blacksmith") else 0.0
     var camp_hp_pct: float = 8.0 if camp_manager.is_built("training_ground") else 0.0
     hero.apply_camp_bonus(camp_attack_pct, camp_hp_pct)
+    hero.apply_loose_equipment_bonus(equipment_manager.loose_bonus_for_hero(hero.hero_id, backpack_manager.items))
     if preserve_hp_ratio:
         hero.hp = clampi(int(round(hp_ratio * float(hero.max_hp))), 1, hero.max_hp)
     hero.queue_redraw()
