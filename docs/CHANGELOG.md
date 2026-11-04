@@ -184,3 +184,15 @@
 - 验证结果：文档静态核对；无 Godot 运行测试（本次未改运行时代码）。
 - 已知问题：英雄编队编辑、统一战力评分、建筑实体入口、红点系统和日常活跃度奖励仍需独立实现；Android 真机验收仍未完成。
 - 下一步：先完成 PR #32 的 Android 真机验收，再按编队/战力、建筑入口、任务红点顺序开发。
+
+
+## 2026-11-04 — 英雄编队系统第一阶段：数据层
+
+- 分支：`feat/hero-formation-data-layer-2026-11-04`。
+- 修改文件：`scripts/core/formation_manager.gd`、`tests/test_formation_manager.gd`、`.github/workflows/godot-cloud-validation.yml`、`docs/HERO_FORMATION.md`、`docs/PROJECT_STATUS.md`、`docs/CHANGELOG.md`。
+- 变更说明：新增已拥有英雄与出战编队分离的数据管理器，支持上阵、下阵、换位、队长固定首槽、队伍上限与存档序列化；默认上限 4。
+- 数据/存档兼容性：本阶段未接入 SaveManager/Main，不修改现有存档，不改变当前队伍生成行为。
+- 验证环境：GitHub Actions / Godot 4.7.2。
+- 验证结果：等待 PR CI；包含 10 项编队规则测试、既有 13 项地图/坐标测试和 headless 启动。
+- 已知问题：编队数据层尚未接入运行时与 UI；非上阵英雄的装备/等级管理将在下一阶段统一处理。
+- 下一步：CI 通过后审查合并，再实现英雄收藏与编队编辑界面及队伍生成接入。
