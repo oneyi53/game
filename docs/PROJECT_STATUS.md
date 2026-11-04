@@ -3,6 +3,15 @@
 > Hero World 长期上下文入口。仓库 `oneyi53/game`；唯一正式主线 `main`。
 > 最后核对：2026-11-04。以下“当前状态”优先于本文后续保留的历史快照。
 
+## 当前功能分支进展：通用红点展示组件（待 PR 验证）
+
+- 分支：`feat/red-dot-indicator-ui-2026-11-04`（从 main 建立；不改动 main）。
+- 已新增 `scripts/ui/components/red_dot_indicator.gd`：默认隐藏、运行时显隐、尺寸配置、锚点/偏移定位、鼠标/触屏事件穿透；不包含业务状态和存档逻辑。
+- 本轮补充：`tests/test_red_dot_indicator.gd`（6 组 headless Control 测试）、`docs/RED_DOT_INDICATOR.md`（接口/用法/测试说明），并将测试接入 Godot 4.7.2 云端验证 workflow。
+- 验证状态：等待 GitHub Actions 实际执行；当前没有本地 Godot 运行结果，不将未执行的测试标记为通过。
+- 验收边界：组件仅负责展示；每日活跃度、统一业务红点派生服务、HUD/主城业务接入均不在本分支范围。
+
+
 ## 最新交接状态（2026-11-04）
 
 - **main 最新提交：** `318b11f99c5f807cb1289386849fd43c52ce06c2`；PR #35–#41 均已合并。英雄编队、队长更换、预备英雄装备、统一战力和主城建筑入口均已进入主线。
