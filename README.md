@@ -17,6 +17,7 @@
 | 文档 | 用途 |
 |---|---|
 | [项目状态与架构档案](docs/PROJECT_STATUS.md) | 项目定位、主线/分支关系、现有模块、风险、整合策略和下一步 |
+| [《百炼英雄》竞品研究与设计参考](docs/BAILIAN_HERO_REFERENCE_STUDY.md) | 画面、竖屏操作、战斗、探索、资源成长循环、开发优先级与验收清单 |
 | [2.5D / 美术分支静态审查](docs/BRANCH_AUDIT.md) | 文件净差异、资源归属、坐标/存档风险、静态接入完成度和整合顺序 |
 | [开发变更日志](docs/CHANGELOG.md) | 按日期、分支、Commit、文件和验证结果追踪每次修改 |
 | [开发工作流与会话交接](docs/DEVELOPMENT_WORKFLOW.md) | 分支策略、提交规范、验证等级和会话交接要求 |
@@ -30,4 +31,4 @@
 
 ## 当前主线
 
-当前正式基线以 GitHub main 最新提交为准。详细分支提交关系和待验证事项见 docs/PROJECT_STATUS.md。
+当前正式基线以 GitHub main 最新提交为准。详细分支提交关系和待验证事项见 docs/PROJECT_STATUS.md.
