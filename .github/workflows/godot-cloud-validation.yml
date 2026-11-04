@@ -1,0 +1,56 @@
+name: Godot 4.7.2 cloud validation
+
+on:
+  push:
+    branches:
+      - main
+      - "fix/**"
+      - "feat/**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: godot-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  godot-smoke:
+    name: Import, parse and headless startup
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Godot 4.7.2
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.2
+          use-dotnet: false
+      - name: Verify engine version
+        run: godot --version
+      - name: Import project and parse scripts
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --editor --path . --quit 2>&1 | tee godot-import.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error' godot-import.log; then exit 1; fi
+      - name: Run headless project smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --quit-after 15 2>&1 | tee godot-runtime.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Error loading' godot-runtime.log; then exit 1; fi
+      - name: Upload diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-4.7.2-diagnostics
+          path: |
+            godot-import.log
+            godot-runtime.log
+          if-no-files-found: ignore
