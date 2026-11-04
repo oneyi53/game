@@ -33,7 +33,7 @@ func set_manager(p_manager: BackpackManager, p_heroes: Array = []) -> void:
     _ensure_dynamic()
     rebuild()
 
-func set_hero_roster(p_hero_ids: Array, p_hero_definitions: Array) -> void:
+func set_hero_roster(p_hero_ids: Array, p_hero_definitions: Array, p_active_ids: Array = []) -> void:
     hero_options.clear()
     for hero_id_value in p_hero_ids:
         var hero_id: String = str(hero_id_value)
@@ -42,7 +42,8 @@ func set_hero_roster(p_hero_ids: Array, p_hero_definitions: Array) -> void:
             if str(definition.get("id", "")) == hero_id:
                 hero_name = str(definition.get("name", hero_id))
                 break
-        hero_options.append({"id": hero_id, "name": hero_name})
+        var roster_state: String = "出战" if p_active_ids.has(hero_id) else "预备"
+        hero_options.append({"id": hero_id, "name": hero_name + "（" + roster_state + "）"})
     rebuild()
 
 func refresh() -> void:
