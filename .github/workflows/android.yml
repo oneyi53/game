@@ -1,5 +1,5 @@
 # Hero World Android 1.0 release build (cloud only; never run Gradle on a dev VM).
-# Trigger: automatic validation on feature-branch pushes; signed APK export remains a manual opt-in.
+# Trigger: every feature-branch push validates and produces a test APK; signed release APK remains opt-in.
 # Required repository Secrets (set in GitHub repo Settings > Secrets and variables > Actions):
 #   ANDROID_KEYSTORE_BASE64 - base64 of the fixed release keystore (never commit the keystore itself)
 #   ANDROID_KEYSTORE_PASSWORD - keystore password
@@ -167,7 +167,6 @@ jobs:
           grep -c 'keystore/release="release.keystore"' export_presets.cfg
 
       - name: Configure Godot Android editor settings
-        if: ${{ inputs.build_apk }}
         shell: bash
         run: |
           set -euo pipefail
@@ -187,6 +186,50 @@ jobs:
           grep -E '^export/android/(java_sdk_path|android_sdk_path|debug_keystore)' "$HOME/.config/godot/editor_settings-4.tres"
           test -x "$JAVA_HOME/bin/java"
           test -x "$ANDROID_HOME/platform-tools/adb"
+
+      - name: Export installable debug APK automatically
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          GODOT="$HOME/godot/Godot_v4.7.2-stable_linux.x86_64"
+          # Android export needs ETC2/ASTC texture imports on the Linux runner.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("project.godot")
+          s = p.read_text()
+          key = "textures/vram_compression/import_etc2_astc"
+          if re.search(r"(?m)^" + re.escape(key) + r"\\s*=", s):
+              s = re.sub(r"(?m)^" + re.escape(key) + r"\\s*=.*$", key + "=true", s)
+          elif "[rendering]" in s:
+              s = s.replace("[rendering]", "[rendering]\\n" + key + "=true", 1)
+          else:
+              s += "\\n[rendering]\\n" + key + "=true\\n"
+          p.write_text(s)
+          assert key + "=true" in s
+          PY
+          "$GODOT" --headless --import
+          "$GODOT" --headless --verbose --install-android-build-template
+          "$GODOT" --headless --verbose --export-debug "Android" build/hero-world-debug.apk
+
+      - name: Verify automatic debug APK
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/hero-world-debug.apk
+          ls -lh build/hero-world-debug.apk
+          sha256sum build/hero-world-debug.apk
+
+      - name: Upload automatic debug APK
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hero-world-debug-apk
+          path: build/hero-world-debug.apk
+          if-no-files-found: error
 
       - name: Export release APK
         if: ${{ inputs.build_apk }}
