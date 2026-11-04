@@ -44,6 +44,10 @@ var list_box: VBoxContainer = null
 
 func set_data(p_heroes: Array, p_manager: EquipmentManager) -> void:
     heroes = p_heroes
+    hero_entries.clear()
+    for hero in heroes:
+        if hero != null:
+            hero_entries.append({"id": str(hero.hero_id), "name": str(hero.hero_name)})
     manager = p_manager
     dynamic_mode = true
     if panel_label != null:
