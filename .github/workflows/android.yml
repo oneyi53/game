@@ -1,5 +1,5 @@
 # Hero World Android 1.0 release build (cloud only; never run Gradle on a dev VM).
-# Trigger: manual only. Godot validation runs by default; signed APK export is opt-in.
+# Trigger: automatic validation on feature-branch pushes; signed APK export remains a manual opt-in.
 # Required repository Secrets (set in GitHub repo Settings > Secrets and variables > Actions):
 #   ANDROID_KEYSTORE_BASE64 - base64 of the fixed release keystore (never commit the keystore itself)
 #   ANDROID_KEYSTORE_PASSWORD - keystore password
