@@ -55,7 +55,7 @@ jobs:
             echo "World save migration tests reported errors."
             exit 1
           fi
-          grep -q "World save migration tests: 7 passed" world-save-migration-tests.log
+          grep -q "World save migration tests: 8 passed" world-save-migration-tests.log
 
       - name: Run headless project smoke test
         shell: bash
