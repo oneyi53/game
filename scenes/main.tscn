@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/core/map.gd" id="2_map"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/ui/backpack_panel.gd" id="10_pack"]
 [ext_resource type="Script" path="res://scripts/ui/offline_panel.gd" id="11_offline"]
 [ext_resource type="Script" path="res://scripts/ui/recruit_panel.gd" id="12_recruit"]
+[ext_resource type="Script" path="res://scripts/ui/teleport_panel.gd" id="13_teleport"]
 [ext_resource type="PackedScene" path="res://scenes/campfire.tscn" id="9_fire"]
 
 [node name="Main" type="Node2D"]
@@ -125,6 +126,13 @@ offset_top = 1205.0
 offset_right = 710.0
 offset_bottom = 1265.0
 text = "招募"
+
+[node name="TeleportButton" type="Button" parent="UI/HUD"]
+offset_left = 540.0
+offset_top = 900.0
+offset_right = 680.0
+offset_bottom = 960.0
+text = "传送"
 
 [node name="CooldownLabel" type="Label" parent="UI/HUD"]
 offset_left = 540.0
@@ -241,6 +249,46 @@ offset_top = 16.0
 offset_right = 584.0
 offset_bottom = 224.0
 bbcode_enabled = false
+
+[node name="TeleportPanel" type="Control" parent="UI"]
+script = ExtResource("13_teleport")
+visible = false
+offset_left = 60.0
+offset_top = 420.0
+offset_right = 660.0
+offset_bottom = 860.0
+
+[node name="PanelBackground" type="ColorRect" parent="UI/TeleportPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.88)
+
+[node name="TitleLabel" type="Label" parent="UI/TeleportPanel"]
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 400.0
+offset_bottom = 54.0
+text = "传送阵 · 已探索区域"
+
+[node name="CloseButton" type="Button" parent="UI/TeleportPanel"]
+offset_left = 500.0
+offset_top = 12.0
+offset_right = 580.0
+offset_bottom = 52.0
+text = "关闭"
+
+[node name="Scroll" type="ScrollContainer" parent="UI/TeleportPanel"]
+offset_left = 20.0
+offset_top = 70.0
+offset_right = 580.0
+offset_bottom = 420.0
+
+[node name="List" type="VBoxContainer" parent="UI/TeleportPanel/Scroll"]
+size_flags_horizontal = 3
 
 [node name="RecruitPanel" type="Control" parent="UI"]
 script = ExtResource("12_recruit")
