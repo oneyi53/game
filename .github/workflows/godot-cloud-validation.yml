@@ -122,7 +122,7 @@ jobs:
             echo "Daily activity manager tests reported errors."
             exit 1
           fi
-          grep -q "Daily activity manager tests: 14 passed" daily-activity-tests.log
+          grep -q "Daily activity manager tests: 15 passed" daily-activity-tests.log
 
       - name: Run headless project smoke test
         shell: bash
