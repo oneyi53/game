@@ -9,8 +9,9 @@ func _initialize() -> void:
     _test_morning_dew_requires_both_gates()
     _test_legacy_position_outside_regions()
     _test_existing_map_local_save_is_preserved()
+    _test_locked_new_format_map_falls_back_without_rescaling()
     _test_missing_position_uses_spawn()
-    print("World save migration tests: 7 passed")
+    print("World save migration tests: 8 passed")
     quit()
 
 
@@ -84,6 +85,21 @@ func _test_existing_map_local_save_is_preserved() -> void:
     var result: Dictionary = Migration.migrate_save(input)
     assert(result["migrated"] == false)
     assert(result["map_id"] == Migration.FALLEN_LEAF)
+    var pos: Dictionary = result["data"]["player_position"]
+    assert(is_equal_approx(float(pos["x"]), 420.0))
+    assert(is_equal_approx(float(pos["y"]), 500.0))
+
+
+
+func _test_locked_new_format_map_falls_back_without_rescaling() -> void:
+    var input := {
+        "map_id": Migration.MORNING_DEW,
+        "player_position": {"x": 420.0, "y": 500.0},
+        "elite_defeated": false
+    }
+    var result: Dictionary = Migration.migrate_save(input)
+    assert(result["migrated"] == true)
+    assert(result["map_id"] == Migration.MOSS_CROWN)
     var pos: Dictionary = result["data"]["player_position"]
     assert(is_equal_approx(float(pos["x"]), 420.0))
     assert(is_equal_approx(float(pos["y"]), 500.0))
