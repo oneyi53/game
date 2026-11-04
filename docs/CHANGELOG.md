@@ -2,6 +2,19 @@
 
 本文件记录可追溯的项目变更。Git commit 是代码事实来源；本日志解释每次变更的目的、范围和验证状态。
 
+## 2026-11-04 — 2.5D 静态审查文档合并至 main
+
+- PR：[#4](https://github.com/oneyi53/game/pull/4)
+- 来源分支：docs/branch-audit
+- 目标分支：main
+- 合并方式：Squash merge
+- 合并提交：ea1d4fd7c705fe3e527e3591cca42b851f2f27e6
+- 变更文件：README.md、docs/PROJECT_STATUS.md、docs/CHANGELOG.md、docs/BRANCH_AUDIT.md
+- 变更说明：记录 main 与 2.5D/美术分支的递归 tree/blob 净差异，纠正基础美术资源已在 main 的判断，并记录地图边界、旧存档迁移、镜头构图、地图装饰和动画等风险。
+- 影响范围：仅文档；没有修改游戏代码、美术资源、Godot 项目配置或存档结构。
+- 验证：审查四个文档文件；GitHub 显示 PR 可合并且状态 clean，已成功合并。Godot 导入/运行/设备验证未执行。
+- 下一步：设计地图坐标契约与旧存档迁移，随后从最新 main 逐文件迁移 2.5D 代码。
+
 ## 2026-11-04 — 2.5D / 美术分支静态审查与资源归属纠错
 
 - 基线：main 97e23ed3d3fbc5e44d220d069c0daf6cad015ebe。

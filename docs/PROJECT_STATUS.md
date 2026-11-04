@@ -5,11 +5,11 @@
 
 ## 当前交接状态（2026-11-04）
 
-- 当前 main HEAD：97e23ed3d3fbc5e44d220d069c0daf6cad015ebe。
-- 项目治理文档 PR #2、交接状态更新 PR #3 均已 squash 合并到 main。
+- 项目治理文档 PR #2、交接状态更新 PR #3、2.5D 静态审查文档 PR #4 均已 squash 合并到 main。
+- PR #4 合并提交：ea1d4fd7c705fe3e527e3591cca42b851f2f27e6。
 - 本轮完成了 2.5D / 美术分支静态审查，详细发现见 BRANCH_AUDIT.md。
 - 重要纠正：main 已经包含大部分基础美术资源（原始图集、英雄/怪物/Boss/散件/场景单体 PNG 和预览图）。此前“这些基础美术资源不在 main”的说法不正确。美术分支相对 main 真正新增的是 3 套装备的 18 张 PNG、manifest/preview、2.5D 地图/投影/地标代码和相关接入修改。
-- 美术分支相对当前 main：ahead 113 / behind 13；相对 feat/hero-world-2.5d-boss-p0：ahead 56 / behind 0。不要整分支直接合并。
+- 最近一次完整分支比较基线为 main HEAD ea1d4fd7c705fe3e527e3591cca42b851f2f27e6：美术分支 ahead 113 / behind 14；2.5D 分支 ahead 57 / behind 14；美术分支相对 2.5D 分支 ahead 56 / behind 0。此后 main 只有本次文档同步 PR 的变化，真正开始代码整合前需重新计算精确提交数。
 - 用户本地此前显示在 integration/art-2.5d，且有 project.godot 修改和 Godot 生成的未跟踪 .godot/、.import、.uid 文件。尚未确认这些状态在最新文档合并后是否变化；不得用 reset/clean/覆盖操作处理。
 - 下一步：在最新 main 上继续逐文件整合设计，优先解决地图尺寸/移动边界不一致与旧存档位置迁移；在此之前不改游戏代码。
 
@@ -23,20 +23,20 @@ Hero World 是原创单机 RPG，目标平台为 Android，目标体验为竖屏
 
 - 仓库：oneyi53/game
 - 正式主线：main
-- 当前 main HEAD：97e23ed3d3fbc5e44d220d069c0daf6cad015ebe（项目状态与变更日志同步提交）。
+- 当前 main HEAD 请以 GitHub main 最新提交为准；最近一次完整分支比较基线为 ea1d4fd7c705fe3e527e3591cca42b851f2f27e6。
 - 当前本地开发目录：~/GodotProjects/HeroWorld；此前终端显示用户曾切换到 integration/art-2.5d，本地工作区有未提交状态，必须先检查再操作。
 
 ### 主线与 2.5D 分支关系
 
-| 分支 | 相对当前 main 的提交关系 | 定位 | 当前判断 |
+| 分支 | 最近核对的提交关系 | 定位 | 当前判断 |
 |---|---:|---|---|
 | main | 基准 | 唯一正式主线 | 当前唯一整合基线 |
-| feat/hero-world-2.5d-boss-p0 | ahead 57 / behind 13 | 2.5D 投影、场景排序、Boss 与相关场景/角色逻辑 | 前置技术阶段；与 main 已分叉 |
-| feat/hero-world-art-integration | ahead 113 / behind 13 | 在 2.5D 分支基础上继续扩展美术资源、地图管理、角色/怪物/场景接入和 UI | 2.5D 分支的严格后继；主要技术参考，但不能整分支合并 |
+| feat/hero-world-2.5d-boss-p0 | ahead 57 / behind 14 | 2.5D 投影、场景排序、Boss 与相关场景/角色逻辑 | 前置技术阶段；与 main 已分叉 |
+| feat/hero-world-art-integration | ahead 113 / behind 14 | 在 2.5D 分支基础上继续扩展美术资源、地图管理、角色/怪物/场景接入和 UI | 2.5D 分支的严格后继；主要技术参考，但不能整分支合并 |
 
 核对结果：
 - feat/hero-world-art-integration 相对 feat/hero-world-2.5d-boss-p0：ahead 56 / behind 0。
-- 两条开发线相对 main 的共同基点为 1add5582f092d9cc52752fb54e5bce5137fb4bfd；当前 main 已在其后新增 13 个提交，因此分支已分叉。
+- 两条开发线相对 main 的共同基点为 1add5582f092d9cc52752fb54e5bce5137fb4bfd；main 已在其后新增提交，因此分支已分叉。
 - 不要把 GitHub 三点比较的文件列表直接当作当前 main 缺少的文件清单。资源归属以递归 Git tree/blob SHA 对照为准，详细记录见 BRANCH_AUDIT.md。
 
 ## 3. 其他远程分支盘点
