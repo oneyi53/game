@@ -1,17 +1,9 @@
 class_name Campfire
 extends Node2D
 
-# Placeholder campfire marker, drawn in code like the map: an orange
-# circle with a flame dot. No art asset, no gameplay logic here;
-# interaction (fog prompt / wood check / dispel) lives in Main,
-# exactly like the chest, so this node can never lock a zone.
+# Visual uses the original campfire sprite; interaction and progression
+# remain in Main so this node cannot independently unlock a zone.
+const CAMPFIRE_TEXTURE: Texture2D = preload("res://assets/art-v1/sprites/scene/campfire.png")
 
 func _draw() -> void:
-    # Visual only: same footprint, no gameplay logic here.
-    draw_circle(Vector2.ZERO, 22.0, Color(0.35, 0.25, 0.15, 0.6))
-    draw_line(Vector2(-12.0, 8.0), Vector2(12.0, -8.0), Color(0.45, 0.3, 0.15), 3.0)
-    draw_line(Vector2(12.0, 8.0), Vector2(-12.0, -8.0), Color(0.45, 0.3, 0.15), 3.0)
-    draw_circle(Vector2.ZERO, 14.0, Color(1.0, 0.55, 0.1, 0.9))
-    draw_circle(Vector2(0.0, -4.0), 6.0, Color(1.0, 0.85, 0.3, 1.0))
-    draw_circle(Vector2(-4.0, -14.0), 2.0, Color(1.0, 0.85, 0.3, 0.8))
-    draw_circle(Vector2(5.0, -17.0), 1.5, Color(1.0, 0.85, 0.3, 0.6))
+    draw_texture_rect(CAMPFIRE_TEXTURE, Rect2(-34.0, -48.0, 68.0, 68.0), false)
