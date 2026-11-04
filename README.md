@@ -29,4 +29,4 @@
 
 ## 当前主线
 
-当前档案核对的 main 基线：`afddb70`（`Add sprites: previews`）。详细分支提交关系和待验证事项见 [PROJECT_STATUS.md](docs/PROJECT_STATUS.md)。
+当前 main HEAD：`9e18e3f`（项目治理文档 squash merge）。详细分支提交关系和待验证事项见 [PROJECT_STATUS.md](docs/PROJECT_STATUS.md)。
