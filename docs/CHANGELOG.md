@@ -67,3 +67,14 @@
 - 验证结果：通过 / 失败 / 未验证
 - 已知问题：
 - 下一步：
+
+
+## 2026-11-04 — 核心存档与招募问题修复（待验证）
+
+- 分支：`fix/core-save-recruitment-2026-11-04`（从 main 建立）。
+- 修改文件：`scripts/core/main.gd`、`scripts/core/save_manager.gd`、`scripts/progression/recruitment_manager.gd`、`docs/PROJECT_STATUS.md`、`docs/CHANGELOG.md`。
+- 变更：恢复英雄已保存 HP；碎片英雄合成成功后消费配置数量的碎片；区分首次启动与双档损坏；备份前先验证主存档，避免损坏主档覆盖有效备份。
+- 存档兼容：没有 heroes HP 记录的旧档仍以满血初始化；保存时 HP 为 0 的英雄重启后按普通复活规则恢复半血；schema_version 未改变。
+- 验证环境：尚未在本地 Godot 4.7.2 执行。
+- 验证结果：未验证。静态检查已复核修改后的代码片段，但没有运行时测试或故障注入。
+- 下一步：测试首次启动、英雄 HP 保存恢复、碎片合成/不足/重复合成、损坏主档+有效备份恢复和保存失败场景。

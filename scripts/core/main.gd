@@ -155,6 +155,7 @@ func _ready() -> void:
         hud.show_message("主存档损坏，已用备份恢复")
     elif load_result["status"] == "corrupted":
         hud.show_message("存档损坏且无可用备份，从头开始")
+    # A genuinely new install has no save files; do not label it corrupted.
     gold = int(save_data.get("gold", 0))
     backpack_manager.load_saved(save_data.get("backpack", {}))
     wood = mini(wood_cap, maxi(0, int(save_data.get("wood", 0))))
@@ -272,6 +273,14 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     if save_data.get("player_position") is Dictionary:
         var saved_pos: Dictionary = save_data["player_position"]
         start_pos = Vector2(float(saved_pos.get("x", 800.0)), float(saved_pos.get("y", 600.0)))
+    # Restore per-hero HP after level and equipment have rebuilt max_hp.
+    # Older saves without a heroes array retain the full-health default.
+    var saved_hp_by_id: Dictionary = {}
+    var saved_heroes = save_data.get("heroes", [])
+    if saved_heroes is Array:
+        for saved_hero in saved_heroes:
+            if saved_hero is Dictionary and saved_hero.has("id") and saved_hero.has("hp"):
+                saved_hp_by_id[str(saved_hero["id"])] = int(saved_hero["hp"])
     var spawn_index: int = 0
     for hero_data in data_loader.heroes:
         var hero_id: String = str(hero_data["id"])
@@ -282,6 +291,12 @@ func _spawn_heroes(save_data: Dictionary) -> void:
         hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
         hero.reset_to_base_stats()
         hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
+        if saved_hp_by_id.has(hero_id):
+            var saved_hp: int = int(saved_hp_by_id[hero_id])
+            # A hero saved during the 3-second death delay resumes at the
+            # same half-health amount used by the normal respawn routine.
+            hero.hp = maxi(1, hero.max_hp / 2) if saved_hp <= 0 else clampi(saved_hp, 1, hero.max_hp)
+            hero.queue_redraw()
         hero.global_position = start_pos + offsets[spawn_index]
         hero.formation_offset = offsets[spawn_index]
         heroes_root.add_child(hero)
@@ -634,10 +649,9 @@ func _on_recruit_synthesize(hero_id: String) -> void:
     if recruitment_manager.is_recruited(hero_id):
         hud.show_message("该英雄已加入")
         return
-    if recruitment_manager.fragments < recruitment_manager.fragments_required(hero_id):
-        hud.show_message("碎片不足，需要 " + str(recruitment_manager.fragments_required(hero_id)) + " 片，当前 " + str(recruitment_manager.fragments))
+    if not recruitment_manager.synthesize_with_fragments(hero_id):
+        hud.show_message("合成失败：碎片不足或英雄状态已变化")
         return
-    recruitment_manager.recruit(hero_id)
     var hero_name: String = ""
     for hero_data in data_loader.heroes:
         if str(hero_data["id"]) == hero_id:
