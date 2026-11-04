@@ -122,6 +122,21 @@ func add_fragment() -> int:
     fragments += 1
     return fragments
 
+func synthesize_with_fragments(hero_id: String) -> bool:
+    if not entries.has(hero_id) or is_recruited(hero_id):
+        return false
+    var entry_data: Dictionary = entries[hero_id]
+    if str(entry_data.get("unlock_type", "")) != "fragments":
+        return false
+    var cost: int = fragments_required(hero_id)
+    if cost <= 0 or fragments < cost:
+        return false
+    # Commit both state changes together so a successful synthesis
+    # cannot recruit the hero while leaving the fragment balance intact.
+    recruited[hero_id] = true
+    fragments -= cost
+    return true
+
 func fragments_required(hero_id: String) -> int:
     var entry = entries.get(hero_id, null)
     if entry == null:
