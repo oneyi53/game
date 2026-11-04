@@ -16,8 +16,8 @@ extends RefCounted
 # in a positive visual coordinate range. These constants affect only
 # presentation and must not be used for gameplay distance checks.
 
-const MAP_WIDTH: float = 1600.0
-const MAP_HEIGHT: float = 1200.0
+const MAP_WIDTH: float = 1200.0
+const MAP_HEIGHT: float = 900.0
 const ISO_X_SCALE: float = 0.5
 const ISO_Y_SCALE: float = 0.25
 const HORIZONTAL_OFFSET: float = MAP_HEIGHT * ISO_X_SCALE
