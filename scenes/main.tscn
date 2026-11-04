@@ -173,12 +173,12 @@ color = Color(0, 0, 0, 0.82)
 offset_left = 16.0
 offset_top = 10.0
 offset_right = 584.0
-offset_bottom = 70.0
+offset_bottom = 128.0
 bbcode_enabled = false
 
 [node name="FormationScroll" type="ScrollContainer" parent="UI/HeroPanel"]
 offset_left = 12.0
-offset_top = 78.0
+offset_top = 136.0
 offset_right = 588.0
 offset_bottom = 350.0
 horizontal_scroll_mode = 0
