@@ -1,7 +1,7 @@
 extends SceneTree
 
 const Registry = preload("res://scripts/core/town_building_registry.gd")
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 
 func _initialize() -> void:
     _test_all_existing_panels_have_one_building()
@@ -23,7 +23,7 @@ func _test_all_existing_panels_have_one_building() -> void:
         assert(Registry.panel_for(building_id) == expected[building_id])
 
 func _test_building_positions_are_inside_town_projection() -> void:
-    var bounds: Rect2 = Projection.projected_bounds()
+    var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     for item in Registry.entries():
         var point: Vector2 = Registry.projected_position(str(item["id"]))
         assert(bounds.has_point(point))
