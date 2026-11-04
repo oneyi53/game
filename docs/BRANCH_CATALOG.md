@@ -16,16 +16,17 @@
 | 分支 | 状态 | 用途 |
 |---|---|---|
 | main | 唯一正式主线 | HEAD 05ae26f4961a4d2f0b26cf243963b305dce61a60 |
-| docs/verify-loose-equipment-merge-2026-11-04 | PR #30 开放 | 合并/CI 记录与本次项目文档整理 |
 | ci/godot-cloud-validation-2026-11-04 | PR #9 开放 | Godot 4.7.2 云端验证工作流 |
 | docs/local-code-audit-2026-11-04 | PR #6 开放 | 本地代码审查文档 |
-| feat/equipment-art-ui-2026-11-04 | PR #18 开放 | 装备美术 UI 接入候选 |\n| feat/world-map-local-2-5d-integration-2026-11-04 | PR #32 开放 | 四地图 2.5D 投影、map-local 坐标与旧存档迁移接入 |
-| feat/world-coordinate-save-migration-2026-11-04 | PR #31 开放 | 旧共享地图坐标迁移与 8 项回归测试 |
+| feat/equipment-art-ui-2026-11-04 | PR #18 开放 | 装备美术 UI 接入候选 |
 
 ## 已合并 PR 来源
 | PR | 分支 | 主题 |
 |---:|---|---|
-| #32 | feat/world-map-local-2-5d-integration-2026-11-04 | 四地图 2.5D 投影、map-local 坐标与旧存档运行时迁移 |\n| #31 | feat/world-coordinate-save-migration-2026-11-04 | 旧共享地图坐标迁移纯函数与 8 项回归测试 |\n| #30 | docs/verify-loose-equipment-merge-2026-11-04 | 分支盘点、原创 PNG 归档与 Godot 引用更新 |\n| #29 | feat/loose-equipment-wearable-loop-2026-11-04 | 散件穿戴、属性、套装槽覆盖、存档兼容 |
+| #32 | feat/world-map-local-2-5d-integration-2026-11-04 | 四地图 2.5D 投影、map-local 坐标与旧存档运行时迁移 |
+| #31 | feat/world-coordinate-save-migration-2026-11-04 | 旧共享地图坐标迁移纯函数与 8 项回归测试 |
+| #30 | docs/verify-loose-equipment-merge-2026-11-04 | 分支盘点、原创 PNG 归档与 Godot 引用更新 |
+| #29 | feat/loose-equipment-wearable-loop-2026-11-04 | 散件穿戴、属性、套装槽覆盖、存档兼容 |
 | #28 | docs/update-development-records-2026-11-04 | 状态/日志同步 |
 | #27 | feat/camp-building-party-bonuses | 营地建筑队伍增益 |
 | #26 | feat/progression-fast-travel-destinations-2026-11-04 | 森林进度门槛传送点 |
@@ -135,7 +136,6 @@
 
 | 分支 | 状态 | HEAD SHA |
 |---|---|---|
-| feat/world-coordinate-save-migration-2026-11-04 | PR #31 开放 | 当前 HEAD 以 PR #31 页面为准 |
 
 PR #30 已合并至 main；PR #31 尚未合并。此补充不改变前面的 42 条分支固定 SHA 快照。
 
