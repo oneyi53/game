@@ -87,7 +87,7 @@ func available_ids() -> Array[String]:
     return result
 
 func save_data() -> Dictionary:
-    return {"max_party_size": max_party_size, "active_ids": active_ids.duplicate()}
+    return {"active_ids": active_ids.duplicate()}
 
 func validate() -> bool:
     if active_ids.is_empty() or active_ids[0] != CAPTAIN_ID or active_ids.size() > max_party_size:
