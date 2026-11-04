@@ -141,5 +141,5 @@
 - PNG 归档：`effect_atlas.png` → `assets/art-v1/effects/effect_atlas.png`；`icon.png` → `assets/art-v1/branding/icon.png`。保留原 Git blob，不重绘、不压缩。
 - 引用更新：同步更新特效 preload 与 `project.godot` 应用图标路径。
 - 数据/存档兼容：未改数据 JSON、存档字段或 schema；只调整两个 PNG 的资源路径。
-- 验证：GitHub 文件树/Blob 静态核对；本次路径变更尚未运行 Godot 4.7.2 导入/启动；移动端未验收。
+- 验证：GitHub 文件树/Blob 静态核对；素材路径变更后的 Godot 4.7.2 资源导入、脚本解析和 headless 启动通过（run 41816598943）；最新文档提交检查通过（run 41816687698）。移动端未验收。
 - 下一步：完成 Godot 导入验证后，从 main 新建 2.5D 坐标/旧存档迁移分支。
