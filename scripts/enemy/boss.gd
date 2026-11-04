@@ -122,7 +122,9 @@ func _update_telegraph(delta: float) -> void:
             for hero in get_tree().get_nodes_in_group("heroes"):
                 if hero == null or bool(hero.get("dead")):
                     continue
-                if global_position.distance_to(hero.global_position) <= 95.0:
+                if str(hero.get("world_map_id")) != str(get_meta("world_map_id", "")):
+                    continue
+                if global_position.distance_to(hero.global_position) <= 95.0
                     if hero.has_method("take_damage"):
                         hero.take_damage(_effective_attack())
             queue_redraw()
@@ -133,7 +135,9 @@ func _update_telegraph(delta: float) -> void:
         for hero in get_tree().get_nodes_in_group("heroes"):
             if hero == null or bool(hero.get("dead")):
                 continue
-            if global_position.distance_to(hero.global_position) <= 110.0:
+            if str(hero.get("world_map_id")) != str(get_meta("world_map_id", "")):
+                continue
+            if global_position.distance_to(hero.global_position) <= 110.0
                 anyone_close = true
                 break
         if anyone_close:
