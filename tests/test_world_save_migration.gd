@@ -2,7 +2,7 @@ extends SceneTree
 
 const Migration = preload("res://scripts/core/world_save_migration.gd")
 const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 
 func _initialize() -> void:
     _test_legacy_starter_region()
@@ -52,12 +52,12 @@ func _test_enemy_map_assignment() -> void:
 
 
 func _test_projection_bounds_and_depth() -> void:
-    var bounds: Rect2 = Projection.projected_bounds()
+    var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     assert(is_equal_approx(bounds.position.x, 0.0))
     assert(is_equal_approx(bounds.position.y, 0.0))
     assert(is_equal_approx(bounds.size.x, 1050.0))
     assert(is_equal_approx(bounds.size.y, 525.0))
-    assert(Projection.screen_depth(Vector2(500.0, 500.0)) > Projection.screen_depth(Vector2(200.0, 200.0)))
+    assert(WorldProjectionScript.screen_depth(Vector2(500.0, 500.0)) > WorldProjectionScript.screen_depth(Vector2(200.0, 200.0)))
 
 
 func _test_legacy_starter_region() -> void:
