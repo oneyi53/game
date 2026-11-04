@@ -55,7 +55,8 @@ func set_data(p_heroes: Array, p_manager: EquipmentManager) -> void:
     _ensure_dynamic()
     rebuild()
 
-func set_roster(p_hero_ids: Array, p_hero_definitions: Array, p_manager: EquipmentManager) -> void:
+func set_roster(p_hero_ids: Array, p_hero_definitions: Array, p_manager: EquipmentManager, p_runtime_heroes: Array = []) -> void:
+    heroes = p_runtime_heroes
     hero_entries.clear()
     manager = p_manager
     for hero_id_value in p_hero_ids:
