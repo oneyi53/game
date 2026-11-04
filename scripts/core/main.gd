@@ -1217,8 +1217,8 @@ func _on_hero_died(hero) -> void:
     if hero != null and is_instance_valid(hero):
         # If the player changed maps during the death delay, respawn
         # with the party in the new map instead of using stale coordinates.
-        if hero.world_map_id != active_map_id:
-            respawn_pos = world_map_manager.spawn_position(active_map_id)
+        if death_map_id != active_map_id:
+            respawn_pos = world_map_manager.spawn_position(active_map_id) if hero == captain else captain.global_position + Vector2(0.0, 40.0)
         elif hero != captain and captain != null:
             respawn_pos = captain.global_position + Vector2(0.0, 40.0)
         hero.world_map_id = active_map_id
