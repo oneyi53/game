@@ -242,41 +242,28 @@ func use_skill() -> bool:
                 enemy.take_damage(attack * 2)
     return true
 
+const HERO_TEXTURES := {
+    "captain": preload("res://assets/art-v1/sprites/heroes/captain.png"),
+    "archer": preload("res://assets/art-v1/sprites/heroes/archer.png"),
+    "guardian": preload("res://assets/art-v1/sprites/heroes/guardian.png"),
+    "mage": preload("res://assets/art-v1/sprites/heroes/mage.png"),
+    "healer": preload("res://assets/art-v1/sprites/heroes/healer.png"),
+    "assassin": preload("res://assets/art-v1/sprites/heroes/assassin.png")
+}
+
 func _draw() -> void:
     if dead:
         return
-    # Visual only: body circle radius, hp bar and all gameplay values
-    # are unchanged. Per-hero details are small _draw() marks inside
-    # or beside the same 16 px body, following the Q-style bright
-    # palette (grass green / sky blue / warm yellow / coral orange).
-    draw_circle(Vector2.ZERO, 16.0, hero_color)
-    draw_circle(Vector2(0.0, -4.0), 5.0, Color.WHITE)
-    match hero_id:
-        "captain":
-            # Captain belt: warm-yellow band + sword line at the side.
-            draw_rect(Rect2(-13.0, 2.0, 26.0, 4.0), Color(1.0, 0.8, 0.2))
-            draw_line(Vector2(14.0, -12.0), Vector2(20.0, 6.0), Color(0.95, 0.95, 0.95), 2.0)
-        "archer":
-            # Bow arc + arrow, sky-blue trim.
-            draw_arc(Vector2(12.0, 0.0), 10.0, -1.2, 1.2, 12, Color(0.2, 0.8, 1.0), 2.0)
-            draw_line(Vector2(12.0, 0.0), Vector2(22.0, 0.0), Color(0.9, 0.9, 0.9), 1.5)
-        "guardian":
-            # Thick shield in front of the body.
-            draw_rect(Rect2(8.0, -12.0, 8.0, 24.0), Color(0.4, 0.7, 0.4))
-            draw_circle(Vector2(12.0, 0.0), 3.0, Color(1.0, 0.8, 0.2))
-        "mage":
-            # Staff line + star sparkle, soft blue-green glow dot.
-            draw_line(Vector2(-16.0, -10.0), Vector2(-16.0, 12.0), Color(0.55, 0.4, 0.8), 2.0)
-            draw_circle(Vector2(-16.0, -13.0), 3.5, Color(0.6, 0.95, 0.85))
-        "healer":
-            # Water-drop glow + leaf ornaments at the shoulders.
-            draw_circle(Vector2(0.0, -18.0), 4.0, Color(0.65, 0.95, 0.9))
-            draw_circle(Vector2(-13.0, -8.0), 2.5, Color(0.35, 0.8, 0.45))
-            draw_circle(Vector2(13.0, -8.0), 2.5, Color(0.35, 0.8, 0.45))
-        "assassin":
-            # Forward-lean marker: coral-orange dash + belt dot.
-            draw_line(Vector2(10.0, -2.0), Vector2(20.0, -2.0), Color(1.0, 0.45, 0.25), 2.5)
-            draw_circle(Vector2(0.0, 6.0), 2.5, Color(1.0, 0.45, 0.25))
-    draw_rect(Rect2(-18.0, -30.0, 36.0, 6.0), Color.BLACK)
-    var fill: float = 36.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-18.0, -30.0, fill, 6.0), Color(0.2, 0.9, 0.3))
+    # Original art sprites replace the temporary geometric party tokens.
+    # Combat stats, collision, movement and logical world coordinates stay unchanged.
+    draw_set_transform(Vector2(0.0, 0.0), 0.0, Vector2(1.0, 0.42))
+    draw_circle(Vector2.ZERO, 20.0, Color(0.04, 0.12, 0.05, 0.24))
+    draw_set_transform(Vector2.ZERO)
+    var texture: Texture2D = HERO_TEXTURES.get(hero_id)
+    if texture != null:
+        draw_texture_rect(texture, Rect2(-34.0, -72.0, 68.0, 72.0), false)
+    else:
+        draw_circle(Vector2.ZERO, 16.0, hero_color)
+    draw_rect(Rect2(-20.0, -82.0, 40.0, 5.0), Color(0.04, 0.06, 0.04, 0.9))
+    var fill: float = 40.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-20.0, -82.0, fill, 5.0), Color(0.2, 0.9, 0.3))
