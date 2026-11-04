@@ -10,6 +10,7 @@ signal camp_panel_pressed
 signal backpack_panel_pressed
 signal recruit_panel_pressed
 signal teleport_pressed
+signal map_pressed
 
 @onready var gold_label: Label = $GoldLabel
 @onready var wood_label: Label = $WoodLabel
@@ -25,6 +26,7 @@ signal teleport_pressed
 @onready var recruit_button: Button = $RecruitButton
 @onready var cooldown_label: Label = $CooldownLabel
 @onready var teleport_button: Button = $TeleportButton
+@onready var map_button: Button = $MapButton
 
 func _ready() -> void:
     skill_button.pressed.connect(_on_skill_button_pressed)
@@ -36,6 +38,7 @@ func _ready() -> void:
     backpack_button.pressed.connect(_on_backpack_button_pressed)
     recruit_button.pressed.connect(_on_recruit_button_pressed)
     teleport_button.pressed.connect(_on_teleport_button_pressed)
+    map_button.pressed.connect(_on_map_button_pressed)
     teleport_button.disabled = true
 
 func set_gold(amount: int) -> void:
@@ -85,3 +88,7 @@ func _on_recruit_button_pressed() -> void:
 
 func _on_teleport_button_pressed() -> void:
     teleport_pressed.emit()
+
+
+func _on_map_button_pressed() -> void:
+    map_pressed.emit()
