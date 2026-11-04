@@ -5,11 +5,11 @@
 ## 当前资源分组
 
 - `sprites/heroes/`：6 名英雄角色立绘/精灵资源。
-- `sprites/monsters/`：9 类普通怪物资源。
+- `sprites/monsters/`：10 类普通怪物资源（与 README 的切图清单一致）。
 - `sprites/bosses/`：2 个 Boss 资源。
-- `sprites/scene/`：营火、宝箱、喷泉、塔楼及树木场景素材。
+- `sprites/scene/`：6 张独立场景素材（营火、宝箱、喷泉、塔楼、绿树、黄树）。
 - `sprites/equipment/`：6 件基础装备图标。
-- `sprites/equipment_sets/`：3 套完整装备外观，每套 6 个部位，共 18 张独立 PNG。
+- `sprites/equipment_sets/`：3 套装备外观，每套 6 个部位，共 18 张独立装备 PNG，另有 1 张套装预览图。
 - `sprites/previews/`：英雄、怪物、Boss、装备和场景预览图。
 - `../heroes-v1.png`、`../monsters-v1.png`、`../bosses-v1.png`、`../equipment-v1.png`、`../scene-v1.png`：原始分类图集。
 - 仓库根目录 `effect_atlas.png`：已保留的特效图集源图；目前不代表特效动画已完成接入。
