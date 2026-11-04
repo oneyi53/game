@@ -67,12 +67,17 @@ func refresh() -> void:
         var info := Label.new()
         var state_text: String = "队长 · " if leader else ("出战 · " if active else "预备 · ")
         var hero_level: int = level_manager.level(hero_id) if level_manager != null else 1
-        info.text = state_text + _hero_name(hero_id) + "  Lv." + str(hero_level) + "  战力 " + str(_power_for_hero(hero_id))
+        var stats: Dictionary = _stats_for_hero(hero_id)
+        var role: String = str(_hero_definition(hero_id).get("role", ""))
+        var stat_line: String = "攻击 " + str(stats.get("attack", 0)) + " 生命 " + str(stats.get("max_hp", 0)) + " 防御 " + str(stats.get("defense", 0))
+        var combat_line: String = "暴击 " + str(int(round(float(stats.get("crit_chance", 0.0)) * 100.0))) + "% 攻速 +" + str(stats.get("attack_speed_pct", 0)) + "%"
+        info.text = state_text + _hero_name(hero_id) + "（" + role + "） Lv." + str(hero_level) + "  战力 " + str(HeroPowerCalculator.power_from_stats(stats)) + "\n" + stat_line + "  " + combat_line
         info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        info.custom_minimum_size = Vector2(220, 34)
+        info.custom_minimum_size = Vector2(220, 52)
+        info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
         row.add_child(info)
         var leader_button := Button.new()
-        leader_button.custom_minimum_size = Vector2(108, 34)
+        leader_button.custom_minimum_size = Vector2(108, 48)
         if leader:
             leader_button.text = "当前队长"
             leader_button.disabled = true
@@ -81,7 +86,7 @@ func refresh() -> void:
             leader_button.pressed.connect(_emit_leader.bind(hero_id))
         row.add_child(leader_button)
         var party_button := Button.new()
-        party_button.custom_minimum_size = Vector2(76, 34)
+        party_button.custom_minimum_size = Vector2(76, 48)
         if active:
             party_button.text = "下阵"
             party_button.disabled = formation_manager.active_ids.size() <= 1
@@ -100,10 +105,10 @@ func _hero_definition(hero_id: String) -> Dictionary:
             return definition
     return {}
 
-func _power_for_hero(hero_id: String) -> int:
+func _stats_for_hero(hero_id: String) -> Dictionary:
     var definition: Dictionary = _hero_definition(hero_id)
     if definition.is_empty():
-        return 0
+        return {}
     var hero_level: int = level_manager.level(hero_id) if level_manager != null else 1
     var attack_growth: float = level_manager.attack_growth_pct_per_level if level_manager != null else 0.0
     var hp_growth: float = level_manager.hp_growth_pct_per_level if level_manager != null else 0.0
@@ -111,7 +116,10 @@ func _power_for_hero(hero_id: String) -> int:
     var loose_bonus: Dictionary = equipment_manager.loose_bonus_for_hero(hero_id, item_definitions) if equipment_manager != null else {}
     var camp_attack: float = 5.0 if camp_manager != null and camp_manager.is_built("blacksmith") else 0.0
     var camp_hp: float = 8.0 if camp_manager != null and camp_manager.is_built("training_ground") else 0.0
-    return HeroPowerCalculator.calculate(definition, hero_level, attack_growth, hp_growth, equipment_bonus, camp_attack, camp_hp, loose_bonus)
+    return HeroPowerCalculator.final_stats(definition, hero_level, attack_growth, hp_growth, equipment_bonus, camp_attack, camp_hp, loose_bonus)
+
+func _power_for_hero(hero_id: String) -> int:
+    return HeroPowerCalculator.power_from_stats(_stats_for_hero(hero_id))
 
 func _hero_name(hero_id: String) -> String:
     for definition in hero_definitions:
