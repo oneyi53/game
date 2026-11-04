@@ -4,8 +4,8 @@ extends RefCounted
 # Local save only. No network code anywhere in this project.
 # save.json is the current save, save_backup.json is the previous one.
 # Loading: main save first, then backup if the main save is broken.
-# If both are broken, load_game() reports "corrupted" and the caller
-# starts a fresh game instead of silently using invented data.
+# No files means "new_game"; existing but unusable files mean "corrupted".
+# A valid backup is preserved when the main save is corrupt.
 
 const SAVE_PATH: String = "user://save.json"
 const BACKUP_PATH: String = "user://save_backup.json"
