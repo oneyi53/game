@@ -22,7 +22,7 @@ func _ready() -> void:
     _spawn_scene_art()
 
 func _spawn_scene_art() -> void:
-    # Replace the old tiny circles with the repository's original transparent PNGs.
+    # Decorative sprites now have matching physical blockers at their trunks.
     for i in range(tree_positions.size()):
         var tree := Sprite2D.new()
         tree.texture = GOLDEN_TREE_TEXTURE if i % 5 == 0 else TREE_TEXTURE
@@ -32,11 +32,12 @@ func _spawn_scene_art() -> void:
         tree.position = tree_positions[i]
         tree.z_index = 0
         add_child(tree)
+        _add_obstacle(tree_positions[i] + Vector2(0.0, -8.0), 18.0, "TreeBlocker")
 
-    _add_landmark(TOWER_TEXTURE, Vector2(260.0, 300.0), Vector2(0.34, 0.34), Vector2(-72.0, -170.0))
-    _add_landmark(FOUNTAIN_TEXTURE, Vector2(920.0, 500.0), Vector2(0.32, 0.32), Vector2(-64.0, -128.0))
+    _add_landmark(TOWER_TEXTURE, Vector2(260.0, 300.0), Vector2(0.34, 0.34), Vector2(-72.0, -170.0), 30.0)
+    _add_landmark(FOUNTAIN_TEXTURE, Vector2(920.0, 500.0), Vector2(0.32, 0.32), Vector2(-64.0, -128.0), 28.0)
 
-func _add_landmark(texture: Texture2D, world_position: Vector2, visual_scale: Vector2, visual_offset: Vector2) -> void:
+func _add_landmark(texture: Texture2D, world_position: Vector2, visual_scale: Vector2, visual_offset: Vector2, blocker_radius: float) -> void:
     var landmark := Sprite2D.new()
     landmark.texture = texture
     landmark.centered = false
@@ -44,6 +45,21 @@ func _add_landmark(texture: Texture2D, world_position: Vector2, visual_scale: Ve
     landmark.scale = visual_scale
     landmark.position = world_position
     add_child(landmark)
+    _add_obstacle(world_position + Vector2(0.0, -8.0), blocker_radius, "LandmarkBlocker")
+
+func _add_obstacle(world_position: Vector2, radius: float, node_name: String) -> void:
+    var body := StaticBody2D.new()
+    body.name = node_name
+    body.position = world_position
+    # Hero and enemy CharacterBody2D nodes use the default layer/mask (1).
+    body.collision_layer = 1
+    body.collision_mask = 1
+    var shape := CollisionShape2D.new()
+    var circle := CircleShape2D.new()
+    circle.radius = radius
+    shape.shape = circle
+    body.add_child(shape)
+    add_child(body)
 
 func _draw() -> void:
     for xi in range(0, MAP_WIDTH / TILE):
