@@ -1,7 +1,7 @@
 class_name Hero
 extends CharacterBody2D
 
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
 
 # One party member. The captain moves with the joystick or keyboard.
@@ -282,7 +282,7 @@ func _draw() -> void:
     if dead:
         return
     var visual_world_position: Vector2 = global_position + visual_formation_offset
-    var offset: Vector2 = Projection.world_to_screen(visual_world_position) - global_position
+    var offset: Vector2 = WorldProjectionScript.world_to_screen(visual_world_position) - global_position
     draw_set_transform(offset, 0.0, Vector2(1.0, 0.42))
     draw_circle(Vector2.ZERO, 14.0, Color(0.05, 0.18, 0.05, 0.28))
     draw_set_transform(offset)
