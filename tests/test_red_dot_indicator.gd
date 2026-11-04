@@ -9,12 +9,12 @@ func _initialize() -> void:
 
 func _run_tests() -> void:
     await process_frame
-    _test_default_hidden()
-    _test_runtime_visibility_updates()
-    _test_repeated_updates_do_not_duplicate_nodes()
-    _test_multiple_indicators_are_independent()
-    _test_parent_input_passthrough()
-    _test_attach_layout_and_size()
+    await _test_default_hidden()
+    await _test_runtime_visibility_updates()
+    await _test_repeated_updates_do_not_duplicate_nodes()
+    await _test_multiple_indicators_are_independent()
+    await _test_parent_input_passthrough()
+    await _test_attach_layout_and_size()
     print("Red dot indicator tests: %d passed" % passed)
     quit()
 
