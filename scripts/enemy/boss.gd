@@ -124,7 +124,7 @@ func _update_telegraph(delta: float) -> void:
                     continue
                 if str(hero.get("world_map_id")) != str(get_meta("world_map_id", "")):
                     continue
-                if global_position.distance_to(hero.global_position) <= 95.0
+                if global_position.distance_to(hero.global_position) <= 95.0:
                     if hero.has_method("take_damage"):
                         hero.take_damage(_effective_attack())
             queue_redraw()
