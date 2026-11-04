@@ -1,7 +1,7 @@
 class_name MapDrawer
 extends Node2D
 
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
 const TREE_SCRIPT = preload("res://scripts/core/tree_visual.gd")
 const LANDMARK_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
@@ -94,13 +94,13 @@ func _refresh_decorations() -> void:
         body.set_deferred("collision_mask", 1 if belongs else 0)
 
 func _projected_rect(rect: Rect2) -> PackedVector2Array:
-    return Projection.world_rect_to_screen_polygon(rect)
+    return WorldProjectionScript.world_rect_to_screen_polygon(rect)
 
 func _draw_ground_tile(x: int, y: int, color: Color) -> void:
     draw_colored_polygon(_projected_rect(Rect2(float(x), float(y), float(TILE), float(TILE))), color)
 
 func _draw_dot(world_position: Vector2, radius: float, color: Color) -> void:
-    draw_circle(Projection.world_to_screen(world_position), radius, color)
+    draw_circle(WorldProjectionScript.world_to_screen(world_position), radius, color)
 
 func _draw() -> void:
     var manager = WorldMaps.new()
@@ -127,7 +127,7 @@ func _draw() -> void:
     var title: String = manager.map_name(active_map_id)
     var font = ThemeDB.fallback_font
     if font != null:
-        var label_pos: Vector2 = Projection.world_to_screen(bounds.position + Vector2(40.0, 55.0))
+        var label_pos: Vector2 = WorldProjectionScript.world_to_screen(bounds.position + Vector2(40.0, 55.0))
         var label_width: float = font.get_string_size(title).x + 34.0
         draw_rect(Rect2(label_pos.x - 12.0, label_pos.y - 27.0, label_width, 38.0), Color(0.08, 0.19, 0.12, 0.82))
         draw_string(font, label_pos, title, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.96, 0.94, 0.78))
