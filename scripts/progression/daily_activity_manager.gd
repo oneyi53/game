@@ -133,7 +133,7 @@ func _restore_progress(saved_state: Dictionary) -> void:
     if saved_claims is Array:
         for stage_id_value in saved_claims:
             var stage_id: String = str(stage_id_value)
-            if next_stage_definitions.has(stage_id):
+            if _stage_definitions.has(stage_id):
                 _claimed_stages[stage_id] = true
 
     var saved_occurrences: Variant = saved_state.get("processed_occurrences", [])
