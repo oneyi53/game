@@ -1,7 +1,7 @@
 class_name LandmarkVisual
 extends Node2D
 
-const Projection = preload("res://scripts/core/world_projection.gd")
+const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const TEXTURES := {
     "tower": preload("res://assets/art-v1/sprites/scene/tower.png"),
     "fountain": preload("res://assets/art-v1/sprites/scene/fountain.png"),
@@ -15,11 +15,11 @@ var landmark_kind: String = "tower"
 func setup(kind: String) -> void:
     landmark_kind = kind
     z_as_relative = false
-    z_index = clampi(int(Projection.screen_depth(global_position) / 4.0), 0, 1024)
+    z_index = clampi(int(WorldProjectionScript.screen_depth(global_position) / 4.0), 0, 1024)
     queue_redraw()
 
 func _draw() -> void:
-    var offset: Vector2 = Projection.world_to_screen(global_position) - global_position
+    var offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
     var texture: Texture2D = TEXTURES.get(landmark_kind)
     if texture == null:
         return
