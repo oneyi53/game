@@ -14,7 +14,9 @@ func _ready() -> void:
     rebuild()
 
 func set_destinations(entries: Array[Dictionary]) -> void:
-    destinations = entries.duplicate(true)
+    destinations.clear()
+    for entry in entries:
+        destinations.append(entry.duplicate(true))
     rebuild()
 
 func rebuild() -> void:
