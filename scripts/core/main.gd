@@ -31,6 +31,8 @@ const HERO_SCENE: PackedScene = preload("res://scenes/hero.tscn")
 const ENEMY_SCENE: PackedScene = preload("res://scenes/enemy.tscn")
 const BOSS_SCENE: PackedScene = preload("res://scenes/boss.tscn")
 const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
+const EFFECT_PLAYER = preload("res://scripts/fx/effect_player.gd")
+const EFFECT_ATLAS: Texture2D = preload("res://effect_atlas.png")
 
 @onready var camera: Camera2D = $Camera
 @onready var heroes_root: Node2D = $Heroes
@@ -517,7 +519,17 @@ func _unhandled_input(event: InputEvent) -> void:
 func _on_skill_pressed() -> void:
     if captain == null:
         return
+    var hit_positions: Array[Vector2] = []
+    for enemy in get_tree().get_nodes_in_group("enemies"):
+        if enemy == null or bool(enemy.get("dead")):
+            continue
+        if captain.global_position.distance_to(enemy.global_position) <= 140.0:
+            hit_positions.append(enemy.global_position)
     if captain.use_skill():
+        # Atlas entries are standalone illustrations, not animation frames.
+        EFFECT_PLAYER.play(self, EFFECT_ATLAS, captain.global_position, Rect2(900.0, 175.0, 180.0, 170.0), Vector2(220.0, 210.0), 0.48, randf_range(-0.12, 0.12))
+        for hit_position in hit_positions:
+            EFFECT_PLAYER.play(self, EFFECT_ATLAS, hit_position, Rect2(905.0, 335.0, 165.0, 120.0), Vector2(92.0, 76.0), 0.34, randf_range(-0.2, 0.2))
         hud.show_message("释放技能！")
     else:
         hud.show_message("技能冷却中")
