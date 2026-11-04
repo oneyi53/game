@@ -26,8 +26,8 @@
 - 当前项目使用 Godot 4.7.2 作为目标编辑器版本（实际打开前请确认本机版本）。
 - 在 Godot Project Manager 中导入仓库根目录的 project.godot。
 - 运行前先查看项目状态档案和当前分支状态。
-- 不要把本地 .godot/ 缓存当作源码提交；.import 和 .uid 是否纳入版本控制应遵循仓库现有规则，不能批量删除或盲目添加。
+- 不要把本地 .godot/ 缓存当作源码提交；.import 和 .uid 是否纳入版本控制应遵循仓库现有规则，不能批量添加或盲目删除。
 
 ## 当前主线
 
-当前 main HEAD：97e23ed（项目状态与变更日志同步提交）。详细分支提交关系和待验证事项见 docs/PROJECT_STATUS.md。
+当前正式基线以 GitHub main 最新提交为准。详细分支提交关系和待验证事项见 docs/PROJECT_STATUS.md。
