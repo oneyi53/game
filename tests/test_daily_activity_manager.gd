@@ -87,7 +87,7 @@ func _test_progress_is_capped_at_target() -> void:
     var manager = _new_manager()
     manager.record_event("enemy_killed", "kill-006", {"enemy_id": "slime"}, 20)
     assert(manager.get_snapshot()["tasks"]["slime_hunt"]["progress"] == 2)
-    assert(manager.get_activity_points() == 10)
+    assert(manager.get_activity_points() == 15)
 
 func _test_duplicate_occurrence_is_ignored() -> void:
     var manager = _new_manager()
