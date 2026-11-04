@@ -36,15 +36,19 @@ static func migrate_save(save_data: Dictionary) -> Dictionary:
 
     if save_data.has("map_id"):
         var saved_map_id: String = str(save_data.get("map_id", ""))
-        if MAP_IDS.has(saved_map_id) and bool(unlocked.get(saved_map_id, false)):
-            var saved_position: Vector2 = _read_position(save_data.get("player_position"))
-            if save_data.get("player_position") is Dictionary:
-                saved_position = clamp_to_map(saved_position)
-            else:
-                saved_position = SPAWNS[saved_map_id]
-            result["map_id"] = saved_map_id
-            result["player_position"] = _position_to_data(saved_position)
-            return {"data": result, "migrated": false, "map_id": saved_map_id}
+        var safe_map_id: String = saved_map_id if MAP_IDS.has(saved_map_id) and bool(unlocked.get(saved_map_id, false)) else MOSS_CROWN
+        var saved_position: Vector2
+        if save_data.get("player_position") is Dictionary:
+            saved_position = clamp_to_map(_read_position(save_data.get("player_position")))
+        else:
+            saved_position = SPAWNS[safe_map_id]
+        result["map_id"] = safe_map_id
+        result["player_position"] = _position_to_data(saved_position)
+        return {
+            "data": result,
+            "migrated": safe_map_id != saved_map_id,
+            "map_id": safe_map_id
+        }
 
     var legacy_position: Vector2 = _read_position(save_data.get("player_position"))
     var target_map: String = _map_from_legacy_position(legacy_position, unlocked)
