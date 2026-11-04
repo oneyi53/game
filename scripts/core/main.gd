@@ -285,7 +285,7 @@ func _ready() -> void:
     camp_panel.visible = false
     _refresh_quest_label()
     hero_panel.set_heroes(heroes)
-    hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager)
+    hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager, equipment_manager, camp_manager, backpack_manager.items)
     hero_panel.leader_requested.connect(_on_formation_leader_requested)
     hero_panel.add_requested.connect(_on_formation_add_requested)
     hero_panel.remove_requested.connect(_on_formation_remove_requested)
