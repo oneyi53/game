@@ -126,6 +126,13 @@ offset_right = 710.0
 offset_bottom = 1265.0
 text = "招募"
 
+[node name="TeleportButton" type="Button" parent="UI/HUD"]
+offset_left = 540.0
+offset_top = 310.0
+offset_right = 680.0
+offset_bottom = 366.0
+text = "传送"
+
 [node name="CooldownLabel" type="Label" parent="UI/HUD"]
 offset_left = 540.0
 offset_top = 985.0
