@@ -7,8 +7,8 @@ const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const TREE_VISUAL_SCRIPT = preload("res://scripts/core/tree_visual.gd")
 const LANDMARK_VISUAL_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
 
-const MAP_WIDTH: int = 1600
-const MAP_HEIGHT: int = 1200
+const MAP_WIDTH: int = 1200
+const MAP_HEIGHT: int = 900
 const TILE: int = 64
 
 const WorldMapManagerScript = preload("res://scripts/core/world_map_manager.gd")
@@ -25,10 +25,10 @@ func get_active_map_id() -> String:
     return active_map_id
 
 var tree_positions: Array = [
-    Vector2(120, 120), Vector2(300, 180), Vector2(1480, 140), Vector2(1320, 220),
-    Vector2(140, 1040), Vector2(420, 1080), Vector2(1500, 1020), Vector2(1240, 1080),
-    Vector2(180, 560), Vector2(1420, 640), Vector2(640, 120), Vector2(980, 1080),
-    Vector2(220, 320), Vector2(1380, 880), Vector2(760, 240), Vector2(520, 920),
+    Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220),
+    Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800),
+    Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820),
+    Vector2(220, 320), Vector2(980, 700), Vector2(760, 240), Vector2(520, 700),
 ]
 
 func _ready() -> void:
@@ -41,9 +41,9 @@ func _ready() -> void:
         add_child(tree)
     # Three fixed landmarks add orientation without filling the walking lanes.
     var landmark_specs: Array = [
-        {"kind": "tower", "position": Vector2(320.0, 300.0)},
-        {"kind": "fountain", "position": Vector2(1260.0, 520.0)},
-        {"kind": "tree_cluster", "position": Vector2(820.0, 1040.0)}
+        {"kind": "tower", "position": Vector2(260.0, 300.0)},
+        {"kind": "fountain", "position": Vector2(920.0, 500.0)},
+        {"kind": "tree_cluster", "position": Vector2(620.0, 760.0)}
     ]
     for spec in landmark_specs:
         var landmark := Node2D.new()
