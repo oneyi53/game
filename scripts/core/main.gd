@@ -552,8 +552,17 @@ func _on_campfire_interact(entry: Dictionary) -> void:
     hud.show_message(str(entry["dispel_prompt"]))
     _save_game()
 
+# Only one full-screen menu/settlement panel may be visible at a time.
+# Tapping the active menu button closes it; tapping another switches panels.
+func _toggle_menu_panel(target: Control) -> void:
+    var should_open: bool = not target.visible
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    for panel in panels:
+        panel.visible = false
+    target.visible = should_open
+
 func _on_backpack_panel_pressed() -> void:
-    backpack_panel.visible = not backpack_panel.visible
+    _toggle_menu_panel(backpack_panel)
     if backpack_panel.visible:
         backpack_panel.refresh()
 
@@ -589,7 +598,7 @@ func _on_backpack_claim(index: int) -> void:
     _save_game()
 
 func _on_camp_panel_pressed() -> void:
-    camp_panel.visible = not camp_panel.visible
+    _toggle_menu_panel(camp_panel)
     if camp_panel.visible:
         camp_panel.refresh()
 
@@ -621,12 +630,12 @@ func _on_save_pressed() -> void:
     hud.show_message("已手动保存")
 
 func _on_hero_panel_pressed() -> void:
-    hero_panel.visible = not hero_panel.visible
+    _toggle_menu_panel(hero_panel)
     if hero_panel.visible:
         hero_panel.refresh()
 
 func _on_equip_panel_pressed() -> void:
-    equip_panel.visible = not equip_panel.visible
+    _toggle_menu_panel(equip_panel)
     if equip_panel.visible:
         equip_panel.refresh()
 
@@ -637,7 +646,7 @@ func _refresh_quest_label() -> void:
     hud.set_quest_text(text.strip_edges())
 
 func _on_recruit_panel_pressed() -> void:
-    recruit_panel.visible = not recruit_panel.visible
+    _toggle_menu_panel(recruit_panel)
     if recruit_panel.visible:
         recruit_panel.refresh()
 
