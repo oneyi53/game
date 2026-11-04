@@ -46,7 +46,7 @@
 5. 验证旧存档首次迁移、招募后可上阵、退队后仍保留装备/等级/碎片，以及 MAX_UNITS 约束。
 
 
-## 第二阶段：运行时与编队界面（PR #36，待验证）
+## 第二阶段：运行时与编队界面（PR #36，Godot CI 通过）
 
 - Main 初始化 FormationManager：已拥有列表来自 RecruitmentManager，存档 `formation.active_ids` 优先；旧存档缺少编队字段时按原英雄顺序迁移，最多取 4 人。
 - 世界中只生成当前上阵英雄；第一个上阵槽位是真正的可控队长，队长 ID 不再写死为 `captain`。
