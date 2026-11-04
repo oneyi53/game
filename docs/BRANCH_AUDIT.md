@@ -7,7 +7,7 @@
 ## 1. 本次使用的准确基线
 
 - 仓库：oneyi53/game
-- 当前正式主线：main，HEAD 97e23ed3d3fbc5e44d220d069c0daf6cad015ebe
+- 当前正式主线：main；本次新一轮坐标迁移的基线为 78a92e8e7158260cf185388bac3ee6b24a6db1e5（原 97e... SHA 属于更早历史快照）
 - 2.5D 前置分支：feat/hero-world-2.5d-boss-p0
 - 后续美术整合分支：feat/hero-world-art-integration
 
@@ -246,3 +246,14 @@ main.gd 默认 active_map_id 和无 map_id 存档的回退值都是 MOSS_CROWN�
 - 本文前文记录的旧 main SHA 与 ahead/behind 数字属于当时审查快照，不可作为当前分支提交数；完整远程分支和 PR 状态见 `docs/BRANCH_CATALOG.md`。
 - 2.5D / 美术历史分支仍不得整体 merge。先解决 1200×900 与 1600×1200 边界不一致、旧存档坐标迁移，再按模块迁移。
 - 根目录原创 PNG 归档到 `assets/art-v1/effects/effect_atlas.png` 与 `assets/art-v1/branding/icon.png`；运行时引用同步更新。Godot 新路径导入尚待本次 PR 检查。
+
+
+## 10. 坐标迁移第一阶段（2026-11-04）
+
+- PR #30 已合并，当前坐标迁移基线为 `78a92e8e7158260cf185388bac3ee6b24a6db1e5`。
+- 新分支 PR #31 新增 `scripts/core/world_save_migration.gd`，将旧 1600×1200 共享地图三个区域矩形内的坐标转换为 1200×900 地图本地坐标。
+- 朝露林地解锁条件读取 `quests.completed.side_valley_puppet`，并同时要求精英 Boss 已击败；落叶幽谷要求主 Boss 已击败。
+- 对已有 `map_id` 的新格式存档，位置视为本地坐标；若地图未知或锁定，回退苔冠空地并只做边界限制，避免把本地坐标错误地按旧世界坐标再次缩放。
+- 八项 Godot 4.7.2 headless 迁移回归测试、项目启动检查已通过 run 41818333971。
+- 重要边界：该 PR 目前只交付纯迁移层和测试，尚未在 main 主场景加载/保存流程调用；未写入/重写用户存档。
+- 旧审查中 2.5D 分支的 1200×900 / 1600×1200 混用问题仍然存在于历史分支代码；后续接入必须使用此处明确的 map-local 坐标契约，并统一 Hero/Enemy/Boss clamp。

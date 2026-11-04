@@ -20,6 +20,7 @@
 | ci/godot-cloud-validation-2026-11-04 | PR #9 开放 | Godot 4.7.2 云端验证工作流 |
 | docs/local-code-audit-2026-11-04 | PR #6 开放 | 本地代码审查文档 |
 | feat/equipment-art-ui-2026-11-04 | PR #18 开放 | 装备美术 UI 接入候选 |
+| feat/world-coordinate-save-migration-2026-11-04 | PR #31 开放 | 旧共享地图坐标迁移与 8 项回归测试 |
 
 ## 已合并 PR 来源
 | PR | 分支 | 主题 |
@@ -128,3 +129,12 @@
 | main | `598216e6f67611b0f3db452718b4aa7cdf57ebb2` |
 | tools/effect-atlas-components-2026-11-04 | `859cd5c2c579ce31fbecfb4297200eab4f68224d` |
 | tools/inspect-effect-atlas-2026-11-04 | `f834d5c6d0900015c0702e4dbc580864ab15c5cb` |
+
+
+## 盘点后新增分支（2026-11-04）
+
+| 分支 | 状态 | HEAD SHA |
+|---|---|---|
+| feat/world-coordinate-save-migration-2026-11-04 | PR #31 开放 | 当前 HEAD 以 PR #31 页面为准 |
+
+PR #30 已合并至 main；PR #31 尚未合并。此补充不改变前面的 42 条分支固定 SHA 快照。
