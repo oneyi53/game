@@ -123,7 +123,7 @@ func _restore_progress(saved_state: Dictionary) -> void:
     if saved_progress is Dictionary:
         for task_id_value in saved_progress.keys():
             var task_id: String = str(task_id_value)
-            if not next_task_definitions.has(task_id):
+            if not _task_definitions.has(task_id):
                 continue
             var task: Dictionary = _task_definitions[task_id]
             var progress: int = clampi(int(saved_progress[task_id_value]), 0, int(task["target_count"]))
@@ -222,7 +222,7 @@ func get_activity_points() -> int:
     return total
 
 func claim_stage(stage_id: String, reward_grant: Callable) -> Dictionary:
-    if not next_stage_definitions.has(stage_id):
+    if not _stage_definitions.has(stage_id):
         return {"ok": false, "reason": "unknown_stage"}
     if _claimed_stages.has(stage_id):
         return {"ok": false, "reason": "already_claimed"}
