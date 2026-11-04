@@ -135,6 +135,6 @@
 
 | 分支 | 状态 | HEAD SHA |
 |---|---|---|
-| feat/world-coordinate-save-migration-2026-11-04 | PR #31 开放 | `2eb2791d81c18da741c727ff5d0ae8dce7b49083` |
+| feat/world-coordinate-save-migration-2026-11-04 | PR #31 开放 | 当前 HEAD 以 PR #31 页面为准 |
 
 PR #30 已合并至 main；PR #31 尚未合并。此补充不改变前面的 42 条分支固定 SHA 快照。
