@@ -1,6 +1,8 @@
 class_name HeroPanel
 extends Control
 
+const HeroPowerCalculator = preload("res://scripts/progression/hero_power_calculator.gd")
+
 signal leader_requested(hero_id: String)
 signal add_requested(hero_id: String)
 signal remove_requested(hero_id: String)
@@ -12,15 +14,21 @@ var heroes: Array = []
 var formation_manager = null
 var hero_definitions: Array = []
 var level_manager = null
+var equipment_manager = null
+var camp_manager = null
+var item_definitions: Dictionary = {}
 
 func set_heroes(p_heroes: Array) -> void:
     heroes = p_heroes
     refresh()
 
-func set_formation_data(p_formation_manager, p_hero_definitions: Array, p_level_manager) -> void:
+func set_formation_data(p_formation_manager, p_hero_definitions: Array, p_level_manager, p_equipment_manager = null, p_camp_manager = null, p_item_definitions: Dictionary = {}) -> void:
     formation_manager = p_formation_manager
     hero_definitions = p_hero_definitions
     level_manager = p_level_manager
+    equipment_manager = p_equipment_manager
+    camp_manager = p_camp_manager
+    item_definitions = p_item_definitions
     refresh()
 
 func refresh() -> void:
@@ -29,7 +37,10 @@ func refresh() -> void:
     var summary_lines: Array[String] = ["英雄编队"]
     if formation_manager != null and not formation_manager.active_ids.is_empty():
         var leader_name: String = _hero_name(str(formation_manager.active_ids[0]))
-        summary_lines[0] = "英雄编队  " + str(formation_manager.active_ids.size()) + "/" + str(formation_manager.max_party_size) + "    当前队长：" + leader_name
+        var team_power: int = 0
+        for active_id in formation_manager.active_ids:
+            team_power += _power_for_hero(str(active_id))
+        summary_lines[0] = "英雄编队  " + str(formation_manager.active_ids.size()) + "/" + str(formation_manager.max_party_size) + "    队长：" + leader_name + "    总战力：" + str(team_power)
     for hero in heroes:
         if hero == null:
             continue
@@ -39,6 +50,7 @@ func refresh() -> void:
             + " HP " + str(hero.hp) + "/" + str(hero.max_hp)
             + " ATK " + str(hero.attack)
             + " DEF " + str(hero.defense)
+            + " 战力 " + str(_power_for_hero(str(hero.hero_id)))
         )
     panel_label.text = "\n".join(summary_lines)
     if formation_list == null or formation_manager == null:
@@ -55,7 +67,7 @@ func refresh() -> void:
         var info := Label.new()
         var state_text: String = "队长 · " if leader else ("出战 · " if active else "预备 · ")
         var hero_level: int = level_manager.level(hero_id) if level_manager != null else 1
-        info.text = state_text + _hero_name(hero_id) + "  Lv." + str(hero_level)
+        info.text = state_text + _hero_name(hero_id) + "  Lv." + str(hero_level) + "  战力 " + str(_power_for_hero(hero_id))
         info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         info.custom_minimum_size = Vector2(220, 34)
         row.add_child(info)
@@ -80,6 +92,26 @@ func refresh() -> void:
             party_button.pressed.connect(_emit_add.bind(hero_id))
         row.add_child(party_button)
         formation_list.add_child(row)
+
+
+func _hero_definition(hero_id: String) -> Dictionary:
+    for definition in hero_definitions:
+        if str(definition.get("id", "")) == hero_id:
+            return definition
+    return {}
+
+func _power_for_hero(hero_id: String) -> int:
+    var definition: Dictionary = _hero_definition(hero_id)
+    if definition.is_empty():
+        return 0
+    var hero_level: int = level_manager.level(hero_id) if level_manager != null else 1
+    var attack_growth: float = level_manager.attack_growth_pct_per_level if level_manager != null else 0.0
+    var hp_growth: float = level_manager.hp_growth_pct_per_level if level_manager != null else 0.0
+    var equipment_bonus: Dictionary = equipment_manager.bonus_for_hero(hero_id) if equipment_manager != null else {}
+    var loose_bonus: Dictionary = equipment_manager.loose_bonus_for_hero(hero_id, item_definitions) if equipment_manager != null else {}
+    var camp_attack: float = 5.0 if camp_manager != null and camp_manager.is_built("blacksmith") else 0.0
+    var camp_hp: float = 8.0 if camp_manager != null and camp_manager.is_built("training_ground") else 0.0
+    return HeroPowerCalculator.calculate(definition, hero_level, attack_growth, hp_growth, equipment_bonus, camp_attack, camp_hp, loose_bonus)
 
 func _hero_name(hero_id: String) -> String:
     for definition in hero_definitions:
