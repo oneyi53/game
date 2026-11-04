@@ -6,6 +6,7 @@ on:
       - main
       - "fix/**"
       - "feat/**"
+      - "test/**"
   pull_request:
     branches:
       - main
@@ -101,6 +102,17 @@ jobs:
           fi
           grep -q "Town building entrance tests: 4 passed" town-building-tests.log
 
+      - name: Run quest manager regression tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_quest_manager.gd 2>&1 | tee quest-manager-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' quest-manager-tests.log; then
+            echo "Quest manager tests reported errors."
+            exit 1
+          fi
+          grep -q "Quest manager tests: 10 passed" quest-manager-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -124,4 +136,5 @@ jobs:
             reserve-hero-equipment-tests.log
             hero-power-tests.log
             town-building-tests.log
+            quest-manager-tests.log
           if-no-files-found: ignore
