@@ -3,6 +3,15 @@
 > 本文是 Hero World 的长期项目上下文入口。更新代码或分支关系后，必须同步更新本文及 `CHANGELOG.md`。
 > 最后核对：2026-11-04。核对范围：GitHub 远程分支、提交关系、`main` README，以及美术整合分支与主线的文件差异。未在 Godot 4.7.2 本机运行验证。
 
+## 当前交接状态（2026-11-04）
+
+- 项目治理文档 PR：[#2](https://github.com/oneyi53/game/pull/2)，已 squash 合并到 `main`。
+- 合并提交：`9e18e3f7065b0d19ab652a8c17840a08921b7d03`。
+- 本轮只改动文档，没有改动游戏代码、美术资源、Godot 配置或存档。
+- 远程 `main` 已包含 README、项目档案、变更日志和开发工作流规范。
+- 用户本地当前分支/工作区仍需再次确认；此前终端输出显示本地在 `integration/art-2.5d`，且有 `project.godot` 修改及 Godot 生成的未跟踪导入文件。不要用切换/重置命令覆盖这些本地状态。
+- 下一步：只读审查 `feat/hero-world-art-integration` 的 Sprite 规范、资源清单、投影、地图、主场景、英雄、敌人和 Boss 实现，并与最新 `main` 逐文件对照；暂不整分支 merge。
+
 ## 1. 项目定位
 
 Hero World 是原创单机 RPG，目标平台为 Android，目标体验为竖屏移动端、卡通斜视伪 2.5D 世界。核心玩法方向包括英雄小队探索、自动战斗、装备成长、营地建设、地图/区域探索与离线本地存档。
@@ -13,30 +22,30 @@ Hero World 是原创单机 RPG，目标平台为 Android，目标体验为竖屏
 
 - 仓库：`oneyi53/game`
 - 正式主线：`main`
-- 当前已核对的 main HEAD：`afddb7028a327b9c22d1d13450b967e944f63548`（短 SHA：`afddb70`，提交说明：`Add sprites: previews`）
-- 本次文档工作分支：`docs/project-governance`，从上述 main HEAD 创建。
-- 本地开发目录：`~/GodotProjects/HeroWorld`（用户此前提供的终端状态显示本地曾切换到该目录下的 `integration/art-2.5d`；本次文档分支是在 GitHub 远端创建，尚未确认用户本地是否获取该分支）。
+- 当前已核对的 main HEAD：`9e18e3f7065b0d19ab652a8c17840a08921b7d03`（本轮文档 squash merge）。
+- 文档治理分支：`docs/project-governance`，已通过 PR #2 合并；后续文档同步另开短期 docs 分支。
+- 本地开发目录：`~/GodotProjects/HeroWorld`。此前本地终端曾显示当前分支为 `integration/art-2.5d`，但用户工作区含本地改动，必须先检查，不得覆盖。
 
 ### 主线与 2.5D 分支关系
 
-| 分支 | 相对 main 的提交关系 | 定位 | 当前判断 |
+| 分支 | 相对原 main 基线的提交关系（核对时） | 定位 | 当前判断 |
 |---|---:|---|---|
-| `main` | 基准 | 唯一正式主线 | 稳定基线；不要被功能分支直接覆盖 |
+| `main` | 基准；之后增加文档 squash commit | 唯一正式主线 | 稳定基线；不要被功能分支直接覆盖 |
 | `feat/hero-world-2.5d-boss-p0` | ahead 57 / behind 11 | 2.5D 投影、场景排序、Boss 与相关场景/角色逻辑 | 有价值的技术开发线；与 main 已分叉 |
 | `feat/hero-world-art-integration` | ahead 113 / behind 11 | 在 2.5D 分支基础上继续扩展美术资源、地图管理、角色/怪物/场景接入和 UI | 比 2.5D 分支多 56 个提交；与该分支关系为严格后继，但仍与 main 分叉 |
 
 核对结果：
 - `feat/hero-world-art-integration` 相对 `feat/hero-world-2.5d-boss-p0`：ahead 56 / behind 0。也就是说，美术整合分支包含 2.5D 分支的历史，并额外向前开发 56 个提交。
-- 两条开发线相对 main 的共同基点为 `1add5582f092d9cc52752fb54e5bce5137fb4bfd`；main 后续又有 11 个提交，因此它们不能视作 main 的直接快进更新。
+- 两条开发线相对原 main 的共同基点为 `1add5582f092d9cc52752fb54e5bce5137fb4bfd`；原 main 后续又有 11 个提交，因此它们不能视作 main 的直接快进更新。后续 main 新增的文档提交不改变这一技术分支分叉事实。
 - 美术分支与 main 比较时，差异包括美术 PNG 资源、`world_projection.gd`、`world_map_manager.gd`、地图/主场景/英雄/敌人/Boss/交互物/UI 修改，以及 Godot 检查和 Android 构建 workflow 的变化。
 
 **重要纠错：** 之前对话曾将美术资源描述为已经在 main 中。以本次 GitHub 分支比较结果为准：`assets/art-v1/` 下的美术图集和独立 PNG 在 `feat/hero-world-art-integration` 相对 main 的差异中被列为新增文件，因此不能据此认定它们已经进入 main。后续应以具体分支和文件路径核实资源归属。
 
 ## 3. 其他远程分支盘点
 
-以下内容分支均以旧的共同基点为基础，相对当前 main 显示 behind 29，并只包含少量独立内容文件改动。它们是内容草稿来源，不应直接合并整个分支：
+以下内容分支均以旧的共同基点为基础，相对当时 main 显示 behind 29，并只包含少量独立内容文件改动。它们是内容草稿来源，不应直接合并整个分支：
 
-| 分支 | 相对 main | 主要独立文件/主题 |
+| 分支 | 相对当时 main | 主要独立文件/主题 |
 |---|---:|---|
 | `content/area2-dialogues` | ahead 1 / behind 29 | `content/area2-dialogues.md` |
 | `content/area3-dialogues` | ahead 1 / behind 29 | `content/area3-dialogues.md` |
@@ -46,7 +55,7 @@ Hero World 是原创单机 RPG，目标平台为 Android，目标体验为竖屏
 | `content/m1-text-draft` | ahead 4 / behind 29 | 装备套装、英雄、怪物/Boss、任务文案 |
 | `content/next-chat-batch` | ahead 3 / behind 29 | APK 文案、美术描述、后续任务 |
 | `content/system-draft` | ahead 1 / behind 29 | 系统草案 |
-| `fix/android-apk-build` | ahead 0 / behind 13 | 已落后于 main；比较结果没有独立差异文件 |
+| `fix/android-apk-build` | ahead 0 / behind 13 | 已落后于当时 main；比较结果没有独立差异文件 |
 
 内容分支应逐文件挑选、审校和迁移到当前主线，不要把旧分支整体合并进来。
 
