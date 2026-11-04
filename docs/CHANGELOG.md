@@ -1,15 +1,15 @@
 # 开发变更日志
 
-## 2026-11-04 — 散件装备穿戴闭环（开发分支，待 CI 验证）
+## 2026-11-04 — 散件装备穿戴闭环（PR #29 已合并）
 
-- 分支：`feat/loose-equipment-wearable-loop-2026-11-04`（基于 main `4dba3ea6947d8661f82f35199e8e0cf2c4d270a1`）。
+- PR：[#29](https://github.com/oneyi53/game/pull/29)，分支：`feat/loose-equipment-wearable-loop-2026-11-04`，合并提交：`598216e6f67611b0f3db452718b4aa7cdf57ebb2`。
 - 修改文件：`scripts/progression/equipment_manager.gd`、`scripts/progression/backpack_manager.gd`、`scripts/ui/backpack_panel.gd`、`scripts/ui/equip_panel.gd`、`scripts/character/hero.gd`、`scripts/core/main.gd`，以及本文档。
 - 变更：背包可选择队伍英雄穿戴散件；同槽替换时旧装备回到背包；装备面板显示当前散件槽并支持卸下；卸下后回到背包，背包满时进入原有邮箱溢出流程。散件平面攻击/生命/防御加成纳入统一属性重算。
 - 槽位：武器（铁剑/短刀互斥）、胸甲、护腕、鞋子、副手盾牌。副手为独立槽，不侵占套装六槽。
 - 套装兼容：散件覆盖武器/胸甲/护腕/鞋子时，对应底层套装件不计入套装数量；卸下散件后底层套装部件恢复计数。散件永不计入套装。
 - 数据/存档兼容性：新增可选 `loose_equipment` 存档字段；原 `equipment` 字段保持原格式，旧存档无新字段时保持原套装状态；schema_version 不变。未修改散件掉落、背包上限、分解收益、强化/合成规则。
 - 验证环境：GitHub Actions / Godot 4.7.2，等待本 PR 自动检查。
-- 验证结果：提交前静态复核；CI 尚未完成，不能视为运行验证通过。移动端真机未验收。
+- 验证结果：Godot 4.7.2 云端资源导入、脚本解析、无头启动通过（Actions runs 41809736359、41809725550）。这不是完整玩法回归；移动端真机未验收。
 - 已知限制：当前散件配置没有头盔和饰品类型；装备外观只在面板显示，不叠加到角色战斗立绘。
 - 下一步：通过 CI 后检查 PR 差异与存档兼容，再合并；合并后补录最终 PR/commit 与 CI 结果。
 
