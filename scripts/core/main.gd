@@ -365,9 +365,11 @@ func _spawn_enemy_at(enemy_id: String, pos: Vector2) -> bool:
         return false
     var enemy = ENEMY_SCENE.instantiate()
     enemy.setup(enemy_data)
-    enemy.global_position = pos
-    enemy.set_meta("spawn_pos", pos)
-    enemy.set_meta("world_map_id", world_map_manager.map_for_enemy(enemy_id))
+    var map_id: String = world_map_manager.map_for_enemy(enemy_id)
+    var local_spawn: Vector2 = world_map_manager.enemy_spawn_position(enemy_id)
+    enemy.global_position = local_spawn
+    enemy.set_meta("spawn_pos", local_spawn)
+    enemy.set_meta("world_map_id", map_id)
     enemy.set_meta("world_region_id", world_map_manager.enemy_region(enemy_id))
     enemies_root.add_child(enemy)
     enemy.add_to_group("enemies")
@@ -427,8 +429,8 @@ func _spawn_enemies() -> void:
             return
         boss = BOSS_SCENE.instantiate()
         boss.setup(boss_data)
-        boss.global_position = Vector2(1300.0, 900.0)
-        boss.spawn_position = Vector2(1300.0, 900.0)
+        boss.global_position = world_map_manager.enemy_spawn_position(data_loader.boss_id)
+        boss.spawn_position = boss.global_position
         boss.set_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)
         boss.set_meta("world_region_id", WorldMapManagerScript.STARTER_REGION)
         enemies_root.add_child(boss)
@@ -444,8 +446,8 @@ func _spawn_enemies() -> void:
             return
         elite_boss = BOSS_SCENE.instantiate()
         elite_boss.setup(elite_data)
-        elite_boss.global_position = Vector2(1000.0, 220.0)
-        elite_boss.spawn_position = Vector2(1000.0, 220.0)
+        elite_boss.global_position = world_map_manager.enemy_spawn_position(data_loader.elite_boss_id)
+        elite_boss.spawn_position = elite_boss.global_position
         elite_boss.set_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)
         elite_boss.set_meta("world_region_id", WorldMapManagerScript.NORTH_CLEARING_REGION)
         enemies_root.add_child(elite_boss)
