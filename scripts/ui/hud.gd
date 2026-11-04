@@ -9,6 +9,7 @@ signal equip_panel_pressed
 signal camp_panel_pressed
 signal backpack_panel_pressed
 signal recruit_panel_pressed
+signal map_pressed
 
 @onready var gold_label: Label = $GoldLabel
 @onready var wood_label: Label = $WoodLabel
@@ -25,6 +26,7 @@ var quest_expanded: bool = true
 @onready var camp_button: Button = $CampButton
 @onready var backpack_button: Button = $BackpackButton
 @onready var recruit_button: Button = $RecruitButton
+@onready var map_button: Button = $MapButton
 @onready var cooldown_label: Label = $CooldownLabel
 
 func _ready() -> void:
@@ -36,6 +38,7 @@ func _ready() -> void:
     camp_button.pressed.connect(_on_camp_button_pressed)
     backpack_button.pressed.connect(_on_backpack_button_pressed)
     recruit_button.pressed.connect(_on_recruit_button_pressed)
+    map_button.pressed.connect(func(): map_pressed.emit())
     quest_toggle_button.pressed.connect(_on_quest_toggle_pressed)
     _apply_quest_display()
 
