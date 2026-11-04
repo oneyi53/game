@@ -7,6 +7,7 @@ const Projection = preload("res://scripts/core/world_projection.gd")
 func _initialize() -> void:
     _test_legacy_starter_region()
     _test_legacy_fallen_leaf_region()
+    _test_fallen_leaf_requires_elite_boss()
     _test_locked_region_falls_back_safely()
     _test_morning_dew_requires_both_gates()
     _test_legacy_position_outside_regions()
@@ -17,7 +18,7 @@ func _initialize() -> void:
     _test_map_unlock_gates()
     _test_enemy_map_assignment()
     _test_projection_bounds_and_depth()
-    print("World coordinate tests: 12 passed")
+    print("World coordinate tests: 13 passed")
     quit()
 
 
@@ -72,7 +73,8 @@ func _test_legacy_starter_region() -> void:
 func _test_legacy_fallen_leaf_region() -> void:
     var input := {
         "player_position": {"x": 400.0, "y": 1020.0},
-        "boss_defeated": true
+        "boss_defeated": true,
+        "elite_defeated": true
     }
     var result: Dictionary = Migration.migrate_save(input)
     assert(result["map_id"] == Migration.FALLEN_LEAF)
@@ -95,6 +97,17 @@ func _test_locked_region_falls_back_safely() -> void:
     assert(float(pos["y"]) >= Migration.MARGIN)
     assert(float(pos["y"]) <= Migration.MAP_SIZE.y - Migration.MARGIN)
 
+
+
+
+func _test_fallen_leaf_requires_elite_boss() -> void:
+    var input := {
+        "player_position": {"x": 400.0, "y": 1020.0},
+        "boss_defeated": true,
+        "elite_defeated": false
+    }
+    var result: Dictionary = Migration.migrate_save(input)
+    assert(result["map_id"] == Migration.MOSS_CROWN)
 
 
 func _test_morning_dew_requires_both_gates() -> void:
