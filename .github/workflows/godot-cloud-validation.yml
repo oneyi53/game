@@ -113,6 +113,17 @@ jobs:
           fi
           grep -q "Quest manager tests: 10 passed" quest-manager-tests.log
 
+      - name: Run daily activity manager tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_daily_activity_manager.gd 2>&1 | tee daily-activity-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' daily-activity-tests.log; then
+            echo "Daily activity manager tests reported errors."
+            exit 1
+          fi
+          grep -q "Daily activity manager tests: 14 passed" daily-activity-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -137,4 +148,5 @@ jobs:
             hero-power-tests.log
             town-building-tests.log
             quest-manager-tests.log
+            daily-activity-tests.log
           if-no-files-found: ignore
