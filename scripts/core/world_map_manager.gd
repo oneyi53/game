@@ -38,7 +38,7 @@ func is_unlocked(map_id: String, boss_defeated: bool, elite_defeated: bool, vall
         TOWN, MOSS_CROWN:
             return true
         FALLEN_LEAF:
-            return boss_defeated
+            return elite_defeated
         MORNING_DEW:
             return elite_defeated and valley_quest_done
         _:
