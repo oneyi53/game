@@ -527,6 +527,114 @@ func _tick_respawns(delta: float) -> void:
         respawn_queue.erase(entry)
         _spawn_enemy_at(str(entry["id"]), entry["pos"])
 
+
+func _serialize_map_positions() -> Dictionary:
+    var serialized: Dictionary = {}
+    for map_id in map_positions:
+        var position: Vector2 = map_positions[map_id]
+        serialized[str(map_id)] = {"x": position.x, "y": position.y}
+    if captain != null:
+        serialized[active_map_id] = {"x": captain.global_position.x, "y": captain.global_position.y}
+    return serialized
+
+
+func _on_map_pressed() -> void:
+    var popup := PopupMenu.new()
+    popup.add_item("王朝营地（安全区）", 0)
+    popup.add_item("苔冠空地", 1)
+    popup.add_item("落叶幽谷", 2)
+    popup.add_item("朝露林地", 3)
+    popup.id_pressed.connect(_on_map_selected)
+    add_child(popup)
+    popup.popup_centered()
+
+
+func _on_map_selected(map_index: int) -> void:
+    var target_map_id: String = WorldMapManagerScript.MOSS_CROWN
+    match map_index:
+        0: target_map_id = WorldMapManagerScript.TOWN
+        1: target_map_id = WorldMapManagerScript.MOSS_CROWN
+        2: target_map_id = WorldMapManagerScript.FALLEN_LEAF
+        3: target_map_id = WorldMapManagerScript.MORNING_DEW
+    if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done):
+        hud.show_message("该地图尚未解锁，先完成对应首领与任务")
+        return
+    _switch_map(target_map_id)
+
+
+func _apply_active_map_visibility() -> void:
+    for enemy in enemies:
+        if not is_instance_valid(enemy):
+            continue
+        var belongs: bool = str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) == active_map_id
+        enemy.visible = belongs
+        enemy.process_mode = Node.PROCESS_MODE_INHERIT if belongs else Node.PROCESS_MODE_DISABLED
+        if enemy is CollisionObject2D:
+            enemy.set_deferred("collision_layer", 1 if belongs else 0)
+            enemy.set_deferred("collision_mask", 1 if belongs else 0)
+    if chest_node != null:
+        chest_node.visible = active_map_id == WorldMapManagerScript.MOSS_CROWN
+    if campfire_node != null:
+        campfire_node.visible = active_map_id == WorldMapManagerScript.MOSS_CROWN
+
+
+func _switch_map(target_map_id: String) -> void:
+    if target_map_id == active_map_id or not world_map_manager.is_known_map(target_map_id) or captain == null:
+        return
+    if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done):
+        hud.show_message("该地图尚未解锁")
+        return
+    map_positions[active_map_id] = captain.global_position
+    for hero in heroes:
+        hero.move_input = Vector2.ZERO
+        hero.velocity = Vector2.ZERO
+    active_map_id = target_map_id
+    $Map.set_active_map(active_map_id)
+    var target_position: Vector2 = map_positions.get(active_map_id, world_map_manager.spawn_position(active_map_id))
+    target_position = WorldMapManagerScript.clamp_position(target_position)
+    for hero in heroes:
+        hero.world_map_id = active_map_id
+        hero.global_position = WorldMapManagerScript.clamp_position(target_position + hero.formation_offset)
+    _apply_active_map_visibility()
+    camera.position = _projected_camera_position(captain.global_position)
+    hud.show_message("已进入：" + world_map_manager.map_name(active_map_id))
+    _save_game()
+
+
+func _projected_camera_position(logical_position: Vector2) -> Vector2:
+    var bounds: Rect2 = WorldProjectionScript.projected_bounds()
+    var visible_size: Vector2 = get_viewport_rect().size / camera.zoom
+    var min_x: float = bounds.position.x + visible_size.x * 0.5
+    var max_x: float = bounds.end.x - visible_size.x * 0.5
+    var center_x: float = (bounds.position.x + bounds.end.x) * 0.5
+    var projected: Vector2 = WorldProjectionScript.world_to_screen(logical_position)
+    var camera_x: float = center_x if min_x > max_x else clampf(projected.x, min_x, max_x)
+    var min_y: float = bounds.position.y + visible_size.y * 0.5
+    var max_y: float = bounds.end.y - visible_size.y * 0.5
+    var camera_y: float = (bounds.position.y + bounds.end.y) * 0.5 if min_y > max_y else clampf(projected.y, min_y, max_y)
+    return Vector2(camera_x, camera_y)
+
+
+func _set_world_depth_order(unit: Node2D) -> void:
+    var depth_index: int = clampi(int(WorldProjectionScript.screen_depth(unit.global_position) / 4.0), 0, 1024)
+    if unit.z_index != depth_index:
+        unit.z_index = depth_index
+
+
+func _update_world_visuals() -> void:
+    for unit in heroes:
+        if is_instance_valid(unit):
+            _set_world_depth_order(unit)
+            if unit.velocity.length_squared() > 0.01:
+                unit.queue_redraw()
+    for unit in enemies:
+        if is_instance_valid(unit) and unit.visible:
+            _set_world_depth_order(unit)
+    if chest_node != null and is_instance_valid(chest_node) and chest_node.visible:
+        _set_world_depth_order(chest_node)
+    if campfire_node != null and is_instance_valid(campfire_node) and campfire_node.visible:
+        _set_world_depth_order(campfire_node)
+
 func _process(delta: float) -> void:
     if config_failed or captain == null:
         return
