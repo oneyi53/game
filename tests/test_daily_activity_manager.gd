@@ -130,6 +130,7 @@ func _test_same_day_does_not_reset() -> void:
     assert(manager.get_snapshot()["tasks"]["slime_hunt"]["progress"] == 1)
 
 func _test_day_rollover_resets_daily_state() -> void:
+    granted_rewards.clear()
     var manager = _new_manager()
     manager.record_event("enemy_killed", "before-rollover", {"enemy_id": "slime"}, 2)
     var claim: Dictionary = manager.claim_stage("stage_10", Callable(self, "_grant_reward"))
@@ -153,6 +154,7 @@ func _test_clock_rollback_is_rejected() -> void:
     assert(restored_on_earlier_clock.get_snapshot()["tasks"]["slime_hunt"]["progress"] == 1)
 
 func _test_stage_claim_requires_unlock_and_successful_grant() -> void:
+    granted_rewards.clear()
     var manager = _new_manager()
     var locked: Dictionary = manager.claim_stage("stage_10", Callable(self, "_grant_reward"))
     assert(not locked["ok"] and locked["reason"] == "locked")
