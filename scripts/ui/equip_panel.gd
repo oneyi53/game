@@ -1,15 +1,21 @@
 class_name EquipPanel
 extends Control
 
-# Equipment swap panel: one row per hero showing the set currently
-# worn, plus one button per set (晨曦先锋 / 森林壁垒 / 星羽游猎).
-# Tapping a set button swaps that hero's whole six-piece set at once
-# and emits swap_requested; main re-applies the bonus and saves.
-# The button for the currently worn set is disabled. There is no
-# backpack, upgrade or dismantle UI in M1. set_lines is kept only
-# as a label-only fallback and is not used by main.
+# Equipment swap panel: one row per hero showing the six visible pieces
+# currently worn, plus one button per complete set. Swapping remains a
+# whole-set operation; these sprites are presentation only.
 
 signal swap_requested(hero_id, set_id)
+
+const SLOT_ORDER: Array[String] = ["weapon", "helmet", "chest", "gloves", "boots", "accessory"]
+const SLOT_LABELS: Dictionary = {
+    "weapon": "武器",
+    "helmet": "头盔",
+    "chest": "胸甲",
+    "gloves": "护手",
+    "boots": "战靴",
+    "accessory": "饰品"
+}
 
 @onready var panel_label: RichTextLabel = $PanelLabel
 
@@ -19,6 +25,7 @@ var lines: Array = []
 var dynamic_mode: bool = false
 var scroll: ScrollContainer = null
 var list_box: VBoxContainer = null
+var texture_cache: Dictionary = {}
 
 func set_data(p_heroes: Array, p_manager: EquipmentManager) -> void:
     heroes = p_heroes
@@ -60,6 +67,29 @@ func _ensure_dynamic() -> void:
     list_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     scroll.add_child(list_box)
 
+func _piece_texture(set_id: String, slot: String) -> Texture2D:
+    var key: String = set_id + "_" + slot
+    if texture_cache.has(key):
+        return texture_cache[key] as Texture2D
+    var path: String = "res://assets/art-v1/sprites/equipment_sets/" + key + ".png"
+    var texture := load(path) as Texture2D
+    if texture != null:
+        texture_cache[key] = texture
+    return texture
+
+func _add_piece_preview(parent: Control, set_id: String) -> void:
+    var pieces_row := HBoxContainer.new()
+    pieces_row.add_theme_constant_override("separation", 4)
+    parent.add_child(pieces_row)
+    for slot in SLOT_ORDER:
+        var piece := TextureRect.new()
+        piece.custom_minimum_size = Vector2(44.0, 44.0)
+        piece.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+        piece.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+        piece.texture = _piece_texture(set_id, slot)
+        piece.tooltip_text = str(SLOT_LABELS[slot])
+        pieces_row.add_child(piece)
+
 func rebuild() -> void:
     if manager == null or list_box == null:
         return
@@ -75,15 +105,22 @@ func rebuild() -> void:
         if current == "":
             row_label.text = str(hero.hero_name) + "：未穿戴套装"
         else:
-            row_label.text = str(hero.hero_name) + "：" + manager.set_name(current) + " 6 件"
+            row_label.text = str(hero.hero_name) + "：" + manager.set_name(current) + "（6 件）"
         list_box.add_child(row_label)
+        if current != "":
+            _add_piece_preview(list_box, current)
         var row: HBoxContainer = HBoxContainer.new()
+        row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         list_box.add_child(row)
-        for set_id in manager.set_ids():
+        for set_id_value in manager.set_ids():
+            var set_id: String = str(set_id_value)
             var button: Button = Button.new()
-            button.text = manager.set_name(str(set_id))
-            button.disabled = (str(set_id) == current)
-            button.pressed.connect(_on_set_button_pressed.bind(hero_id, str(set_id)))
+            button.text = manager.set_name(set_id)
+            button.icon = _piece_texture(set_id, "weapon")
+            button.icon_max_width = 32
+            button.disabled = (set_id == current)
+            button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+            button.pressed.connect(_on_set_button_pressed.bind(hero_id, set_id))
             row.add_child(button)
 
 func _on_set_button_pressed(hero_id: String, set_id: String) -> void:
