@@ -46,6 +46,17 @@ jobs:
             exit 1
           fi
 
+      - name: Run world save migration tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_world_save_migration.gd 2>&1 | tee world-save-migration-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' world-save-migration-tests.log; then
+            echo "World save migration tests reported errors."
+            exit 1
+          fi
+          grep -q "World save migration tests: 7 passed" world-save-migration-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -64,4 +75,5 @@ jobs:
           path: |
             godot-import.log
             godot-runtime.log
+            world-save-migration-tests.log
           if-no-files-found: ignore
