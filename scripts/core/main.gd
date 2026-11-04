@@ -5,10 +5,10 @@ extends Node2D
 # chest, runs the camera, the skill/interact/save buttons and saving.
 # If a table is invalid, startup stops with an on-screen error and no
 # fallback data is used. Unit count is capped at MAX_UNITS by the
-# initial spawn plan (see _spawn_enemies): main boss alive 6 + 2 + 1
-# = 9; main boss dead, elite alive 6 + 2 + 2 + 1 = 11; both bosses
-# dead, third-zone quest open 6 + 1 + 1 + 4 = 12; both bosses dead,
-# third-zone quest done, fourth zone open 6 + 1 + 1 + 2 + 2 = 12.
+# initial spawn plan (see _spawn_enemies): with a four-hero active party,
+# main boss alive 4 + 2 + 1 = 7; main boss dead, elite alive 4 + 2 + 2 + 1 = 9;
+# both bosses dead, third-zone quest open 4 + 1 + 1 + 4 = 10; both bosses
+# dead, third-zone quest done, fourth zone open 4 + 1 + 1 + 2 + 2 = 10.
 # When the third zone opens, the first and second zones each drop
 # to 1 initial monster so the third zone's 4 still fit. When the
 # fourth zone opens, the third zone drops to 2 initial monsters so
