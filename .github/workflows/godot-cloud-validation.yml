@@ -66,7 +66,7 @@ jobs:
             echo "Hero formation tests reported errors."
             exit 1
           fi
-          grep -q "Hero formation tests: 10 passed" hero-formation-tests.log
+          grep -q "Hero formation tests: 13 passed" hero-formation-tests.log
 
       - name: Run headless project smoke test
         shell: bash
