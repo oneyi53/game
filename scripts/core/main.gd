@@ -297,8 +297,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
         var hero = HERO_SCENE.instantiate()
         hero.setup(hero_data, hero_id == "captain")
         hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
-        hero.reset_to_base_stats()
-        hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
+        _rebuild_hero_stats(hero, false)
         if saved_hp_by_id.has(hero_id):
             var saved_hp: int = int(saved_hp_by_id[hero_id])
             # A hero saved during the 3-second death delay resumes at the
@@ -338,8 +337,7 @@ func _spawn_recruited_hero(hero_id: String) -> bool:
     var hero = HERO_SCENE.instantiate()
     hero.setup(hero_data, false)
     hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
-    hero.reset_to_base_stats()
-    hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero_id))
+    _rebuild_hero_stats(hero, false)
     hero.global_position = captain.global_position + offsets[index]
     hero.formation_offset = offsets[index]
     heroes_root.add_child(hero)
@@ -360,8 +358,7 @@ func _grant_party_xp(amount: int) -> void:
             continue
         var hp_ratio: float = float(hero.hp) / float(hero.max_hp) if hero.max_hp > 0 else 1.0
         hero.set_level(level_manager.level(hero.hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
-        hero.reset_to_base_stats()
-        hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
+        _rebuild_hero_stats(hero, true)
         hero.hp = maxi(1, int(round(hp_ratio * float(hero.max_hp))))
         hero.queue_redraw()
         hud.show_message(str(hero.hero_name) + " 升到 " + str(level_manager.level(hero.hero_id)) + " 级！")
@@ -762,6 +759,26 @@ func _on_camp_hero_panel_pressed() -> void:
     camp_panel.visible = false
     _on_hero_panel_pressed()
 
+func _rebuild_hero_stats(hero: Hero, preserve_hp_ratio: bool = true) -> void:
+    if hero == null:
+        return
+    var hp_ratio: float = float(hero.hp) / float(hero.max_hp) if hero.max_hp > 0 else 1.0
+    hero.reset_to_base_stats()
+    hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero.hero_id))
+    var camp_attack_pct: float = 5.0 if camp_manager.is_built("blacksmith") else 0.0
+    var camp_hp_pct: float = 8.0 if camp_manager.is_built("training_ground") else 0.0
+    hero.apply_camp_bonus(camp_attack_pct, camp_hp_pct)
+    if preserve_hp_ratio:
+        hero.hp = clampi(int(round(hp_ratio * float(hero.max_hp))), 1, hero.max_hp)
+    hero.queue_redraw()
+
+func _refresh_party_camp_bonuses() -> void:
+    for hero in heroes:
+        _rebuild_hero_stats(hero, true)
+    if hero_panel.visible:
+        hero_panel.refresh()
+    equip_panel.refresh()
+
 func _on_camp_build(building_id: String) -> void:
     var entry = camp_manager.building(building_id)
     if entry == null:
@@ -776,6 +793,7 @@ func _on_camp_build(building_id: String) -> void:
         return
     wood -= cost
     camp_manager.build(building_id)
+    _refresh_party_camp_bonuses()
     hud.set_wood(wood, wood_cap)
     camp_panel.refresh()
     hud.show_message(str(entry["built_message"]))
@@ -863,8 +881,7 @@ func _on_equip_swap(hero_id: String, set_id: String) -> void:
         if hero.hero_id != hero_id:
             continue
         var hp_ratio: float = float(hero.hp) / float(hero.max_hp) if hero.max_hp > 0 else 1.0
-        hero.reset_to_base_stats()
-        hero.apply_equipment_bonus(equipment_manager.bonus_for_hero(hero_id))
+        _rebuild_hero_stats(hero, true)
         hero.hp = maxi(1, int(round(hp_ratio * float(hero.max_hp))))
         hero.queue_redraw()
     if hero_panel.visible:
