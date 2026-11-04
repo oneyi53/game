@@ -34,6 +34,7 @@ const SET_PIECE_TEXTURES := {
 }
 
 var heroes: Array = []
+var hero_entries: Array = []
 var manager: EquipmentManager = null
 var item_definitions: Dictionary = {}
 var lines: Array = []
@@ -43,7 +44,29 @@ var list_box: VBoxContainer = null
 
 func set_data(p_heroes: Array, p_manager: EquipmentManager) -> void:
     heroes = p_heroes
+    hero_entries.clear()
+    for hero in heroes:
+        if hero != null:
+            hero_entries.append({"id": str(hero.hero_id), "name": str(hero.hero_name)})
     manager = p_manager
+    dynamic_mode = true
+    if panel_label != null:
+        panel_label.visible = false
+    _ensure_dynamic()
+    rebuild()
+
+func set_roster(p_hero_ids: Array, p_hero_definitions: Array, p_manager: EquipmentManager, p_runtime_heroes: Array = []) -> void:
+    heroes = p_runtime_heroes
+    hero_entries.clear()
+    manager = p_manager
+    for hero_id_value in p_hero_ids:
+        var hero_id: String = str(hero_id_value)
+        var hero_name: String = hero_id
+        for definition in p_hero_definitions:
+            if str(definition.get("id", "")) == hero_id:
+                hero_name = str(definition.get("name", hero_id))
+                break
+        hero_entries.append({"id": hero_id, "name": hero_name})
     dynamic_mode = true
     if panel_label != null:
         panel_label.visible = false
@@ -91,15 +114,16 @@ func rebuild() -> void:
     for child in list_box.get_children():
         list_box.remove_child(child)
         child.queue_free()
-    for hero in heroes:
-        if hero == null:
+    for hero_entry in hero_entries:
+        var hero_id: String = str(hero_entry.get("id", ""))
+        var hero_name: String = str(hero_entry.get("name", hero_id))
+        if hero_id == "":
             continue
-        var hero_id: String = str(hero.hero_id)
         var current: String = manager.equipped_set_id_for_hero(hero_id)
         var counts: Dictionary = manager.set_counts_for_hero(hero_id)
         var current_count: int = int(counts.get(current, 0))
         var row_label := Label.new()
-        row_label.text = str(hero.hero_name) + ("：未穿戴套装" if current == "" else "：" + manager.set_name(current) + " " + str(current_count) + "/6 件套装部件")
+        row_label.text = hero_name + ("（预备）" if not _is_runtime_hero(hero_id) else "") + ("：未穿戴套装" if current == "" else "：" + manager.set_name(current) + " " + str(current_count) + "/6 件套装部件")
         list_box.add_child(row_label)
 
         var worn: Dictionary = manager.loose_equipped_for_hero(hero_id)
@@ -145,6 +169,13 @@ func rebuild() -> void:
             button.disabled = (set_id == current)
             button.pressed.connect(_on_set_button_pressed.bind(hero_id, set_id))
             card.add_child(button)
+
+
+func _is_runtime_hero(hero_id: String) -> bool:
+    for hero in heroes:
+        if hero != null and str(hero.hero_id) == hero_id:
+            return true
+    return false
 
 func _on_unequip_button_pressed(hero_id: String, slot: String) -> void:
     unequip_requested.emit(hero_id, slot)

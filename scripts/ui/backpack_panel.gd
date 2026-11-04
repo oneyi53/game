@@ -20,6 +20,7 @@ const ITEM_TEXTURES := {
 
 var manager: BackpackManager = null
 var heroes: Array = []
+var hero_options: Array = []
 var scroll: ScrollContainer = null
 var list_box: VBoxContainer = null
 var pending_decompose: int = -1
@@ -30,6 +31,19 @@ func set_manager(p_manager: BackpackManager, p_heroes: Array = []) -> void:
     if panel_label != null:
         panel_label.visible = false
     _ensure_dynamic()
+    rebuild()
+
+func set_hero_roster(p_hero_ids: Array, p_hero_definitions: Array, p_active_ids: Array = []) -> void:
+    hero_options.clear()
+    for hero_id_value in p_hero_ids:
+        var hero_id: String = str(hero_id_value)
+        var hero_name: String = hero_id
+        for definition in p_hero_definitions:
+            if str(definition.get("id", "")) == hero_id:
+                hero_name = str(definition.get("name", hero_id))
+                break
+        var roster_state: String = "出战" if p_active_ids.has(hero_id) else "预备"
+        hero_options.append({"id": hero_id, "name": hero_name + "（" + roster_state + "）"})
     rebuild()
 
 func refresh() -> void:
@@ -88,10 +102,9 @@ func rebuild() -> void:
         action_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         var target := OptionButton.new()
         target.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        for hero in heroes:
-            if hero != null:
-                target.add_item(str(hero.hero_name))
-                target.set_item_metadata(target.item_count - 1, str(hero.hero_id))
+        for hero_entry in hero_options:
+            target.add_item(str(hero_entry.get("name", hero_entry.get("id", ""))))
+            target.set_item_metadata(target.item_count - 1, str(hero_entry.get("id", "")))
         if target.item_count > 0:
             target.select(0)
         action_row.add_child(target)

@@ -272,6 +272,7 @@ func _ready() -> void:
     recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
     recruit_panel.visible = false
     backpack_panel.set_manager(backpack_manager, heroes)
+    backpack_panel.set_hero_roster(formation_manager.owned_ids, data_loader.heroes, formation_manager.active_ids)
     backpack_panel.equip_requested.connect(_on_backpack_equip)
     backpack_panel.decompose_requested.connect(_on_backpack_decompose)
     backpack_panel.claim_requested.connect(_on_backpack_claim)
@@ -289,7 +290,7 @@ func _ready() -> void:
     hero_panel.add_requested.connect(_on_formation_add_requested)
     hero_panel.remove_requested.connect(_on_formation_remove_requested)
     hero_panel.visible = false
-    equip_panel.set_data(heroes, equipment_manager)
+    equip_panel.set_roster(formation_manager.owned_ids, data_loader.heroes, equipment_manager, heroes)
     equip_panel.set_item_definitions(backpack_manager.items)
     equip_panel.swap_requested.connect(_on_equip_swap)
     equip_panel.unequip_requested.connect(_on_loose_unequip)
@@ -908,13 +909,8 @@ func _on_backpack_equip(index: int, hero_id: String) -> void:
     if backpack_manager == null or equipment_manager == null or index < 0 or index >= backpack_manager.backpack.size():
         hud.show_message("穿戴失败：未知散件")
         return
-    var target_exists: bool = false
-    for party_hero in heroes:
-        if party_hero != null and party_hero.hero_id == hero_id:
-            target_exists = true
-            break
-    if not target_exists:
-        hud.show_message("穿戴失败：英雄不存在")
+    if recruitment_manager == null or not recruitment_manager.is_recruited(hero_id):
+        hud.show_message("穿戴失败：英雄未拥有")
         return
     var item_id: String = str(backpack_manager.backpack[index])
     var entry = backpack_manager.item(item_id)
@@ -1119,6 +1115,8 @@ func _on_recruit_synthesize(hero_id: String) -> void:
         _spawn_recruited_hero(hero_id)
     recruit_panel.refresh()
     hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager)
+    equip_panel.set_roster(formation_manager.owned_ids, data_loader.heroes, equipment_manager, heroes)
+    backpack_panel.set_hero_roster(formation_manager.owned_ids, data_loader.heroes)
     if deployed:
         hud.show_message("新英雄加入并上阵：" + hero_name + "！")
     else:
