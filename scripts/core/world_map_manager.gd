@@ -1,115 +1,89 @@
 class_name WorldMapManager
 extends RefCounted
 
-# Owns world-map identity and unlock rules. Existing combat, quest and
-# reward systems remain authoritative; this class only routes the player
-# between the safe town and the three progression regions.
-# The first field is always available. The original main-boss gate is
-# retained as an internal progression milestone, not a gate to the whole
-# starter region. Later regions preserve the campaign's elite/quest gates.
+# Independent, local coordinate spaces: every map starts at (0, 0).
+# The active map is a complete play space, not a rectangle inside a
+# shared mega-map. Combat entities are routed by their authored map id.
 
 const TOWN := "town"
 const MOSS_CROWN := "moss_crown"
 const FALLEN_LEAF := "fallen_leaf"
 const MORNING_DEW := "morning_dew"
 
+const MAP_SIZE := Vector2(1200.0, 900.0)
 const MAPS := {
-    TOWN: {
-        "name": "王朝营地",
-        "bounds": Rect2(0.0, 0.0, 1200.0, 900.0),
-        "spawn": Vector2(600.0, 450.0),
-        "safe": true
-    },
-    MOSS_CROWN: {
-        "name": "苔冠空地",
-        "bounds": Rect2(0.0, 0.0, 1600.0, 1200.0),
-        "spawn": Vector2(800.0, 600.0),
-        "safe": false
-    },
-    FALLEN_LEAF: {
-        "name": "落叶幽谷",
-        "bounds": Rect2(40.0, 880.0, 720.0, 280.0),
-        "spawn": Vector2(400.0, 1020.0),
-        "safe": false
-    },
-    MORNING_DEW: {
-        "name": "朝露林地",
-        "bounds": Rect2(840.0, 880.0, 720.0, 280.0),
-        "spawn": Vector2(1200.0, 1020.0),
-        "safe": false
-    }
+    TOWN: {"name":"王朝营地", "bounds":Rect2(Vector2.ZERO, MAP_SIZE), "spawn":Vector2(600, 610), "safe":true},
+    MOSS_CROWN: {"name":"苔冠空地", "bounds":Rect2(Vector2.ZERO, MAP_SIZE), "spawn":Vector2(600, 620), "safe":false},
+    FALLEN_LEAF: {"name":"落叶幽谷", "bounds":Rect2(Vector2.ZERO, MAP_SIZE), "spawn":Vector2(600, 650), "safe":false},
+    MORNING_DEW: {"name":"朝露林地", "bounds":Rect2(Vector2.ZERO, MAP_SIZE), "spawn":Vector2(600, 650), "safe":false}
 }
+
+const STARTER_REGION := "starter"
+const NORTH_CLEARING_REGION := "north_clearing"
 
 func is_known_map(map_id: String) -> bool:
     return MAPS.has(map_id)
 
 func map_name(map_id: String) -> String:
-    return str(MAPS.get(map_id, MAPS[TOWN]).get("name", "王朝营地"))
+    return str(MAPS.get(map_id, MAPS[TOWN]).name)
 
 func map_bounds(map_id: String) -> Rect2:
-    return MAPS.get(map_id, MAPS[TOWN]).get("bounds", Rect2(0.0, 0.0, 1200.0, 900.0))
+    return MAPS.get(map_id, MAPS[TOWN]).bounds
 
 func spawn_position(map_id: String) -> Vector2:
-    return MAPS.get(map_id, MAPS[TOWN]).get("spawn", Vector2(600.0, 450.0))
+    return MAPS.get(map_id, MAPS[TOWN]).spawn
 
 func is_safe_map(map_id: String) -> bool:
-    return bool(MAPS.get(map_id, MAPS[TOWN]).get("safe", true))
+    return bool(MAPS.get(map_id, MAPS[TOWN]).safe)
 
 func is_unlocked(map_id: String, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool) -> bool:
     match map_id:
-        TOWN:
-            return true
-        MOSS_CROWN:
+        TOWN, MOSS_CROWN:
             return true
         FALLEN_LEAF:
-            return elite_defeated
+            return boss_defeated
         MORNING_DEW:
             return elite_defeated and valley_quest_done
         _:
             return false
 
-# Legacy saves contain only a position in the old combined world. That
-# coordinate cannot safely identify the active logical map: old boss and
-# monster spawn points overlap the newer map rectangles. Until a caller
-# performs an explicit, validated migration, preserve the campaign's
-# earliest field as the safe fallback rather than guessing a later map.
 func map_from_legacy_position(_position: Vector2, _boss_defeated: bool, _elite_defeated: bool, _valley_quest_done: bool) -> String:
     return MOSS_CROWN
 
-# Stable region routing for the legacy combined-world spawn table.
-# The starter field contains the original opening encounters and the
-# north clearing becomes an advanced subregion after the main boss.
-const STARTER_REGION := "starter"
-const NORTH_CLEARING_REGION := "north_clearing"
-
 func enemy_region(enemy_id: String) -> String:
-    match enemy_id:
-        "thorn_vine", "forest_wasp", "boss_thorn":
-            return NORTH_CLEARING_REGION
-        _:
-            return STARTER_REGION
+    if enemy_id in ["thorn_vine", "forest_wasp", "boss_thorn"]:
+        return NORTH_CLEARING_REGION
+    return STARTER_REGION
 
 func is_region_unlocked(region_id: String, boss_defeated: bool) -> bool:
-    match region_id:
-        STARTER_REGION:
-            return true
-        NORTH_CLEARING_REGION:
-            return boss_defeated
-        _:
-            return false
+    return region_id == STARTER_REGION or (region_id == NORTH_CLEARING_REGION and boss_defeated)
 
 func map_for_enemy(enemy_id: String) -> String:
-    match enemy_id:
-        "valley_firefly", "withered_puppet", "stream_spirit", "valley_mushroom":
-            return FALLEN_LEAF
-        "dawn_deer", "hill_rock":
-            return MORNING_DEW
-        _:
-            return MOSS_CROWN
+    if enemy_id in ["valley_firefly", "withered_puppet", "stream_spirit", "valley_mushroom"]:
+        return FALLEN_LEAF
+    if enemy_id in ["dawn_deer", "hill_rock"]:
+        return MORNING_DEW
+    return MOSS_CROWN
 
-func clamp_to_map(position: Vector2, map_id: String, margin: float = 24.0) -> Vector2:
+# Authored encounter positions in each map's own coordinate space.
+# This intentionally replaces legacy mega-map coordinates.
+func enemy_spawn_position(enemy_id: String) -> Vector2:
+    match enemy_id:
+        "slime": return Vector2(820, 470)
+        "wolf": return Vector2(390, 650)
+        "boss_tree": return Vector2(930, 650)
+        "thorn_vine": return Vector2(360, 280)
+        "forest_wasp": return Vector2(780, 260)
+        "boss_thorn": return Vector2(930, 360)
+        "valley_firefly": return Vector2(300, 360)
+        "withered_puppet": return Vector2(850, 360)
+        "stream_spirit": return Vector2(600, 230)
+        "valley_mushroom": return Vector2(420, 650)
+        "dawn_deer": return Vector2(360, 420)
+        "hill_rock": return Vector2(850, 420)
+        _:
+            return spawn_position(map_for_enemy(enemy_id)) + Vector2(100, 0)
+
+func clamp_to_map(position: Vector2, map_id: String, margin: float = 32.0) -> Vector2:
     var bounds: Rect2 = map_bounds(map_id)
-    return Vector2(
-        clampf(position.x, bounds.position.x + margin, bounds.end.x - margin),
-        clampf(position.y, bounds.position.y + margin, bounds.end.y - margin)
-    )
+    return Vector2(clampf(position.x, bounds.position.x + margin, bounds.end.x - margin), clampf(position.y, bounds.position.y + margin, bounds.end.y - margin))
