@@ -25,13 +25,18 @@ func save_game(data: Dictionary) -> bool:
     var payload: Dictionary = data.duplicate(true)
     payload["schema_version"] = SCHEMA_VERSION
     if FileAccess.file_exists(SAVE_PATH):
-        var old_text: String = FileAccess.get_file_as_string(SAVE_PATH)
-        if old_text != "":
-            var backup = FileAccess.open(BACKUP_PATH, FileAccess.WRITE)
-            if backup == null:
-                return false
-            backup.store_string(old_text)
-            backup.close()
+        # Never replace a known-good backup with a corrupt main save.
+        # This matters after load_game() has recovered from BACKUP_PATH:
+        # the damaged main file remains until this next successful save.
+        var current_main: Dictionary = _try_load(SAVE_PATH)
+        if current_main["ok"]:
+            var old_text: String = FileAccess.get_file_as_string(SAVE_PATH)
+            if old_text != "":
+                var backup = FileAccess.open(BACKUP_PATH, FileAccess.WRITE)
+                if backup == null:
+                    return false
+                backup.store_string(old_text)
+                backup.close()
     var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
     if file == null:
         return false
@@ -40,6 +45,10 @@ func save_game(data: Dictionary) -> bool:
     return true
 
 func load_game() -> Dictionary:
+    var main_exists: bool = FileAccess.file_exists(SAVE_PATH)
+    var backup_exists: bool = FileAccess.file_exists(BACKUP_PATH)
+    if not main_exists and not backup_exists:
+        return {"status": "new_game", "data": null}
     var main_result: Dictionary = _try_load(SAVE_PATH)
     if main_result["ok"]:
         return {"status": "ok", "data": main_result["data"]}
