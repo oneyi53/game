@@ -5,10 +5,10 @@ extends Node2D
 # chest, runs the camera, the skill/interact/save buttons and saving.
 # If a table is invalid, startup stops with an on-screen error and no
 # fallback data is used. Unit count is capped at MAX_UNITS by the
-# initial spawn plan (see _spawn_enemies): main boss alive 6 + 2 + 1
-# = 9; main boss dead, elite alive 6 + 2 + 2 + 1 = 11; both bosses
-# dead, third-zone quest open 6 + 1 + 1 + 4 = 12; both bosses dead,
-# third-zone quest done, fourth zone open 6 + 1 + 1 + 2 + 2 = 12.
+# initial spawn plan (see _spawn_enemies): with a four-hero active party,
+# main boss alive 4 + 2 + 1 = 7; main boss dead, elite alive 4 + 2 + 2 + 1 = 9;
+# both bosses dead, third-zone quest open 4 + 1 + 1 + 4 = 10; both bosses
+# dead, third-zone quest done, fourth zone open 4 + 1 + 1 + 2 + 2 = 10.
 # When the third zone opens, the first and second zones each drop
 # to 1 initial monster so the third zone's 4 still fit. When the
 # fourth zone opens, the third zone drops to 2 initial monsters so
@@ -25,6 +25,7 @@ extends Node2D
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 const WorldMapManagerScript = preload("res://scripts/core/world_map_manager.gd")
 const WorldSaveMigrationScript = preload("res://scripts/core/world_save_migration.gd")
+const FormationManagerScript = preload("res://scripts/core/formation_manager.gd")
 const MAX_UNITS: int = 12
 const RESPAWN_DELAY: float = 8.0
 
@@ -60,6 +61,7 @@ var camp_manager: CampManager = null
 var backpack_manager: BackpackManager = null
 var offline_manager: OfflineManager = null
 var recruitment_manager: RecruitmentManager = null
+var formation_manager: FormationManager = null
 var level_manager: LevelManager = null
 var pending_offline: Dictionary = {}
 var world_map_manager: WorldMapManager = WorldMapManagerScript.new()
@@ -68,6 +70,7 @@ var map_positions: Dictionary = {}
 var world_state_migrated: bool = false
 var campfire_node: Node2D = null
 var heroes: Array = []
+var hero_hp_cache: Dictionary = {}
 var enemies: Array = []
 var boss: Boss = null
 var elite_boss: Boss = null
@@ -186,6 +189,19 @@ func _ready() -> void:
     # touched by this migration.
     recruitment_manager.load_saved(save_data.get("recruitment", {}), had_save, hero_ids)
     level_manager.load_saved(save_data.get("levels", {}), hero_ids)
+    formation_manager = FormationManagerScript.new()
+    var owned_hero_ids: Array = []
+    for owned_hero_id in recruitment_manager.entry_order:
+        if recruitment_manager.is_recruited(str(owned_hero_id)):
+            owned_hero_ids.append(str(owned_hero_id))
+    var saved_formation = save_data.get("formation", {})
+    if not formation_manager.configure(owned_hero_ids, saved_formation, owned_hero_ids):
+        hud.show_message("编队数据异常，已按已拥有英雄恢复")
+        if not formation_manager.configure(owned_hero_ids):
+            config_failed = true
+            error_label.text = "编队初始化失败：" + formation_manager.error_message
+            push_error(error_label.text)
+            return
     chest_opened = bool(save_data.get("chest_opened", false))
     boss_defeated = bool(save_data.get("boss_defeated", false))
     elite_defeated = bool(save_data.get("elite_defeated", false))
@@ -202,7 +218,7 @@ func _ready() -> void:
     # first and second zones each spawn 1 initial monster once the
     # third zone opens (elite defeated), otherwise 2 each when open.
     # Once the fourth zone opens, the third zone drops to 2.
-    var planned_units: int = recruitment_manager.recruited_count()
+    var planned_units: int = formation_manager.active_ids.size()
     if valley_quest_done:
         planned_units += 1 + 1 + 2 + 2
     elif elite_defeated:
@@ -268,6 +284,10 @@ func _ready() -> void:
     camp_panel.visible = false
     _refresh_quest_label()
     hero_panel.set_heroes(heroes)
+    hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager)
+    hero_panel.leader_requested.connect(_on_formation_leader_requested)
+    hero_panel.add_requested.connect(_on_formation_add_requested)
+    hero_panel.remove_requested.connect(_on_formation_remove_requested)
     hero_panel.visible = false
     equip_panel.set_data(heroes, equipment_manager)
     equip_panel.set_item_definitions(backpack_manager.items)
@@ -300,10 +320,9 @@ func _ready() -> void:
         _save_game()
 
 func _spawn_heroes(save_data: Dictionary) -> void:
-    # Only recruited heroes spawn, in heroes.json order, with
-    # formation offsets indexed by recruited position (not by
-    # table index) so a 1-person party has no empty slots and a
-    # growing party never overlaps. The captain is always first.
+    # Only active formation members spawn. The first slot is the
+    # replaceable leader; owned reserve heroes keep their progression
+    # and equipment data in the managers without requiring a world node.
     var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
     var start_pos: Vector2 = world_map_manager.spawn_position(active_map_id)
     if map_positions.has(active_map_id):
@@ -319,14 +338,22 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     if saved_heroes is Array:
         for saved_hero in saved_heroes:
             if saved_hero is Dictionary and saved_hero.has("id") and saved_hero.has("hp"):
-                saved_hp_by_id[str(saved_hero["id"])] = int(saved_hero["hp"])
+                var saved_hero_id: String = str(saved_hero["id"])
+                var saved_hp_value: int = int(saved_hero["hp"])
+                saved_hp_by_id[saved_hero_id] = saved_hp_value
+                hero_hp_cache[saved_hero_id] = saved_hp_value
     var spawn_index: int = 0
-    for hero_data in data_loader.heroes:
-        var hero_id: String = str(hero_data["id"])
-        if not recruitment_manager.is_recruited(hero_id):
+    for hero_id_value in formation_manager.active_ids:
+        var hero_id: String = str(hero_id_value)
+        var hero_data: Dictionary = {}
+        for entry in data_loader.heroes:
+            if str(entry["id"]) == hero_id:
+                hero_data = entry
+                break
+        if hero_data.is_empty():
             continue
         var hero = HERO_SCENE.instantiate()
-        hero.setup(hero_data, hero_id == "captain")
+        hero.setup(hero_data, spawn_index == 0)
         hero.world_map_id = active_map_id
         hero.visual_formation_offset = offsets[spawn_index] * 2.1
         hero.set_level(level_manager.level(hero_id), level_manager.attack_growth_pct_per_level, level_manager.hp_growth_pct_per_level)
@@ -336,7 +363,10 @@ func _spawn_heroes(save_data: Dictionary) -> void:
             # A hero saved during the 3-second death delay resumes at the
             # same half-health amount used by the normal respawn routine.
             hero.hp = maxi(1, hero.max_hp / 2) if saved_hp <= 0 else clampi(saved_hp, 1, hero.max_hp)
+            hero_hp_cache[hero_id] = hero.hp
             hero.queue_redraw()
+        else:
+            hero_hp_cache[hero_id] = hero.hp
         hero.global_position = start_pos + offsets[spawn_index]
         hero.formation_offset = offsets[spawn_index]
         heroes_root.add_child(hero)
@@ -344,7 +374,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
         hero.died.connect(_on_hero_died)
         hero.hp_changed.connect(_on_hero_hp_changed)
         heroes.append(hero)
-        if hero_id == "captain":
+        if spawn_index == 0:
             captain = hero
         spawn_index += 1
     for hero in heroes:
@@ -995,6 +1025,58 @@ func _on_save_pressed() -> void:
     _save_game()
     hud.show_message("已手动保存")
 
+
+func _on_formation_leader_requested(hero_id: String) -> void:
+    if formation_manager == null or not formation_manager.set_leader(hero_id):
+        hud.show_message("无法更换队长")
+        return
+    _rebuild_party_runtime()
+    hud.show_message("队长已更换")
+
+func _on_formation_add_requested(hero_id: String) -> void:
+    if formation_manager == null or not formation_manager.add_to_party(hero_id):
+        hud.show_message("无法上阵：队伍已满或英雄未拥有")
+        return
+    _rebuild_party_runtime()
+    hud.show_message("英雄已上阵")
+
+func _on_formation_remove_requested(hero_id: String) -> void:
+    if formation_manager == null or not formation_manager.remove_from_party(hero_id):
+        hud.show_message("至少保留一名出战英雄")
+        return
+    _rebuild_party_runtime()
+    hud.show_message("英雄已下阵")
+
+func _rebuild_party_runtime() -> void:
+    if formation_manager == null:
+        return
+    var saved_position: Vector2 = captain.global_position if captain != null else world_map_manager.spawn_position(active_map_id)
+    map_positions[active_map_id] = saved_position
+    for hero in heroes:
+        if hero != null and is_instance_valid(hero):
+            hero_hp_cache[hero.hero_id] = hero.hp
+            hero.remove_from_group("heroes")
+            heroes_root.remove_child(hero)
+            hero.queue_free()
+    heroes.clear()
+    captain = null
+    var saved_hero_states: Array = []
+    for cached_hero_id in hero_hp_cache.keys():
+        saved_hero_states.append({"id": str(cached_hero_id), "hp": int(hero_hp_cache[cached_hero_id])})
+    var runtime_save: Dictionary = {
+        "map_id": active_map_id,
+        "player_position": {"x": saved_position.x, "y": saved_position.y},
+        "heroes": saved_hero_states
+    }
+    _spawn_heroes(runtime_save)
+    if captain != null:
+        camera.position = _projected_camera_position(captain.global_position)
+    hero_panel.set_heroes(heroes)
+    hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager)
+    equip_panel.set_data(heroes, equipment_manager)
+    backpack_panel.set_manager(backpack_manager, heroes)
+    _save_game()
+
 func _on_hero_panel_pressed() -> void:
     _toggle_menu_panel(hero_panel)
     if hero_panel.visible:
@@ -1032,11 +1114,15 @@ func _on_recruit_synthesize(hero_id: String) -> void:
         if str(hero_data["id"]) == hero_id:
             hero_name = str(hero_data["name"])
             break
-    _spawn_recruited_hero(hero_id)
+    var deployed: bool = formation_manager.add_to_party(hero_id)
+    if deployed:
+        _spawn_recruited_hero(hero_id)
     recruit_panel.refresh()
-    if hero_panel.visible:
-        hero_panel.refresh()
-    hud.show_message("新英雄加入：" + hero_name + "！")
+    hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager)
+    if deployed:
+        hud.show_message("新英雄加入并上阵：" + hero_name + "！")
+    else:
+        hud.show_message("新英雄加入收藏：" + hero_name + "；队伍已满，可在英雄编队中更换队长")
     _save_game()
 
 func _on_quest_completed(quest_id: String, quest_name: String, complete_line: String, reward_gold: int) -> void:
@@ -1105,7 +1191,11 @@ func _save_game() -> void:
         return
     var hero_states: Array = []
     for hero in heroes:
-        hero_states.append({"id": hero.hero_id, "hp": hero.hp})
+        hero_hp_cache[hero.hero_id] = hero.hp
+    for hero_id_value in recruitment_manager.entry_order:
+        var saved_hero_id: String = str(hero_id_value)
+        if recruitment_manager.is_recruited(saved_hero_id) and hero_hp_cache.has(saved_hero_id):
+            hero_states.append({"id": saved_hero_id, "hp": int(hero_hp_cache[saved_hero_id])})
     var data: Dictionary = {
         "gold": gold,
         "wood": wood,
@@ -1120,6 +1210,7 @@ func _save_game() -> void:
         "player_position": {"x": captain.global_position.x, "y": captain.global_position.y},
         "heroes": hero_states,
         "recruitment": recruitment_manager.save_data(),
+        "formation": formation_manager.save_data(),
         "levels": level_manager.save_data(),
         "quests": quest_manager.save_progress(),
         "equipment": equipment_manager.save_equipped(),
