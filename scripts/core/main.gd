@@ -283,7 +283,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
     var visual_offsets: Array = [Vector2.ZERO, Vector2(-105.0, 35.0), Vector2(105.0, 35.0), Vector2(0.0, 125.0), Vector2(-105.0, 145.0), Vector2(105.0, 145.0)]
     var start_pos: Vector2 = world_map_manager.spawn_position(active_map_id)
-    if save_data.get("player_position") is Dictionary:
+    if str(save_data.get("map_id", active_map_id)) == active_map_id and save_data.get("player_position") is Dictionary:
         var saved_pos: Dictionary = save_data["player_position"]
         start_pos = Vector2(float(saved_pos.get("x", 800.0)), float(saved_pos.get("y", 600.0)))
     var spawn_index: int = 0
