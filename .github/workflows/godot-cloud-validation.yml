@@ -122,7 +122,7 @@ jobs:
             echo "Daily activity panel tests reported errors."
             exit 1
           fi
-          grep -q "Daily activity panel tests: 6 passed" daily-activity-panel-tests.log
+          grep -q "Daily activity panel tests: 7 passed" daily-activity-panel-tests.log
 
       - name: Run headless project smoke test
         shell: bash
