@@ -351,3 +351,10 @@
 ## 2026-11-05
 - 补充《百炼英雄》操作对标：队长移动期间暂停全队普攻扫描，松手并停稳后恢复自动索敌攻击。
 - 明确区分已具备的基础行为与尚待实机校准的摇杆锚点、触控热区和 HUD 布局；未将未知参数猜测为一致。
+
+
+## 2026-11-05 — Exploration fog and persistent discovery
+- Added a projected grid fog layer for outdoor maps. The captain reveals nearby cells while moving; town remains unobscured.
+- Exploration is stored per map in `explored_map_cells`, restored on map switches, and periodically saved after new cells are revealed. Older saves default to revealing the current starting area.
+- The fog draws above world actors and below the HUD. This first slice does not include line-of-sight occlusion, exploration percentage/rewards, or reference-game parameter verification.
+- Godot parsing/runtime, save regression, Android export and device validation remain pending.
