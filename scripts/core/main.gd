@@ -72,6 +72,9 @@ var map_positions: Dictionary = {}
 var world_state_migrated: bool = false
 var campfire_node: Node2D = null
 var resource_nodes: Array = []
+var harvest_target: Node2D = null
+var harvest_timer: float = 0.0
+const HARVEST_DURATION: float = 1.2
 var harvested_resource_ids: Array = []
 var explored_map_cells: Dictionary = {}
 var exploration_fog: ExplorationFog = null
@@ -684,6 +687,8 @@ func _switch_map(target_map_id: String) -> void:
     for hero in heroes:
         hero.move_input = Vector2.ZERO
         hero.velocity = Vector2.ZERO
+    harvest_target = null
+    harvest_timer = 0.0
     active_map_id = target_map_id
     $Map.set_active_map(active_map_id)
     if exploration_fog != null:
@@ -742,6 +747,8 @@ func _process(delta: float) -> void:
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(float(captain.rage), captain.rage >= Hero.SKILL_RAGE_COST)
+    _update_resource_harvest(delta)
+    _refresh_resource_prompt()
     _update_exploration(delta)
     var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
@@ -816,8 +823,27 @@ func _on_interact_pressed() -> void:
         if gained == 0 and chest_node.is_open:
             hud.show_message("宝箱已经开过了")
         return
+    if harvest_target != null and is_instance_valid(harvest_target):
+        hud.show_message("正在采集，请稍候")
+        return
+    var nearest_node: Node2D = _nearest_resource_node(90.0)
+    if nearest_node == null:
+        hud.show_message("靠近树木后，点击交互按钮采集木材")
+        return
+    if bool(nearest_node.get("depleted")):
+        hud.show_message("这里的资源已经采集完了")
+        return
+    if wood >= wood_cap:
+        hud.show_message("木材已满，先到营地使用木材")
+        return
+    harvest_target = nearest_node
+    harvest_timer = HARVEST_DURATION
+    hud.set_interact_prompt("采集中…")
+    hud.show_message("开始采集 " + str(nearest_node.get("resource_name")))
+    
+func _nearest_resource_node(max_distance: float) -> Node2D:
     var nearest_node: Node2D = null
-    var nearest_distance: float = 80.0
+    var nearest_distance: float = max_distance
     for resource_node in resource_nodes:
         if resource_node == null or not is_instance_valid(resource_node) or not resource_node.visible:
             continue
@@ -825,21 +851,51 @@ func _on_interact_pressed() -> void:
         if distance < nearest_distance:
             nearest_distance = distance
             nearest_node = resource_node
+    return nearest_node
+
+func _refresh_resource_prompt() -> void:
+    if captain == null:
+        return
+    if harvest_target != null and is_instance_valid(harvest_target):
+        hud.set_interact_prompt("采集中…")
+        return
+    var nearest_node: Node2D = _nearest_resource_node(90.0)
     if nearest_node == null:
-        hud.show_message("靠近树木后，点击交互按钮采集木材")
+        hud.set_interact_prompt("交互")
+    elif bool(nearest_node.get("depleted")):
+        hud.set_interact_prompt("已耗尽")
+    elif wood >= wood_cap:
+        hud.set_interact_prompt("木材已满")
+    else:
+        hud.set_interact_prompt("采集")
+
+func _update_resource_harvest(delta: float) -> void:
+    if harvest_target == null:
         return
-    if wood >= wood_cap:
-        hud.show_message("木材已满，先到营地使用木材")
+    if not is_instance_valid(harvest_target) or not harvest_target.visible:
+        harvest_target = null
+        harvest_timer = 0.0
         return
-    var amount: int = nearest_node.harvest()
+    if captain.move_input.length_squared() > 0.01 or captain.velocity.length_squared() > 36.0 or captain.global_position.distance_to(harvest_target.global_position) > 100.0:
+        harvest_target = null
+        harvest_timer = 0.0
+        hud.show_message("采集已中断")
+        return
+    harvest_timer = maxf(0.0, harvest_timer - delta)
+    if harvest_timer > 0.0:
+        return
+    var amount: int = harvest_target.harvest()
     if amount <= 0:
         hud.show_message("这里已经采集过了")
+        harvest_target = null
         return
     var credited: int = mini(amount, maxi(0, wood_cap - wood))
     wood += credited
-    harvested_resource_ids.append(str(nearest_node.resource_id))
+    harvested_resource_ids.append(str(harvest_target.get("resource_id")))
+    var resource_name: String = str(harvest_target.get("resource_name"))
+    harvest_target = null
     hud.set_wood(wood, wood_cap)
-    hud.show_message("采集 " + str(nearest_node.resource_name) + "，木材 +" + str(credited))
+    hud.show_message("采集 " + resource_name + "，木材 +" + str(credited))
     _save_game()
 
 func _on_campfire_interact(entry: Dictionary) -> void:
