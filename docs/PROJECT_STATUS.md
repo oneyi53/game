@@ -458,3 +458,11 @@ main 已经包含基础美术资源文件；PR #32 已将英雄、怪物、Boss�
 - 已扩展 QuestManager 回归测试及 Godot 4.7.2 CI 调用，覆盖当前 10 条正式任务、kill/boss/chest/harvest/explore/deliver 事件、数值边界、ID/依赖校验、原子失败与合法前置链。
 - 代码和测试已提交至 `feat/reference-grade-world-exploration-2026-11-05`；未修改 main。
 - 验证状态：尚未在本执行环境运行 Godot 4.7.2；需等待 GitHub Actions 真实结果。CI/headless 通过仍不代表 Android 真机通过。
+
+
+## 最新验证补充（2026-11-05：QuestManager 与主场景 smoke）
+
+- Godot 4.7.2 CI 已实际跑通资源导入/脚本解析、世界坐标、编队、预备英雄装备、战力、主城建筑及 QuestManager 扩展回归测试。
+- QuestManager 的 13 组测试在 CI 中通过；此前 JSON 整数验证已按 Godot JSON 数值解析为 int/float 的真实行为修正，仍拒绝 bool、字符串和小数。
+- 同轮 CI 的最终 headless 主场景 smoke 暴露 ExplorationFog 实例化类型不匹配；已修复为使用脚本类的 new() 创建实例。此修复尚待新一轮 CI 复验。
+- 地图回归断言已同步到当前 1600×1400 逻辑地图与 1500×750 投影边界。
