@@ -73,7 +73,7 @@ func _test_failed_reload_preserves_previous_snapshot() -> void:
     var manager = CampManagerScript.new()
     assert(manager.load_all(), manager.error_message)
     var before := manager.save_camp()
-    var before_ids := manager.building_order.duplicate()
+    var before_ids: Array = manager.building_order.duplicate()
     var bad_camp := _write_temp("camp_manager_invalid_reload.json", {"buildings": [_camp_entry(1.25, true)]})
     var valid_fires := _write_temp("camp_manager_reload_fires.json", _campfires())
     assert(not manager.load_all(bad_camp, valid_fires))

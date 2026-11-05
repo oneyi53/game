@@ -531,3 +531,11 @@
 - 将 `reward_gold` 纳入必填字段；同时要求任务 `name`、`type`、`objective_type` 均为非空字符串，避免错误类型被隐式转成字符串继续校验。
 - 新增回归样本：缺失 reward_gold/name、非字符串/空白 name、非字符串 type/objective_type。测试继续使用 user:// 临时配置，不修改正式 quests.json。
 - 本次提交尚待 Godot 4.7.2 CI 复验；不代表 Android APK 或真机验收。
+
+
+## 2026-11-05 — 修复营地管理器回归测试类型推断
+- 基于探索玩法分支提交 `13ac793c1c7d264848be44ff0284493fc3d033d7` 建立独立修复分支 `fix/camp-manager-test-type-2026-11-05`。
+- Godot 4.7.2 CI 已确认失败点为 `tests/test_camp_manager.gd:76`：`manager.building_order` 的返回值未提供静态类型，导致 `before_ids` 无法推断。
+- 将测试快照声明改为显式 `Array` 类型；只修改测试代码，不改营地运行时逻辑、存档或配置。
+- 修复提交：`8c4cd1254567b2f705ceb6cb0553670c8d3d1339`。
+- 验证状态：修复后 CI 待运行；不得视为已通过。APK/Android 真机仍未验收。
