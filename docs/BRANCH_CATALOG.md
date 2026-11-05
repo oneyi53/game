@@ -188,3 +188,10 @@ PR #30、#31、#32 均已合并。当前远程 refs 请以 GitHub 实时分支�
 - 开放 PR 的支撑模块边界已在 PR 描述中补充；PR #49 描述此前可能存在重复的治理段落，后续应清理重复文本。PR #18 当前 mergeable=false，须解决冲突后再审查。
 - 未执行：历史分支逐个 rebase/代码改写、PR 合并/关闭、Android APK 生成与真机安装验证。
 - 后续审查清单：重新获取实时远程分支和开放 PR；逐个 compare 最新 main 与分支 head；重点核对旧 2.5D/地图/障碍碰撞/角色移动/传送/美术分支；按 aligned、support-only、conflicts-with-benchmark、stale、needs-conflict-resolution 分类；只 cherry-pick 或逐文件迁移经过验证的模块。
+
+## 2026-11-05 全仓分支一致性审计索引
+
+- 本次最高开发方向与逐分支处理矩阵见 `docs/REFERENCE_ALIGNMENT_AUDIT_2026-11-05.md`。
+- 已核对实时分支与开放 PR；PR #49 重复约束段已清理。
+- 旧 2.5D/地图/美术分支作为历史候选，逐文件迁移，不整分支覆盖；支撑 PR 保留但必须服从完整玩法闭环验收。
+- 审计不等于代码重构完成；main 运行时代码未改，旧分支尚未逐个重写，APK/真机验证未完成。
