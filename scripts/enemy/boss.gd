@@ -35,6 +35,10 @@ var attack_timer: float = 0.0
 var telegraph_timer: float = 3.0
 var telegraph_active: bool = false
 var telegraph_time: float = 0.0
+var targeted_attack_timer: float = 5.0
+var targeted_telegraph_active: bool = false
+var targeted_telegraph_time: float = 0.0
+var targeted_telegraph_position: Vector2 = Vector2.ZERO
 
 func setup(p_data: Dictionary) -> void:
     enemy_id = str(p_data["id"])
@@ -73,6 +77,8 @@ func _physics_process(delta: float) -> void:
             phase = 1
             telegraph_active = false
             telegraph_timer = 3.0
+            targeted_telegraph_active = false
+            targeted_attack_timer = 5.0
             queue_redraw()
         else:
             velocity = back_diff.normalized() * move_speed
@@ -82,6 +88,7 @@ func _physics_process(delta: float) -> void:
     if global_position.distance_to(spawn_position) > leash_range:
         returning = true
         telegraph_active = false
+        targeted_telegraph_active = false
         queue_redraw()
         return
     if hp <= max_hp / 2 and phase == 1:
@@ -92,6 +99,7 @@ func _physics_process(delta: float) -> void:
         retarget_timer = 0.5
         _retarget()
     _update_telegraph(delta)
+    _update_targeted_attack(delta)
     if target_hero == null or bool(target_hero.get("dead")):
         velocity = Vector2.ZERO
         move_and_slide()
@@ -175,6 +183,15 @@ func _draw() -> void:
     if dead:
         return
     var offset: Vector2 = WorldProjectionScript.world_to_screen(global_position) - global_position
+    if targeted_telegraph_active:
+        var boss_projected: Vector2 = WorldProjectionScript.world_to_screen(global_position)
+        var target_projected: Vector2 = WorldProjectionScript.world_to_screen(targeted_telegraph_position)
+        var target_local: Vector2 = target_projected - boss_projected
+        var targeted_radius: float = 80.0 if phase == 1 else 95.0
+        draw_set_transform(offset + target_local, 0.0, Vector2(0.7071068, 0.3535534))
+        draw_circle(Vector2.ZERO, targeted_radius, Color(1.0, 0.55, 0.0, 0.24))
+        draw_arc(Vector2.ZERO, targeted_radius, 0.0, TAU, 48, Color(1.0, 0.65, 0.1, 0.95), 3.0, true)
+        draw_set_transform(offset)
     if telegraph_active:
         draw_set_transform(offset, 0.0, Vector2(0.7071068, 0.3535534))
         draw_circle(Vector2.ZERO, 95.0, Color(1.0, 0.0, 0.0, 0.22))
@@ -194,3 +211,37 @@ func _draw() -> void:
     var fill: float = 84.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
     var phase_color: Color = Color(0.98, 0.62, 0.18) if phase >= 2 else Color(0.95, 0.2, 0.18)
     draw_rect(Rect2(-42.0, -218.0, fill, 9.0), phase_color)
+
+func _update_targeted_attack(delta: float) -> void:
+    if returning or dead:
+        targeted_telegraph_active = false
+        return
+    if targeted_telegraph_active:
+        targeted_telegraph_time -= delta
+        if targeted_telegraph_time <= 0.0:
+            _resolve_targeted_attack()
+        return
+    if target_hero == null or not is_instance_valid(target_hero) or bool(target_hero.get("dead")):
+        return
+    targeted_attack_timer -= delta
+    if targeted_attack_timer <= 0.0:
+        targeted_telegraph_active = true
+        targeted_telegraph_time = 0.8
+        targeted_telegraph_position = target_hero.global_position
+        queue_redraw()
+
+func _resolve_targeted_attack() -> void:
+    targeted_telegraph_active = false
+    var radius: float = 80.0 if phase == 1 else 95.0
+    var damage: int = maxi(1, int(round(float(_effective_attack()) * 1.2)))
+    var boss_map_id: String = str(get_meta("world_map_id", WorldMaps.MOSS_CROWN))
+    for hero in get_tree().get_nodes_in_group("heroes"):
+        if hero == null or not is_instance_valid(hero) or bool(hero.get("dead")):
+            continue
+        if str(hero.get("world_map_id")) != boss_map_id:
+            continue
+        if targeted_telegraph_position.distance_to(hero.global_position) <= radius:
+            if hero.has_method("take_damage"):
+                hero.take_damage(damage)
+    targeted_attack_timer = 4.0 if phase >= 2 else 6.0
+    queue_redraw()
