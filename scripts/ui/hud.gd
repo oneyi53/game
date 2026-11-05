@@ -57,10 +57,8 @@ func show_message(text: String) -> void:
     message_label.text = text
 
 func set_skill_cooldown(remaining: float, ready: bool) -> void:
-    if ready:
-        cooldown_label.text = "技能就绪"
-    else:
-        cooldown_label.text = "技能冷却：" + ("%.1f" % remaining) + " 秒"
+    # The second argument is retained for call-site compatibility; active skill now uses team rage.
+    cooldown_label.text = "怒气：" + str(int(remaining)) + "/10 · 技能需3格"
 
 func _on_skill_button_pressed() -> void:
     skill_pressed.emit()
