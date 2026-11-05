@@ -273,9 +273,8 @@ func _ready() -> void:
     _spawn_resource_nodes()
     $Map.set_active_map(active_map_id)
     $Map.building_pressed.connect(_on_town_building_pressed)
-    exploration_fog = Node2D.new()
+    exploration_fog = EXPLORATION_FOG_SCRIPT.new()
     exploration_fog.name = "ExplorationFog"
-    exploration_fog.set_script(EXPLORATION_FOG_SCRIPT)
     exploration_fog.z_index = 4096
     add_child(exploration_fog)
     exploration_fog.set_map_state(active_map_id, explored_map_cells.get(active_map_id, []))
