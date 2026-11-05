@@ -167,10 +167,20 @@ func _physics_process(delta: float) -> void:
         if heal_timer <= 0.0:
             heal_timer = 2.0
             _heal_lowest_ally()
+    # Reference control contract: holding the movement joystick is for
+    # repositioning; releasing it lets the party settle and resume auto-combat.
+    # Followers use the captain's movement state so the whole formation attacks
+    # together instead of individual stragglers stopping to swing mid-run.
+    var party_is_moving: bool = false
+    if is_captain:
+        party_is_moving = move_input.length_squared() > 0.01 or velocity.length_squared() > 25.0
+    elif captain_ref != null:
+        party_is_moving = captain_ref.move_input.length_squared() > 0.01 or captain_ref.velocity.length_squared() > 25.0
     attack_timer -= delta
     if attack_timer <= 0.0:
         attack_timer = scan_interval
-        _scan_and_attack()
+        if not party_is_moving:
+            _scan_and_attack()
 
 func _heal_lowest_ally() -> void:
     if dead:
