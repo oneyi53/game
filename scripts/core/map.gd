@@ -120,13 +120,13 @@ func _draw_exploration_paths() -> void:
         routes = [
             [Vector2(600, 650), Vector2(500, 570), Vector2(420, 480), Vector2(360, 380), Vector2(300, 260)],
             [Vector2(420, 480), Vector2(540, 420), Vector2(660, 360), Vector2(760, 300)],
-            [Vector2(540, 420), Vector2(660, 500), Vector2(780, 570), Vector2(940, 620)]
+            [Vector2(540, 420), Vector2(660, 500), Vector2(780, 570), Vector2(940, 620), Vector2(900, 780), Vector2(720, 960), Vector2(480, 1120)]
         ]
     elif active_map_id == WorldMaps.MORNING_DEW:
         routes = [
             [Vector2(600, 650), Vector2(500, 570), Vector2(420, 480), Vector2(360, 380), Vector2(260, 260)],
             [Vector2(420, 480), Vector2(560, 420), Vector2(700, 360), Vector2(860, 280)],
-            [Vector2(560, 420), Vector2(660, 520), Vector2(760, 600), Vector2(900, 650), Vector2(1040, 660)]
+            [Vector2(560, 420), Vector2(660, 520), Vector2(760, 600), Vector2(900, 650), Vector2(1040, 660), Vector2(1200, 820), Vector2(1400, 1080)]
         ]
     else:
         return
