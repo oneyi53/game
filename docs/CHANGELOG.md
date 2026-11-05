@@ -1,3 +1,15 @@
+# 2026-11-05 — 探索度统计 API 与回归测试
+
+- 分支：`feat/exploration-progression-foundation-2026-11-05`。
+- 修改：`scripts/core/exploration_fog.gd`；新增 `tests/test_exploration_fog.gd`；更新 `.github/workflows/godot-cloud-validation.yml`。
+- 变更：新增探索格有效性过滤与统计 API；总格数根据地图尺寸和 cell size 动态计算；重复格去重；非法格式、非规范整数、负数及越界 cell 忽略；主城探索度标记为不适用。
+- 测试：新增 7 项 headless 回归并接入 Godot 4.7.2 CI。
+- 兼容性：不改变既有探索格存档键或 schema。
+- Commit：`18581d2070a30830c5458f8c140088fc479e2448`（运行时代码）；`13f793c94be9b82349bac8249e2cecc51c4a6dd8`（测试）；`63b69a9013aa478a3f0bc6f2b49711bedefc21fc`（CI）。
+- 验证：等待新 CI；当前未宣称测试通过，未导出 APK，未进行真机验收。
+
+---
+
 # 2026-11-05 — 探索系统技术规格与验收基线
 
 - 分支：`feat/exploration-progression-foundation-2026-11-05`。
