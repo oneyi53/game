@@ -33,6 +33,7 @@ const HERO_SCENE: PackedScene = preload("res://scenes/hero.tscn")
 const ENEMY_SCENE: PackedScene = preload("res://scenes/enemy.tscn")
 const BOSS_SCENE: PackedScene = preload("res://scenes/boss.tscn")
 const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
+const RESOURCE_NODE_SCRIPT = preload("res://scripts/interactable/resource_node.gd")
 const EFFECT_PLAYER = preload("res://scripts/fx/effect_player.gd")
 const EFFECT_ATLAS: Texture2D = preload("res://assets/art-v1/effects/effect_atlas.png")
 
@@ -69,6 +70,8 @@ var active_map_id: String = WorldMapManagerScript.MOSS_CROWN
 var map_positions: Dictionary = {}
 var world_state_migrated: bool = false
 var campfire_node: Node2D = null
+var resource_nodes: Array = []
+var harvested_resource_ids: Array = []
 var heroes: Array = []
 var hero_hp_cache: Dictionary = {}
 var enemies: Array = []
@@ -203,6 +206,9 @@ func _ready() -> void:
             push_error(error_label.text)
             return
     chest_opened = bool(save_data.get("chest_opened", false))
+    var saved_harvested_resources = save_data.get("harvested_resources", [])
+    if saved_harvested_resources is Array:
+        harvested_resource_ids = saved_harvested_resources.duplicate()
     boss_defeated = bool(save_data.get("boss_defeated", false))
     elite_defeated = bool(save_data.get("elite_defeated", false))
     quest_manager.load_progress(save_data.get("quests", {}))
@@ -251,6 +257,7 @@ func _ready() -> void:
     _spawn_heroes(save_data)
     _spawn_enemies()
     _spawn_campfire()
+    _spawn_resource_nodes()
     $Map.set_active_map(active_map_id)
     $Map.building_pressed.connect(_on_town_building_pressed)
     _apply_active_map_visibility()
@@ -545,6 +552,26 @@ func _spawn_campfire() -> void:
     campfire_node.global_position = Vector2(float(pos["x"]), float(pos["y"]))
     add_child(campfire_node)
 
+func _spawn_resource_nodes() -> void:
+    # Stable IDs and save data prevent gathering the same node by re-entering a map.
+    var definitions: Array = [
+        {"id": "moss_wood_01", "name": "林木", "type": "wood", "map": WorldMapManagerScript.MOSS_CROWN, "pos": Vector2(430.0, 760.0), "min": 3, "max": 5},
+        {"id": "moss_wood_02", "name": "林木", "type": "wood", "map": WorldMapManagerScript.MOSS_CROWN, "pos": Vector2(1180.0, 720.0), "min": 3, "max": 5},
+        {"id": "valley_wood_01", "name": "枯木", "type": "wood", "map": WorldMapManagerScript.FALLEN_LEAF, "pos": Vector2(420.0, 820.0), "min": 4, "max": 6},
+        {"id": "valley_wood_02", "name": "枯木", "type": "wood", "map": WorldMapManagerScript.FALLEN_LEAF, "pos": Vector2(1120.0, 760.0), "min": 4, "max": 6},
+        {"id": "grove_wood_01", "name": "古树", "type": "wood", "map": WorldMapManagerScript.MORNING_DEW, "pos": Vector2(420.0, 820.0), "min": 5, "max": 7},
+        {"id": "grove_wood_02", "name": "古树", "type": "wood", "map": WorldMapManagerScript.MORNING_DEW, "pos": Vector2(1180.0, 760.0), "min": 5, "max": 7}
+    ]
+    for definition in definitions:
+        var node: Node2D = Node2D.new()
+        node.set_script(RESOURCE_NODE_SCRIPT)
+        var resource_id: String = str(definition["id"])
+        node.setup(resource_id, str(definition["name"]), str(definition["type"]), str(definition["map"]), int(definition["min"]), int(definition["max"]), resource_id in harvested_resource_ids)
+        node.global_position = definition["pos"]
+        node.set_meta("world_map_id", str(definition["map"]))
+        add_child(node)
+        resource_nodes.append(node)
+
 func _tick_respawns(delta: float) -> void:
     if respawn_queue.is_empty():
         return
@@ -611,6 +638,12 @@ func _apply_active_map_visibility() -> void:
         chest_node.visible = active_map_id == WorldMapManagerScript.MOSS_CROWN
     if campfire_node != null:
         campfire_node.visible = active_map_id == WorldMapManagerScript.MOSS_CROWN
+    for resource_node in resource_nodes:
+        if resource_node == null or not is_instance_valid(resource_node):
+            continue
+        var belongs: bool = str(resource_node.get_meta("world_map_id", "")) == active_map_id
+        resource_node.visible = belongs
+        resource_node.process_mode = Node.PROCESS_MODE_INHERIT if belongs else Node.PROCESS_MODE_DISABLED
 
 
 func _switch_map(target_map_id: String) -> void:
@@ -669,6 +702,9 @@ func _update_world_visuals() -> void:
         _set_world_depth_order(chest_node)
     if campfire_node != null and is_instance_valid(campfire_node) and campfire_node.visible:
         _set_world_depth_order(campfire_node)
+    for resource_node in resource_nodes:
+        if resource_node != null and is_instance_valid(resource_node) and resource_node.visible:
+            _set_world_depth_order(resource_node)
 
 func _process(delta: float) -> void:
     if config_failed or captain == null:
@@ -732,12 +768,33 @@ func _on_interact_pressed() -> void:
         if entry != null and captain.global_position.distance_to(campfire_node.global_position) < 80.0:
             _on_campfire_interact(entry)
             return
-    if chest_node == null or not chest_node.visible:
-        return
-    if captain.global_position.distance_to(chest_node.global_position) < 80.0:
+    if chest_node != null and chest_node.visible and captain.global_position.distance_to(chest_node.global_position) < 80.0:
         var gained: int = chest_node.try_open()
         if gained == 0 and chest_node.is_open:
             hud.show_message("宝箱已经开过了")
+        return
+    var nearest_node: Node2D = null
+    var nearest_distance: float = 80.0
+    for resource_node in resource_nodes:
+        if resource_node == null or not is_instance_valid(resource_node) or not resource_node.visible:
+            continue
+        var distance: float = captain.global_position.distance_to(resource_node.global_position)
+        if distance < nearest_distance:
+            nearest_distance = distance
+            nearest_node = resource_node
+    if nearest_node == null:
+        hud.show_message("靠近树木后，点击交互按钮采集木材")
+        return
+    var amount: int = nearest_node.harvest()
+    if amount <= 0:
+        hud.show_message("这里已经采集过了")
+        return
+    var credited: int = mini(amount, maxi(0, wood_cap - wood))
+    wood += credited
+    harvested_resource_ids.append(str(nearest_node.resource_id))
+    hud.set_wood(wood, wood_cap)
+    hud.show_message("采集 " + str(nearest_node.resource_name) + "，木材 +" + str(credited))
+    _save_game()
 
 func _on_campfire_interact(entry: Dictionary) -> void:
     var campfire_id: String = str(entry["id"])
@@ -1221,6 +1278,7 @@ func _save_game() -> void:
         "backpack": backpack_manager.save_data(),
         "camp": camp_manager.save_camp(),
         "chest_opened": chest_opened,
+        "harvested_resources": harvested_resource_ids.duplicate(),
         "boss_defeated": boss_defeated,
         "elite_defeated": elite_defeated,
         "map_id": active_map_id,
