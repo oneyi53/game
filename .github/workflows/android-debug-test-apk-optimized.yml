@@ -1,0 +1,188 @@
+name: Android debug test APK (optimized)
+
+on:
+  push:
+    branches:
+      - ci/optimize-android-apk-export-2026-11-05
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-debug-apk-optimized-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-test-apk:
+    name: Build installable Android debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GODOT_VERSION: 4.7.2
+      ANDROID_HOME: ${{ github.workspace }}/.android-sdk
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/.android-sdk
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Prepare Android SDK paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+
+      - name: Cache Android SDK
+        id: android-sdk-cache
+        uses: actions/cache@v4
+        with:
+          path: .android-sdk
+          key: android-sdk-linux-api35-build-tools35-ndk28-cmake3102-v1
+
+      - name: Install missing Android SDK packages
+        shell: bash
+        timeout-minutes: 20
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            mkdir -p "$ANDROID_HOME/cmdline-tools/tmp"
+            curl -fsSL --retry 3 --retry-delay 2 -o "$RUNNER_TEMP/cmdline-tools.zip" "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+            unzip -q "$RUNNER_TEMP/cmdline-tools.zip" -d "$ANDROID_HOME/cmdline-tools/tmp"
+            mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
+            cp -a "$ANDROID_HOME/cmdline-tools/tmp/cmdline-tools/." "$ANDROID_HOME/cmdline-tools/latest/"
+            rm -rf "$ANDROID_HOME/cmdline-tools/tmp"
+          fi
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses
+          set -o pipefail
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" "cmake;3.10.2.4988404" "ndk;28.1.13356709"
+          test -d "$ANDROID_HOME/platforms/android-35"
+          test -d "$ANDROID_HOME/build-tools/35.0.0"
+          test -d "$ANDROID_HOME/ndk/28.1.13356709"
+          test -d "$ANDROID_HOME/cmake/3.10.2.4988404"
+
+      - name: Cache Godot binary and Android export templates
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .godot-toolchain
+            .godot-export-templates
+          key: godot-${{ env.GODOT_VERSION }}-android-templates-v1
+
+      - name: Install Godot and Android export templates when cache is cold
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          GODOT_DIR="$GITHUB_WORKSPACE/.godot-toolchain"
+          TEMPLATE_DIR="$GITHUB_WORKSPACE/.godot-export-templates/${GODOT_VERSION}.stable"
+          mkdir -p "$GODOT_DIR" "$TEMPLATE_DIR"
+          GODOT_BIN="$(find "$GODOT_DIR" -maxdepth 2 -type f -name 'Godot_v${GODOT_VERSION}*linux.x86_64' -print -quit || true)"
+          if [ -z "$GODOT_BIN" ]; then
+            curl -fsSL --retry 3 --retry-delay 2 -o "$RUNNER_TEMP/godot.zip" "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+            unzip -oq "$RUNNER_TEMP/godot.zip" -d "$GODOT_DIR"
+            GODOT_BIN="$(find "$GODOT_DIR" -maxdepth 2 -type f -name 'Godot_v${GODOT_VERSION}*linux.x86_64' -print -quit)"
+          fi
+          chmod +x "$GODOT_BIN"
+          if [ ! -s "$TEMPLATE_DIR/android_source.zip" ]; then
+            curl -fsSL --retry 3 --retry-delay 2 -o "$RUNNER_TEMP/templates.tpz" "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+            mkdir -p "$RUNNER_TEMP/godot-export-templates"
+            unzip -oq "$RUNNER_TEMP/templates.tpz" -d "$RUNNER_TEMP/godot-export-templates"
+            ANDROID_SOURCE="$(find "$RUNNER_TEMP/godot-export-templates" -type f -name android_source.zip -print -quit)"
+            test -n "$ANDROID_SOURCE"
+            cp -a "$(dirname "$ANDROID_SOURCE")/." "$TEMPLATE_DIR/"
+          fi
+          test -s "$TEMPLATE_DIR/android_source.zip"
+          echo "GODOT_BIN=$GODOT_BIN" >> "$GITHUB_ENV"
+          "$GODOT_BIN" --version
+
+      - name: Configure Android debug signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.config/godot"
+          keytool -genkeypair -noprompt -keystore "$HOME/debug.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          cat > "$HOME/.config/godot/editor_settings-4.7.2.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/java_sdk_path = "$JAVA_HOME"
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/debug_keystore = "$HOME/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          EOF
+
+      - name: Cache Godot imports and Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .godot/imported
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: godot-imports-gradle-${{ runner.os }}-${{ hashFiles('project.godot', 'assets/**/*', 'scenes/**/*', 'scripts/**/*', 'data/**/*') }}
+          restore-keys: |
+            godot-imports-gradle-${{ runner.os }}-
+
+      - name: Import project resources
+        shell: bash
+        timeout-minutes: 25
+        run: |
+          set -Eeuo pipefail
+          mkdir -p build
+          echo "Import started: $(date -u +%FT%TZ)"
+          timeout 20m "$GODOT_BIN" --headless --editor --path . --import 2>&1 | tee import.log
+          echo "Import finished: $(date -u +%FT%TZ)"
+
+      - name: Install Android Gradle build template
+        shell: bash
+        timeout-minutes: 12
+        run: |
+          set -Eeuo pipefail
+          echo "Template install started: $(date -u +%FT%TZ)"
+          timeout 10m "$GODOT_BIN" --headless --editor --path . --install-android-build-template 2>&1 | tee android-template.log
+          echo "Template install finished: $(date -u +%FT%TZ)"
+
+      - name: Export and verify debug APK
+        shell: bash
+        timeout-minutes: 50
+        run: |
+          set -Eeuo pipefail
+          echo "APK export started: $(date -u +%FT%TZ)"
+          timeout 45m "$GODOT_BIN" --headless --path . --verbose --export-debug "Android" build/hero-world-test.apk 2>&1 | tee android-export.log
+          test -s build/hero-world-test.apk
+          file build/hero-world-test.apk
+          sha256sum build/hero-world-test.apk
+          ls -lh build/hero-world-test.apk
+          echo "APK export finished: $(date -u +%FT%TZ)"
+
+      - name: Upload installable test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hero-world-android-debug-test
+          path: build/hero-world-test.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-build-diagnostics
+          path: |
+            import.log
+            android-template.log
+            android-export.log
+          if-no-files-found: ignore
+          retention-days: 7
