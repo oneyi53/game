@@ -22,7 +22,9 @@ func _initialize() -> void:
     _test_camera_limits_match_projected_bounds()
     _test_new_game_starts_in_town()
     _test_project_orientation_is_portrait()
-    print("World coordinate tests: 16 passed")
+    _test_portrait_projection_fills_viewport()
+    _test_portrait_depth_order()
+    print("World coordinate tests: 18 passed")
     quit()
 
 
@@ -61,9 +63,9 @@ func _test_projection_bounds_and_depth() -> void:
     var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     assert(is_equal_approx(bounds.position.x, 0.0))
     assert(is_equal_approx(bounds.position.y, 0.0))
-    assert(is_equal_approx(bounds.size.x, 1500.0))
-    assert(is_equal_approx(bounds.size.y, 750.0))
-    assert(WorldProjectionScript.screen_depth(Vector2(500.0, 500.0)) > WorldProjectionScript.screen_depth(Vector2(200.0, 200.0)))
+    assert(is_equal_approx(bounds.size.x, 750.0))
+    assert(is_equal_approx(bounds.size.y, 1500.0))
+    assert(WorldProjectionScript.screen_depth(Vector2(500.0, 200.0)) > WorldProjectionScript.screen_depth(Vector2(200.0, 500.0)))
 
 
 func _test_legacy_starter_region() -> void:
@@ -196,6 +198,22 @@ func _test_new_game_starts_in_town() -> void:
 
 func _test_project_orientation_is_portrait() -> void:
     assert(int(ProjectSettings.get_setting("display/window/handheld/orientation", -1)) == 1)
+
+
+
+func _test_portrait_projection_fills_viewport() -> void:
+    var bounds: Rect2 = WorldProjectionScript.projected_bounds()
+    assert(bounds.size.x >= 720.0)
+    assert(bounds.size.y >= 1280.0)
+    var spawn_screen: Vector2 = WorldProjectionScript.world_to_screen(Vector2(600.0, 610.0))
+    assert(spawn_screen.x > 0.0 and spawn_screen.x < bounds.size.x)
+    assert(spawn_screen.y > 0.0 and spawn_screen.y < bounds.size.y)
+
+
+func _test_portrait_depth_order() -> void:
+    var upper := WorldProjectionScript.screen_depth(Vector2(300.0, 800.0))
+    var lower := WorldProjectionScript.screen_depth(Vector2(800.0, 300.0))
+    assert(lower > upper)
 
 func _test_camera_limits_match_projected_bounds() -> void:
     var instance = MainScene.instantiate()
