@@ -365,3 +365,10 @@
 - Kept current project gold/wood rates and the 10-minute threshold. Clarified that rates/threshold are project balance assumptions, while 12 hours is a supplied reference target, not a verified official parameter.
 - Did not add VIP multipliers, offline XP, rare-fragment RNG or offline quest progress. Runtime settlement remains single-player and saves immediately after applying rewards.
 - Godot runtime tests and APK validation are pending.
+
+
+## 2026-11-05 手动技能怒气机制首版
+- 依据用户提供的单机战斗参考，将队长主动技能由纯冷却触发改为普攻命中积攒怒气、手动消耗3格释放；怒气上限10格。
+- 只在队长本人普攻命中后增加怒气；技能仍由玩家点击触发，不自动施放。当前HUD显示怒气进度。
+- 参考文档提及的第二个5格技能槽、怒气满额强化、五行克制和完整队伍共享怒气尚未实现；不把未经验证的具体机制冒充竞品实测。本项目目前只有一个主动技能按钮，因此先实现3格单技能闭环。
+- 未运行Godot 4.7.2解析/战斗回归，未导出APK；待验证技能按钮、怒气显示、敌人死亡边界及存档兼容。
