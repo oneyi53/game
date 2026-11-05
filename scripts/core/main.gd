@@ -1477,7 +1477,7 @@ func _on_enemy_died(enemy) -> void:
             drop_parts.append("木材 +" + str(wood_dropped))
     # Fragment drops stop once the fragment hero is recruited, so a
     # full roster never farms useless fragments.
-    if recruitment_manager != null and not recruitment_manager.is_recruited("assassin") and randf() < recruitment_manager.fragment_drop_chance:
+    if recruitment_manager != null and recruitment_manager.should_drop_fragment():
         var fragment_count: int = recruitment_manager.add_fragment()
         drop_parts.append("砾影碎片 +1（" + str(fragment_count) + "/" + str(recruitment_manager.fragments_required("assassin")) + "）")
     if backpack_manager != null and randf() < backpack_manager.drop_chance:
