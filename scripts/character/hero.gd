@@ -45,6 +45,10 @@ var attack_speed_pct: int = 0
 var scan_interval: float = 0.25
 var heal_timer: float = 2.0
 var dash_timer: float = 0.0
+var move_acceleration: float = 900.0
+var move_braking: float = 1200.0
+var facing_sign: float = 1.0
+var motion_phase: float = 0.0
 
 func setup(p_data: Dictionary, p_is_captain: bool) -> void:
     data = p_data
@@ -131,16 +135,23 @@ func _physics_process(delta: float) -> void:
         if skill_cooldown_remaining <= 0.0:
             skill_cooldown_remaining = 0.0
             skill_ready = true
+    var desired_velocity: Vector2 = Vector2.ZERO
     if is_captain:
-        velocity = move_input * move_speed
-    else:
-        velocity = Vector2.ZERO
-        if captain_ref != null:
-            var target_pos: Vector2 = captain_ref.global_position + formation_offset
-            var diff: Vector2 = target_pos - global_position
-            if diff.length() > 30.0:
-                var speed: float = move_speed * 2.0 if diff.length() > 180.0 else move_speed
-                velocity = diff.normalized() * speed
+        desired_velocity = move_input.limit_length(1.0) * move_speed
+    elif captain_ref != null:
+        var target_pos: Vector2 = captain_ref.global_position + formation_offset
+        var diff: Vector2 = target_pos - global_position
+        if diff.length() > 30.0:
+            var catchup_speed: float = move_speed * 1.65 if diff.length() > 180.0 else move_speed * 0.92
+            desired_velocity = diff.normalized() * catchup_speed
+    var rate: float = move_acceleration if desired_velocity.length_squared() > velocity.length_squared() else move_braking
+    velocity = velocity.move_toward(desired_velocity, rate * delta)
+    if velocity.x < -2.0:
+        facing_sign = -1.0
+    elif velocity.x > 2.0:
+        facing_sign = 1.0
+    if velocity.length_squared() > 9.0:
+        motion_phase += delta * clampf(velocity.length() / maxf(move_speed, 1.0), 0.35, 1.5) * 10.0
     move_and_slide()
     global_position = WorldMaps.clamp_position(global_position)
     if dash_timer > 0.0:
@@ -287,10 +298,16 @@ func _draw() -> void:
     draw_circle(Vector2.ZERO, 14.0, Color(0.05, 0.18, 0.05, 0.28))
     draw_set_transform(offset)
     var texture: Texture2D = HERO_TEXTURES.get(hero_id)
+    var moving: bool = velocity.length_squared() > 9.0
+    var bob: float = sin(motion_phase) * (2.4 if moving else 0.8)
+    # Current art is a single static PNG, not a sprite sheet. This is
+    # restrained procedural motion and facing feedback, not frame animation.
+    draw_set_transform(offset + Vector2(0.0, bob), 0.0, Vector2(facing_sign, 1.0))
     if texture != null:
         draw_texture_rect(texture, Rect2(-48.0, -90.0, 96.0, 96.0), false)
     else:
         draw_circle(Vector2.ZERO, 18.0, hero_color)
+    draw_set_transform(offset)
     draw_rect(Rect2(-24.0, -98.0, 48.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
     var fill: float = 48.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
     draw_rect(Rect2(-24.0, -98.0, fill, 5.0), Color(0.2, 0.9, 0.3))
