@@ -741,7 +741,7 @@ func _process(delta: float) -> void:
         return
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
-    hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
+    hud.set_skill_cooldown(float(captain.rage), captain.rage >= Hero.SKILL_RAGE_COST)
     _update_exploration(delta)
     var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
@@ -801,7 +801,7 @@ func _on_skill_pressed() -> void:
             EFFECT_PLAYER.play(self, EFFECT_ATLAS, hit_position, Rect2(905.0, 335.0, 165.0, 120.0), Vector2(92.0, 76.0), 0.34, randf_range(-0.2, 0.2))
         hud.show_message("释放技能！")
     else:
-        hud.show_message("技能冷却中")
+        hud.show_message("怒气不足，需要3格")
 
 func _on_interact_pressed() -> void:
     if captain == null:
