@@ -1,3 +1,15 @@
+# 2026-11-05 — 探索系统技术规格与验收基线
+
+- 分支：`feat/exploration-progression-foundation-2026-11-05`。
+- 新增：`docs/EXPLORATION_SYSTEM_DESIGN.md`。
+- 内容：明确逻辑坐标/投影隔离、按地图分桶的探索存档、稳定实体 ID、80 单位网格探索度算法、迷雾/主流程/地图管理/UI 的职责边界，以及 E1 探索 API、E2 HUD、E3 小地图传送、E4 区域推进、E5 真机视觉验收。
+- 研究依据：官方小地图更新公告、TapTap 新手攻略、公开视频/传送阵/Boss 战斗样本入口。尚未逐帧解码的视频明确标记为待采样。
+- 验证：静态读取现有 `ExplorationFog`、`WorldMapManager`、`Main` 与里程碑/冒烟文档；未改运行时代码，未运行 Godot/CI，未导出 APK，未进行真机验收。
+- Commit：`d8b480a7abf685e37f5ed7d64394bd82f9933cde`（设计规格文件）。
+- 下一步：实现 E1 探索度 API 与单元测试，不改变现有存档 schema。
+
+---
+
 # 2026-11-05 — 营地配置严格校验与原子加载
 
 - `scripts/progression/camp_manager.gd`：营地建筑与营火配置改为先完整解析/验证，再一次性发布运行时数据；任一配置失败时保留上一份有效快照。
