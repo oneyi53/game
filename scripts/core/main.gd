@@ -314,6 +314,7 @@ func _ready() -> void:
     camp_panel.visible = false
     _refresh_quest_label()
     hud.set_region_name(world_map_manager.map_name(active_map_id))
+    _refresh_exploration_hud()
     hero_panel.set_heroes(heroes)
     hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager, equipment_manager, camp_manager, backpack_manager.items)
     hero_panel.leader_requested.connect(_on_formation_leader_requested)
@@ -703,6 +704,7 @@ func _switch_map(target_map_id: String) -> void:
     $Map.set_active_map(active_map_id)
     if exploration_fog != null:
         exploration_fog.set_map_state(active_map_id, explored_map_cells.get(active_map_id, []))
+    _refresh_exploration_hud()
     var target_position: Vector2 = map_positions.get(active_map_id, world_map_manager.spawn_position(active_map_id))
     target_position = WorldMapManagerScript.clamp_position(target_position)
     for hero in heroes:
@@ -775,6 +777,13 @@ func _process(delta: float) -> void:
     _update_exploration(delta)
     _tick_respawns(delta)
 
+func _refresh_exploration_hud() -> void:
+    if hud == null or exploration_fog == null:
+        return
+    var stats: Dictionary = exploration_fog.get_exploration_stats()
+    hud.set_exploration_stats(bool(stats.get("applicable", false)), int(stats.get("percent", 0)))
+
+
 func _update_exploration(delta: float) -> void:
     if exploration_fog == null or captain == null:
         return
@@ -782,6 +791,7 @@ func _update_exploration(delta: float) -> void:
     if revealed <= 0:
         return
     explored_map_cells[active_map_id] = exploration_fog.get_saved_cells()
+    _refresh_exploration_hud()
     exploration_save_cooldown -= delta
     if exploration_save_cooldown <= 0.0:
         _save_game()
