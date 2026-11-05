@@ -55,7 +55,7 @@ func _test_invalid_dimensions_are_not_applicable() -> void:
     assert(zero_cell["applicable"] == false)
 
 func _test_town_exploration_is_not_applicable() -> void:
-    var fog = Fog.new()
+    var fog: ExplorationFog = Fog.new()
     fog.set_map_state(WorldMaps.TOWN, [])
     var stats: Dictionary = fog.get_exploration_stats()
     assert(stats["applicable"] == false)
