@@ -180,6 +180,24 @@ func _test_reload_preserves_progress() -> void:
 func _test_config_validation_and_dependency_cycles() -> void:
     var q := _minimal_quest("q")
     var invalid := q.duplicate(true)
+    invalid.erase("reward_gold")
+    _assert_invalid_config([invalid], "missing reward_gold")
+    invalid = q.duplicate(true)
+    invalid.erase("name")
+    _assert_invalid_config([invalid], "missing name")
+    invalid = q.duplicate(true)
+    invalid["name"] = 42
+    _assert_invalid_config([invalid], "non-string name")
+    invalid = q.duplicate(true)
+    invalid["name"] = "   "
+    _assert_invalid_config([invalid], "blank name")
+    invalid = q.duplicate(true)
+    invalid["type"] = false
+    _assert_invalid_config([invalid], "non-string quest type")
+    invalid = q.duplicate(true)
+    invalid["objective_type"] = 3
+    _assert_invalid_config([invalid], "non-string objective type")
+    invalid = q.duplicate(true)
     invalid["count"] = true
     _assert_invalid_config([invalid], "boolean count")
     invalid = q.duplicate(true)
