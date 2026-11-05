@@ -113,6 +113,17 @@ jobs:
           fi
           grep -q "Quest manager tests: 10 passed" quest-manager-tests.log
 
+      - name: Run virtual joystick layout tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_virtual_joystick.gd 2>&1 | tee virtual-joystick-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' virtual-joystick-tests.log; then
+            echo "Virtual joystick tests reported errors."
+            exit 1
+          fi
+          grep -q "Virtual joystick tests: 5 passed" virtual-joystick-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -137,4 +148,5 @@ jobs:
             hero-power-tests.log
             town-building-tests.log
             quest-manager-tests.log
+            virtual-joystick-tests.log
           if-no-files-found: ignore
