@@ -51,6 +51,8 @@ var facing_sign: float = 1.0
 var motion_phase: float = 0.0
 var attack_flash_remaining: float = 0.0
 var attack_flash_total: float = 0.18
+var hit_flash_remaining: float = 0.0
+var hit_flash_total: float = 0.22
 var attack_direction: Vector2 = Vector2.RIGHT
 
 func setup(p_data: Dictionary, p_is_captain: bool) -> void:
@@ -129,6 +131,9 @@ func heal(amount: int) -> void:
     hp_changed.emit(self)
 
 func _physics_process(delta: float) -> void:
+    if hit_flash_remaining > 0.0:
+        hit_flash_remaining = maxf(0.0, hit_flash_remaining - delta)
+        queue_redraw()
     if attack_flash_remaining > 0.0:
         attack_flash_remaining = maxf(0.0, attack_flash_remaining - delta)
         queue_redraw()
@@ -263,6 +268,7 @@ func take_damage(amount: int) -> void:
         return
     var damage: int = maxi(1, amount - defense)
     hp -= damage
+    hit_flash_remaining = hit_flash_total
     if hp <= 0:
         hp = 0
         dead = true
@@ -277,6 +283,8 @@ func respawn(at_position: Vector2) -> void:
     dead = false
     visible = true
     velocity = Vector2.ZERO
+    hit_flash_remaining = 0.0
+    attack_flash_remaining = 0.0
     queue_redraw()
     hp_changed.emit(self)
 
@@ -319,12 +327,23 @@ func _draw() -> void:
     draw_set_transform(offset)
     var texture: Texture2D = HERO_TEXTURES.get(hero_id)
     var moving: bool = velocity.length_squared() > 9.0
-    var bob: float = sin(motion_phase) * (2.4 if moving else 0.8)
-    # Current art is a single static PNG, not a sprite sheet. This is
-    # restrained procedural motion and facing feedback, not frame animation.
-    draw_set_transform(offset + Vector2(0.0, bob), 0.0, Vector2(facing_sign, 1.0))
+    var attacking: bool = attack_flash_remaining > 0.0
+    var hit_flash: bool = hit_flash_remaining > 0.0
+    var bob: float = sin(motion_phase) * (3.0 if moving else 0.9)
+    var walk_squash: float = sin(motion_phase * 2.0) * 0.035 if moving else 0.0
+    var attack_progress: float = 1.0 - attack_flash_remaining / maxf(attack_flash_total, 0.01)
+    var attack_lean: float = sin(attack_progress * PI) * 0.12 if attacking else 0.0
+    var hit_progress: float = 1.0 - hit_flash_remaining / maxf(hit_flash_total, 0.01)
+    var hit_recoil: float = sin(hit_progress * PI) * 5.0 if hit_flash else 0.0
+    # Art files are single illustrations, not sprite sheets. These state poses
+    # add readable anticipation/recoil while true frame animation remains an art task.
+    var body_scale := Vector2(1.0 + walk_squash, 1.0 - walk_squash)
+    if attacking:
+        body_scale *= Vector2(1.0 + attack_lean, 1.0 - attack_lean * 0.55)
+    var body_rotation: float = -attack_direction.y * attack_lean * 0.55 if attacking else 0.0
+    draw_set_transform(offset + Vector2(-facing_sign * hit_recoil, bob), body_rotation, Vector2(facing_sign * body_scale.x, body_scale.y))
     if texture != null:
-        draw_texture_rect(texture, Rect2(-48.0, -90.0, 96.0, 96.0), false)
+        draw_texture_rect(texture, Rect2(-48.0, -90.0, 96.0, 96.0), false, Color(1.0, 0.62, 0.62) if hit_flash else Color.WHITE)
     else:
         draw_circle(Vector2.ZERO, 18.0, hero_color)
     draw_set_transform(offset)
