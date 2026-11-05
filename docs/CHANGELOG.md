@@ -317,3 +317,9 @@
 - Kept the static-PNG limitation explicit; this is not sprite-sheet animation.
 - Did not enlarge map bounds before projection/camera/collision/save-coordinate migration is designed and tested.
 - Runtime validation and Android APK export remain pending.
+
+
+## 2026-11-05 — Open-source code reuse study
+- Added `docs/OPEN_SOURCE_CODE_REUSE_STUDY_2026-11-05.md` covering three requested repositories, inspected commits, licenses, key source files, portability, adoption decisions and implementation priorities.
+- MIT Unity/Pygame projects are eligible for attributed porting but their engine-specific files are not directly usable in Godot. The Godot sample has no declared license; no code/assets copied from it.
+- No upstream source was copied in this pass. This is a source/license audit, not a claim that the evaluated systems are integrated.
