@@ -3,6 +3,7 @@ extends SceneTree
 const Migration = preload("res://scripts/core/world_save_migration.gd")
 const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
+const MainScene = preload("res://scenes/main.tscn")
 
 func _initialize() -> void:
     _test_legacy_starter_region()
@@ -18,7 +19,8 @@ func _initialize() -> void:
     _test_map_unlock_gates()
     _test_enemy_map_assignment()
     _test_projection_bounds_and_depth()
-    print("World coordinate tests: 13 passed")
+    _test_camera_limits_match_projected_bounds()
+    print("World coordinate tests: 14 passed")
     quit()
 
 
@@ -171,3 +173,11 @@ func _test_missing_position_uses_spawn() -> void:
     var pos: Dictionary = result["data"]["player_position"]
     assert(is_equal_approx(float(pos["x"]), 600.0))
     assert(is_equal_approx(float(pos["y"]), 620.0))
+
+func _test_camera_limits_match_projected_bounds() -> void:
+    var instance = MainScene.instantiate()
+    var camera: Camera2D = instance.get_node("Camera")
+    var bounds: Rect2 = WorldProjectionScript.projected_bounds()
+    assert(camera.limit_right == int(bounds.end.x))
+    assert(camera.limit_bottom == int(bounds.end.y))
+    instance.free()
