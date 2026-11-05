@@ -1,3 +1,9 @@
+## 2026-11-05 — Quest 存档异常值防护
+- `QuestManager.load_progress()` 对任务计数增加严格类型/整数校验；非法 bool、字符串和小数值忽略，合法负整数仍按既有规则归零。
+- 任务完成状态仅接受 JSON bool；不再把字符串或数字隐式转换为已完成状态。
+- 新增损坏存档回归测试；不改变存档 schema，也不影响缺失字段的旧存档默认行为。
+- 验证：代码与测试已提交，等待 Godot 4.7.2 CI；未导出 APK，未进行 Android 真机验收。
+
 ## 2026-11-05 — DataLoader 原子加载与类型安全校验
 
 - 分支：`feat/reference-grade-world-exploration-2026-11-05`；仅开发分支改动，`main` 未修改。
