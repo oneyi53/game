@@ -126,12 +126,21 @@ func load_progress(saved) -> void:
 	var saved_completed = saved.get("completed", {})
 	if saved_counts is Dictionary:
 		for quest_id in counts.keys():
-			if saved_counts.has(quest_id):
-				counts[quest_id] = maxi(0, int(saved_counts[quest_id]))
+			if not saved_counts.has(quest_id):
+				continue
+			var saved_count = saved_counts[quest_id]
+			# Ignore malformed values rather than coercing strings/booleans or
+			# allowing fractional progress into the runtime state.
+			if _is_integer_number(saved_count):
+				counts[quest_id] = maxi(0, int(saved_count))
 	if saved_completed is Dictionary:
 		for quest_id in completed.keys():
-			if saved_completed.has(quest_id):
-				completed[quest_id] = bool(saved_completed[quest_id])
+			if not saved_completed.has(quest_id):
+				continue
+			var saved_flag = saved_completed[quest_id]
+			# JSON booleans are the only valid completion representation.
+			if typeof(saved_flag) == TYPE_BOOL:
+				completed[quest_id] = saved_flag
 
 func save_progress() -> Dictionary:
 	return {"counts": counts.duplicate(), "completed": completed.duplicate()}
