@@ -563,8 +563,7 @@ func _spawn_resource_nodes() -> void:
         {"id": "grove_wood_02", "name": "古树", "type": "wood", "map": WorldMapManagerScript.MORNING_DEW, "pos": Vector2(1180.0, 760.0), "min": 5, "max": 7}
     ]
     for definition in definitions:
-        var node: Node2D = Node2D.new()
-        node.set_script(RESOURCE_NODE_SCRIPT)
+        var node = RESOURCE_NODE_SCRIPT.new()
         var resource_id: String = str(definition["id"])
         node.setup(resource_id, str(definition["name"]), str(definition["type"]), str(definition["map"]), int(definition["min"]), int(definition["max"]), resource_id in harvested_resource_ids)
         node.global_position = definition["pos"]
