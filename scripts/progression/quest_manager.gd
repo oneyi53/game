@@ -42,13 +42,17 @@ func load_quests(config_path: String = "res://data/quests.json") -> bool:
 		if not (entry is Dictionary):
 			error_message = "quests.json 中有非对象条目"
 			return false
-		for field in ["id", "name", "type", "objective_type"]:
+		for field in ["id", "name", "type", "objective_type", "reward_gold"]:
 			if not entry.has(field):
 				error_message = "quests.json 缺少字段：" + field
 				return false
 		if typeof(entry["id"]) != TYPE_STRING or str(entry["id"]).strip_edges() == "":
 			error_message = "quests.json id 必须是非空字符串"
 			return false
+		for text_field in ["name", "type", "objective_type"]:
+			if typeof(entry[text_field]) != TYPE_STRING or str(entry[text_field]).strip_edges() == "":
+				error_message = "quests.json " + text_field + " 必须是非空字符串"
+				return false
 		var quest_id: String = entry["id"]
 		if seen.has(quest_id):
 			error_message = "quests.json 有重复 id：" + quest_id
