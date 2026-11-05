@@ -272,3 +272,24 @@
 - PR #39 预备英雄属性详情：合并提交 `770d68b5f68e97f08748b4013222812196a61d93`，CI run 41826362294 通过。
 - 所有云端验证均为 Godot 4.7.2 资源导入、脚本解析、自动化回归测试和 headless 启动；不代表 Android 真机验收。
 - 下一阶段：主城建筑实体入口，然后任务活跃度与红点；保留 Android 真机验证为并行验收项。
+
+
+### 2026-11-04 — 通用红点展示组件初版
+
+- 分支：`feat/red-dot-indicator-ui-2026-11-04`。
+- 修改文件：`scripts/ui/components/red_dot_indicator.gd`、`tests/test_red_dot_indicator.gd`、`docs/RED_DOT_INDICATOR.md`、`docs/PROJECT_STATUS.md`、`docs/CHANGELOG.md`、`.github/workflows/godot-cloud-validation.yml`。
+- 变更说明：新增纯展示红点组件，支持默认隐藏、显隐切换、直径配置、锚点/偏移定位；设置鼠标事件忽略与无键盘焦点，避免遮挡父按钮交互。新增 6 组组件行为测试并接入 Godot 4.7.2 CI。
+- 数据/存档兼容性：不读取或修改业务状态，不改变存档字段及 schema_version。
+- 验证环境：本地未运行 Godot；等待 GitHub Actions 在 PR 分支执行。
+- 验证结果：未验证（提交时尚无 CI 结果）。
+- 已知问题：headless 测试不能代替移动设备真实触控和 UI 视觉验收；组件不含统一红点业务服务。
+- 下一步：查看 CI 实际结果，修复失败项后由维护者审查 PR；不自动合并。
+
+
+## 2026-11-04 — 红点聚合服务（PR #45 扩展）
+
+- 在通用显示组件基础上新增 `RedDotService`，由业务层提供权威 Boolean 状态，服务按父子 target 层级派生 HUD/主城入口状态。
+- 支持嵌套 OR 聚合、批量状态原子替换、快照与状态变化信号；拒绝循环/重复/空 target 配置。
+- 不连接业务状态、不定义红点产品语义、不改存档、不创建每日任务规则。
+- 新增 10 项 GDScript 回归测试并接入 Godot 4.7.2 CI。
+- 当前 PR 分支验证结果待最新 workflow 完成；Android 触屏与实际 HUD/建筑布局未验收。
