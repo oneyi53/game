@@ -27,6 +27,7 @@ signal map_pressed
 @onready var cooldown_label: Label = $CooldownLabel
 @onready var teleport_button: Button = $TeleportButton
 @onready var map_button: Button = $MapButton
+@onready var map_name_label: Label = $MapNameLabel
 
 func _ready() -> void:
     skill_button.pressed.connect(_on_skill_button_pressed)
@@ -40,6 +41,53 @@ func _ready() -> void:
     teleport_button.pressed.connect(_on_teleport_button_pressed)
     map_button.pressed.connect(_on_map_button_pressed)
     teleport_button.disabled = true
+    _style_label(gold_label, 20, Color(1.0, 0.9, 0.58))
+    _style_label(wood_label, 20, Color(0.88, 0.95, 0.78))
+    _style_label(quest_label, 17, Color(1.0, 0.97, 0.84))
+    _style_label(message_label, 17, Color(1.0, 0.94, 0.72))
+    _style_label(cooldown_label, 16, Color(1.0, 0.9, 0.66))
+    _style_label(map_name_label, 21, Color(1.0, 0.96, 0.78))
+    _style_button(skill_button, Color(0.66, 0.31, 0.12), 22)
+    _style_button(interact_button, Color(0.2, 0.43, 0.25), 18)
+    for button in [save_button, hero_button, equip_button, camp_button, backpack_button, recruit_button]:
+        _style_button(button, Color(0.13, 0.25, 0.23), 16)
+    _style_button(teleport_button, Color(0.25, 0.37, 0.3), 16)
+    _style_button(map_button, Color(0.25, 0.37, 0.3), 16)
+
+
+
+func set_region_name(region_name: String) -> void:
+    map_name_label.text = region_name
+
+
+func _style_label(label: Label, font_size: int, font_color: Color) -> void:
+    label.add_theme_font_size_override("font_size", font_size)
+    label.add_theme_color_override("font_color", font_color)
+    label.add_theme_color_override("font_shadow_color", Color(0.03, 0.06, 0.04, 0.95))
+    label.add_theme_constant_override("shadow_offset_x", 1)
+    label.add_theme_constant_override("shadow_offset_y", 2)
+
+
+func _style_button(button: Button, fill: Color, font_size: int) -> void:
+    var normal := StyleBoxFlat.new()
+    normal.bg_color = fill
+    normal.border_color = fill.lightened(0.28)
+    normal.set_border_width_all(2)
+    normal.set_corner_radius_all(18)
+    normal.content_margin_left = 8.0
+    normal.content_margin_right = 8.0
+    normal.content_margin_top = 6.0
+    normal.content_margin_bottom = 6.0
+    var hover := normal.duplicate() as StyleBoxFlat
+    hover.bg_color = fill.lightened(0.12)
+    var pressed := normal.duplicate() as StyleBoxFlat
+    pressed.bg_color = fill.darkened(0.16)
+    button.add_theme_stylebox_override("normal", normal)
+    button.add_theme_stylebox_override("hover", hover)
+    button.add_theme_stylebox_override("pressed", pressed)
+    button.add_theme_color_override("font_color", Color(1.0, 0.97, 0.86))
+    button.add_theme_color_override("font_hover_color", Color.WHITE)
+    button.add_theme_font_size_override("font_size", font_size)
 
 func set_gold(amount: int) -> void:
     gold_label.text = "金币：" + str(amount)
