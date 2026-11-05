@@ -117,11 +117,18 @@ func _test_fallen_leaf_requires_elite_boss() -> void:
 
 
 func _test_morning_dew_requires_both_gates() -> void:
+    var locked_input := {
+        "player_position": {"x": 1200.0, "y": 1020.0},
+        "boss_defeated": true,
+        "elite_defeated": true,
+        "quests": {"completed": {"side_moss_crown_king": true, "side_valley_puppet": false}}
+    }
+    assert(Migration.migrate_save(locked_input)["map_id"] == Migration.MOSS_CROWN)
     var input := {
         "player_position": {"x": 1200.0, "y": 1020.0},
         "boss_defeated": true,
         "elite_defeated": true,
-        "quests": {"completed": {"side_valley_puppet": true}}
+        "quests": {"completed": {"side_moss_crown_king": true, "side_valley_puppet": true}}
     }
     var result: Dictionary = Migration.migrate_save(input)
     assert(result["map_id"] == Migration.MORNING_DEW)
