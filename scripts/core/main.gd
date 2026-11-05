@@ -273,7 +273,7 @@ func _ready() -> void:
     exploration_fog = Node2D.new()
     exploration_fog.name = "ExplorationFog"
     exploration_fog.set_script(EXPLORATION_FOG_SCRIPT)
-    exploration_fog.z_index = 200
+    exploration_fog.z_index = 4096
     add_child(exploration_fog)
     exploration_fog.set_map_state(active_map_id, explored_map_cells.get(active_map_id, []))
     if captain != null:
