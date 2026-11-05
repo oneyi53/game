@@ -58,6 +58,17 @@ jobs:
           fi
           grep -q "World coordinate tests: 19 passed" world-save-migration-tests.log
 
+      - name: Run exploration fog regression tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_exploration_fog.gd 2>&1 | tee exploration-fog-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' exploration-fog-tests.log; then
+            echo "Exploration fog tests reported errors."
+            exit 1
+          fi
+          grep -q "Exploration fog tests: 7 passed" exploration-fog-tests.log
+
       - name: Run hero formation data tests
         shell: bash
         run: |
@@ -154,6 +165,7 @@ jobs:
             godot-import.log
             godot-runtime.log
             world-save-migration-tests.log
+            exploration-fog-tests.log
             hero-formation-tests.log
             reserve-hero-equipment-tests.log
             hero-power-tests.log
