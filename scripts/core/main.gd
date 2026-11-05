@@ -327,6 +327,8 @@ func _ready() -> void:
         # SaveManager preserves the previous valid save as backup before
         # replacing it with the map-local format.
         _save_game()
+    if not had_save:
+        hud.show_message("拖动屏幕移动，队伍会自动攻击；靠近树木、宝箱或营火，点击「交互」；技能按钮可手动释放。")
 
 func _spawn_heroes(save_data: Dictionary) -> void:
     # Only active formation members spawn. The first slot is the
@@ -783,6 +785,9 @@ func _on_interact_pressed() -> void:
             nearest_node = resource_node
     if nearest_node == null:
         hud.show_message("靠近树木后，点击交互按钮采集木材")
+        return
+    if wood >= wood_cap:
+        hud.show_message("木材已满，先到营地使用木材")
         return
     var amount: int = nearest_node.harvest()
     if amount <= 0:
