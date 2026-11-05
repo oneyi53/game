@@ -982,6 +982,7 @@ func _refresh_teleport_destinations() -> void:
     for child in teleport_list.get_children():
         teleport_list.remove_child(child)
         child.queue_free()
+    _add_teleport_destination("town", "王朝营地", true, "返回安全区")
     _add_teleport_destination("forest_entry", "森林入口", true, "冒险起点")
     _add_teleport_destination("campfire", "营火据点", campfire_node != null, "已激活的营火")
     _add_teleport_destination("moss_crown", "苔冠空地", true, "已开放")
@@ -1028,6 +1029,10 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
     var destination: Vector2 = world_map_manager.spawn_position(target_map_id)
     var destination_name: String = ""
     match destination_id:
+        "town":
+            target_map_id = WorldMapManagerScript.TOWN
+            destination = world_map_manager.spawn_position(target_map_id)
+            destination_name = "王朝营地"
         "forest_entry":
             destination_name = "森林入口"
         "campfire":
