@@ -484,3 +484,10 @@
 - 更新 `docs/MILESTONE_PLAN.md` 对 M0-4 的过期描述，记录当前真实实现与剩余真机验收边界。
 - 新增 `tests/test_resource_node.gd`，覆盖资源节点初始化、产量范围、单次耗尽、防止重复采集和旧存档耗尽状态恢复；接入 Godot 4.7.2 workflow。
 - 尚待最新 CI 验证；未导出 APK、未做 Android 真机测试。
+
+
+## 2026-11-05 — 地图扩展后的相机边界修正
+- 静态核对 `WorldProjection.projected_bounds()`：当前投影地图范围为 1500×750，但 `scenes/main.tscn` 的 Camera2D 仍保留早期 1050×525 限制和旧中心位置。
+- 已将 Camera2D limit_right/limit_bottom 更新为 1500/750，初始中心调整为 750/375，避免相机在扩展地图边缘提前受限。
+- 新增世界回归断言，实例化主场景并核对 Camera2D 限制与 projected_bounds 一致；世界测试计数更新为 14。
+- 最新 Godot 4.7.2 CI 待运行；相机移动/竖屏视野仍需 Android 真机验收。
