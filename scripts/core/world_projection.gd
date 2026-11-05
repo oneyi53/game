@@ -19,8 +19,8 @@ static func world_to_screen(world_position: Vector2) -> Vector2:
 # Convert a screen-space joystick direction into logical world movement.
 static func screen_to_world_direction(screen_direction: Vector2) -> Vector2:
     return Vector2(
-        2.0 * screen_direction.x + screen_direction.y,
-        2.0 * screen_direction.x - screen_direction.y
+        1.25 * screen_direction.x + 0.625 * screen_direction.y,
+        1.25 * screen_direction.x - 0.625 * screen_direction.y
     )
 
 # Painter's order follows projected vertical depth and remains non-negative.
