@@ -5,7 +5,7 @@
 - **正式主线：** `main`，未直接修改。
 - **Android APK：** 优化导出流程在独立 PR #48 中验证；缓存命中、分阶段导出和 APK 产物尚待 Actions 结果确认。
 - **并行开发：** 每日活跃度独立展示面板正在 `feat/daily-activity-panel-ui` 开发；严格按 Issue #46 限定为 UI 展示和领奖请求信号，不接入 Main/HUD、不修改核心规则/存档。
-- **每日活跃度 UI：** 已新增场景、脚本和 headless 测试；测试已加入 Godot 4.7.2 云端验证 workflow，CI 尚待结果。
+- **每日活跃度 UI：** 已新增场景、脚本和 7 项 headless 测试；测试已加入 Godot 4.7.2 云端验证 workflow，CI 尚待结果。
 - **红点：** main 中尚无统一红点组件；面板不依赖未合并分支中的组件。
 - **下一步：** 完成面板 CI 验证并创建 PR；再处理 DailyActivityManager 与 UI 的独立集成及奖励保存一致性设计。
 
