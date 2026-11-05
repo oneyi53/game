@@ -1,45 +1,48 @@
 class_name HeroVirtualJoystick
 extends Control
 
-# Fixed-position translucent joystick inspired by the supplied mobile RPG
-# reference. It only captures touches that begin near its visible base, so
-# the rest of the world remains available for taps and gestures.
+# Floating full-screen joystick matching the reference game's touch behavior.
+# The idle hint sits near the reference position; on any unhandled gameplay
+# touch, the base relocates to that touch point and follows the finger.
 
 const BASE_RADIUS: float = 76.0
-const ACTIVATE_RADIUS: float = 108.0
 const KNOB_RADIUS: float = 25.0
 const KNOB_TRAVEL: float = 48.0
-const BASE_POSITION: Vector2 = Vector2(0.45, 0.70)
+const IDLE_BASE_POSITION: Vector2 = Vector2(0.45, 0.70)
+const EDGE_PADDING: float = 84.0
 
 var vector: Vector2 = Vector2.ZERO
 var dragging: bool = false
 var touch_index: int = -1
 var mouse_dragging: bool = false
+var active_base_center: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     set_process_input(true)
-    resized.connect(queue_redraw)
+    resized.connect(_on_resized)
     queue_redraw()
 
+func _on_resized() -> void:
+    if not dragging:
+        active_base_center = _idle_base_center()
+    else:
+        active_base_center = _clamp_base_center(active_base_center)
+    queue_redraw()
+
+func _idle_base_center() -> Vector2:
+    return size * IDLE_BASE_POSITION
+
 func _base_center() -> Vector2:
-    return size * BASE_POSITION
+    return active_base_center if dragging else _idle_base_center()
 
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventScreenTouch and event.pressed and not dragging:
-        if _can_start_at(event.position):
-            dragging = true
-            touch_index = event.index
-            mouse_dragging = false
-            _update_vector(event.position)
-            get_viewport().set_input_as_handled()
+        _begin_drag(event.position, event.index, false)
+        get_viewport().set_input_as_handled()
     elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and not dragging:
-        if _can_start_at(event.position):
-            dragging = true
-            touch_index = -1
-            mouse_dragging = true
-            _update_vector(event.position)
-            get_viewport().set_input_as_handled()
+        _begin_drag(event.position, -1, true)
+        get_viewport().set_input_as_handled()
 
 func _input(event: InputEvent) -> void:
     if event is InputEventScreenTouch:
@@ -63,10 +66,29 @@ func _notification(what: int) -> void:
         _end_drag()
 
 func _can_start_at(pos: Vector2) -> bool:
-    return pos.distance_to(_base_center()) <= ACTIVATE_RADIUS
+    # Full viewport is eligible; GUI controls consume their own events before
+    # they reach _unhandled_input, so buttons remain clickable.
+    return Rect2(Vector2.ZERO, size).has_point(pos)
+
+func _begin_drag(pos: Vector2, index: int, from_mouse: bool) -> void:
+    if not _can_start_at(pos):
+        return
+    dragging = true
+    touch_index = index
+    mouse_dragging = from_mouse
+    active_base_center = _clamp_base_center(pos)
+    _update_vector(pos)
+    queue_redraw()
+
+func _clamp_base_center(pos: Vector2) -> Vector2:
+    var padding := minf(EDGE_PADDING, minf(size.x, size.y) * 0.25)
+    return Vector2(
+        clampf(pos.x, padding, maxf(padding, size.x - padding)),
+        clampf(pos.y, padding, maxf(padding, size.y - padding))
+    )
 
 func _update_vector(pos: Vector2) -> void:
-    var offset: Vector2 = pos - _base_center()
+    var offset: Vector2 = pos - active_base_center
     if offset.length() > BASE_RADIUS:
         offset = offset.normalized() * BASE_RADIUS
     vector = offset / BASE_RADIUS
@@ -77,12 +99,14 @@ func _end_drag() -> void:
     touch_index = -1
     mouse_dragging = false
     vector = Vector2.ZERO
+    active_base_center = _idle_base_center()
     queue_redraw()
 
 func _draw() -> void:
     var center := _base_center()
-    # Low-contrast base remains visible while idle, matching the reference.
-    draw_circle(center, BASE_RADIUS, Color(0.92, 0.96, 1.0, 0.10))
+    # Keep a subtle idle hint at the reference position; while active the
+    # translucent base appears at the actual touch-down position.
+    draw_circle(center, BASE_RADIUS, Color(0.92, 0.96, 1.0, 0.10 if not dragging else 0.16))
     draw_arc(center, BASE_RADIUS, 0.0, TAU, 72, Color(1.0, 1.0, 1.0, 0.24), 2.0, true)
     draw_circle(center, BASE_RADIUS * 0.68, Color(1.0, 1.0, 1.0, 0.035))
     var knob_center := center + vector * KNOB_TRAVEL if dragging else center
