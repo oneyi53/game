@@ -346,3 +346,8 @@
 - Added six persistent wood-gathering nodes across the three outdoor regions, with proximity interaction, harvest feedback, wood-cap handling and save persistence.
 - Added a reusable procedural ResourceNode script; depleted nodes remain depleted across map changes and restarts.
 - Runtime/parser validation and APK export remain pending.
+
+
+## 2026-11-05
+- 补充《百炼英雄》公开操作资料与当前控制代码对照：单摇杆移动、松手停止、自动索敌攻击。
+- 明确区分已具备的基础行为与尚待实机校准的摇杆锚点、触控热区和 HUD 布局；未将未知参数猜测为一致。
