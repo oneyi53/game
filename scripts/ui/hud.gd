@@ -50,6 +50,9 @@ func set_wood(amount: int, cap: int) -> void:
 func set_teleport_available(available: bool) -> void:
     teleport_button.disabled = not available
 
+func set_interact_prompt(text: String) -> void:
+    interact_button.text = text
+
 func set_quest_text(text: String) -> void:
     quest_label.text = text
 
