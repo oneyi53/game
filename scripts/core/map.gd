@@ -6,7 +6,7 @@ const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
 const TREE_SCRIPT = preload("res://scripts/core/tree_visual.gd")
 const LANDMARK_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
 const TOWN_BUILDINGS = preload("res://scripts/core/town_building_registry.gd")
-const TILE: int = 64
+const TILE: int = 128
 
 signal building_pressed(building_id: String)
 
@@ -146,16 +146,21 @@ func _draw() -> void:
     draw_rect(Rect2(-1000.0, -1000.0, 3400.0, 2700.0), background)
     for xi in range(0, int(bounds.size.x), TILE):
         for yi in range(0, int(bounds.size.y), TILE):
-            var odd: bool = (int(xi / TILE) + int(yi / TILE)) % 2 == 0
             var color: Color
             if town:
-                color = Color(0.66, 0.59, 0.43) if odd else Color(0.72, 0.65, 0.49)
+                color = Color(0.62, 0.53, 0.38)
             elif active_map_id == WorldMaps.FALLEN_LEAF:
-                color = Color(0.55, 0.58, 0.31) if odd else Color(0.62, 0.61, 0.34)
+                color = Color(0.49, 0.51, 0.27)
             elif active_map_id == WorldMaps.MORNING_DEW:
-                color = Color(0.37, 0.69, 0.55) if odd else Color(0.43, 0.75, 0.61)
+                color = Color(0.31, 0.61, 0.48)
             else:
-                color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
+                color = Color(0.37, 0.67, 0.31)
+            # Stable low-contrast variation breaks the old chessboard look
+            # while keeping every tile deterministic across devices/saves.
+            var cell_x: int = int(xi / TILE)
+            var cell_y: int = int(yi / TILE)
+            var noise_value: int = abs(cell_x * 17 + cell_y * 31 + cell_x * cell_y * 7) % 9
+            color = color.lightened(float(noise_value) * 0.009)
             _draw_ground_tile(xi, yi, color)
     _draw_exploration_paths()
     var outline := _projected_rect(bounds)
@@ -172,6 +177,12 @@ func _draw() -> void:
         for point in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
             _draw_ground_tile(int(point.x), int(point.y), Color(0.82, 0.75, 0.61))
         _draw_town_buildings()
+        var exit_screen: Vector2 = WorldProjectionScript.world_to_screen(Vector2(1460.0, 700.0))
+        draw_circle(exit_screen, 38.0, Color(0.08, 0.16, 0.1, 0.75))
+        draw_circle(exit_screen, 28.0, Color(0.75, 0.67, 0.36))
+        draw_circle(exit_screen, 19.0, Color(0.2, 0.42, 0.25))
+        if font != null:
+            draw_string(font, exit_screen + Vector2(-52.0, 58.0), "森林入口", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(1.0, 0.95, 0.75))
     elif active_map_id == WorldMaps.FALLEN_LEAF:
         for point in [Vector2(240, 240), Vector2(420, 300), Vector2(760, 260), Vector2(940, 620)]:
             _draw_dot(point, 5.0, Color(0.84, 0.65, 0.27))
