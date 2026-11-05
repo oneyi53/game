@@ -15,7 +15,9 @@ func _initialize() -> void:
     _test_chest_objective_completes_at_configured_count()
     _test_completed_quest_ignores_later_progress()
     _test_saved_completed_quest_does_not_emit_again()
-    print("Quest manager tests: 10 passed")
+    _test_reload_preserves_progress()
+    _test_config_validation_and_dependency_cycles()
+    print("Quest manager tests completed")
     quit()
 
 func _new_manager() -> QuestManager:
@@ -30,7 +32,7 @@ func _on_quest_completed(quest_id, quest_name, complete_line, reward_gold) -> vo
 
 func _test_real_quest_table_is_valid() -> void:
     var manager = _new_manager()
-    assert(manager.quests.size() == 9)
+    assert(manager.quests.size() == 10)
     assert(manager.counts.size() == manager.quests.size())
     assert(manager.completed.size() == manager.quests.size())
     for quest in manager.quests:
@@ -135,3 +137,88 @@ func _test_saved_completed_quest_does_not_emit_again() -> void:
     assert(int(manager.counts["side_slime_trouble"]) == 8)
     assert(completion_events.is_empty())
     assert(manager.save_progress()["completed"]["side_slime_trouble"])
+
+func _write_temp_quests(data: Array) -> String:
+    var path := "user://quest_manager_regression_tmp.json"
+    var file = FileAccess.open(path, FileAccess.WRITE)
+    assert(file != null, "cannot create test-owned temp config")
+    file.store_string(JSON.stringify(data))
+    file.close()
+    return path
+
+func _minimal_quest(quest_id: String) -> Dictionary:
+    return {
+        "id": quest_id,
+        "name": quest_id,
+        "type": "side",
+        "objective_type": "kill",
+        "target_id": "slime",
+        "count": 1,
+        "reward_gold": 0
+    }
+
+func _assert_invalid_config(data: Array, label: String) -> void:
+    var manager = _new_manager()
+    var before_quests: Array = manager.quests.duplicate(true)
+    var before_counts: Dictionary = manager.counts.duplicate(true)
+    var before_completed: Dictionary = manager.completed.duplicate(true)
+    var path := _write_temp_quests(data)
+    assert(not manager.load_quests(path), label + " should be rejected")
+    assert(manager.quests == before_quests, label + " changed quests on failure")
+    assert(manager.counts == before_counts, label + " changed counts on failure")
+    assert(manager.completed == before_completed, label + " changed completed on failure")
+    DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+func _test_reload_preserves_progress() -> void:
+    var manager = _new_manager()
+    manager.on_enemy_killed("slime", false)
+    var before: Dictionary = manager.save_progress()
+    assert(manager.load_quests(), manager.error_message)
+    assert(manager.save_progress() == before, "load_quests must preserve progress for retained IDs")
+
+func _test_config_validation_and_dependency_cycles() -> void:
+    var q := _minimal_quest("q")
+    var invalid := q.duplicate(true)
+    invalid["count"] = true
+    _assert_invalid_config([invalid], "boolean count")
+    invalid = q.duplicate(true)
+    invalid["count"] = "5"
+    _assert_invalid_config([invalid], "string count")
+    invalid = q.duplicate(true)
+    invalid["count"] = 1.5
+    _assert_invalid_config([invalid], "fractional count")
+    invalid = q.duplicate(true)
+    invalid["reward_gold"] = true
+    _assert_invalid_config([invalid], "boolean reward")
+    invalid = q.duplicate(true)
+    invalid["reward_gold"] = "5"
+    _assert_invalid_config([invalid], "string reward")
+    invalid = q.duplicate(true)
+    invalid["reward_gold"] = 1.5
+    _assert_invalid_config([invalid], "fractional reward")
+    invalid = q.duplicate(true)
+    invalid["id"] = ""
+    _assert_invalid_config([invalid], "empty ID")
+    _assert_invalid_config([q.duplicate(true), q.duplicate(true)], "duplicate ID")
+    invalid = q.duplicate(true)
+    invalid["prerequisite"] = "missing"
+    _assert_invalid_config([invalid], "missing prerequisite")
+    invalid = q.duplicate(true)
+    invalid["prerequisite"] = "q"
+    _assert_invalid_config([invalid], "self cycle")
+    var a := _minimal_quest("a")
+    var b := _minimal_quest("b")
+    a["prerequisite"] = "b"
+    b["prerequisite"] = "a"
+    _assert_invalid_config([a, b], "multi-node cycle")
+
+    var first := _minimal_quest("first")
+    var second := _minimal_quest("second")
+    second["prerequisite"] = "first"
+    var valid_path := _write_temp_quests([first, second])
+    var manager = QuestManagerScript.new()
+    assert(manager.load_quests(valid_path), manager.error_message)
+    manager.on_enemy_killed("slime", false)
+    assert(manager.is_completed("first"))
+    assert(manager.is_completed("second"), "dependent quest should unlock after prerequisite")
+    DirAccess.remove_absolute(ProjectSettings.globalize_path(valid_path))
