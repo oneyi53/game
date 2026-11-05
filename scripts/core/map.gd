@@ -166,13 +166,7 @@ func _draw() -> void:
     var outline := _projected_rect(bounds)
     outline.append(outline[0])
     draw_polyline(outline, Color(0.2, 0.35, 0.2), 5.0, true)
-    var title: String = manager.map_name(active_map_id)
     var font = ThemeDB.fallback_font
-    if font != null:
-        var label_pos: Vector2 = WorldProjectionScript.world_to_screen(bounds.position + Vector2(40.0, 55.0))
-        var label_width: float = font.get_string_size(title).x + 34.0
-        draw_rect(Rect2(label_pos.x - 12.0, label_pos.y - 27.0, label_width, 38.0), Color(0.08, 0.19, 0.12, 0.82))
-        draw_string(font, label_pos, title, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.96, 0.94, 0.78))
     if town:
         for point in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
             _draw_ground_tile(int(point.x), int(point.y), Color(0.82, 0.75, 0.61))
