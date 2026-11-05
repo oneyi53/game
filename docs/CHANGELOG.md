@@ -470,3 +470,10 @@
 - headless 主场景启动进一步发现 `Main.exploration_fog` 声明为 `ExplorationFog`，但原代码先 new Node2D 再 set_script，运行时赋值类型不匹配。已改为直接调用预加载脚本的 `.new()` 创建正确类型实例。
 - 该修复已推送，等待最新 CI 再次验证；之前该轮 CI 的 smoke test 仍失败，不能将后续修复预先记为通过。
 - 地图测试中的旧 1200×900 和 1050×525 断言已按当前 1600×1400 逻辑地图及 1500×750 投影边界更新。
+
+
+## 2026-11-05 — QuestManager 与主场景回归全部通过
+- 最新 Godot 4.7.2 GitHub Actions run `41990831333`（提交 `b414f6d48a3c8a7566ae60ab726fd1e23a9cbc96`）全部成功：资源导入/脚本解析、世界坐标、英雄编队、预备英雄装备、战力、主城建筑、QuestManager 13 组回归测试及 headless 主场景 smoke。
+- QuestManager 运行测试通过，覆盖正式 10 条任务、Boss ID 与 is_boss 标记、击杀/宝箱、harvest/explore/deliver、旧存档读取、存档往返、重载进度保留、count/reward 边界、空/重复 ID、前置缺失/自环/多节点环、非法配置失败原子性及合法前置链。
+- 主场景 smoke 暴露的 ExplorationFog 类型实例化错误已修复，并在该 run 中通过。
+- 该结果是 Godot 4.7.2 CI/headless 通过，不代表 Android APK 导出或真机验收通过；未修改 main。
