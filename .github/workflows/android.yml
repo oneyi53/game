@@ -119,7 +119,7 @@ jobs:
           elif "[rendering]" in s:
               s = s.replace("[rendering]", "[rendering]\n" + key + "=true", 1)
           else:
-              s += "\n[rendering]\n" + key + "=true\\n"
+              s += "\n[rendering]\n" + key + "=true\n"
           p.write_text(s)
           PY
           godot --headless --editor --path . --quit
