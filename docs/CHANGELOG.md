@@ -445,3 +445,14 @@
 - 新增 `assets/art-v1/GEMINI_ART_BRIEF_V1.md`，定义 captain 四方向行走、普攻、受击/死亡图集规范及四区域环境物件后续需求。
 - 首轮限定 captain 行走样片，统一 2048×2048、4×4 帧格、512×512 单帧、脚底锚点 (256,480)，避免批量生成后出现动画漂移和风格不一致。
 - 仅建立外部生成任务单，未声称 Gemini 已生成素材；新 PNG 需验收后才能入库和接入。
+
+
+## 2026-11-05 — QuestManager 配置校验与回归测试加固
+- `scripts/progression/quest_manager.gd`：`load_quests(config_path = "res://data/quests.json")` 增加可选配置路径；严格拒绝非字符串/空任务 ID、重复 ID、非整数或负数 reward_gold、非正整数 count、非法 prerequisite 类型/引用，以及自引用和多节点前置循环。
+- 配置先在局部快照完成全部校验，成功后才替换运行时配置；同 ID 的 counts/completed 在重复加载时保留，已删除任务 ID 被清理，新任务从零初始化。加载失败不会改变 quests/counts/completed。
+- `tests/test_quest_manager.gd` 扩展正式 10 条配置、Boss 标记、击杀、宝箱、采集/探索/交付事件、存档往返、重复加载保留进度、数值边界、重复/空 ID、前置缺失与环检测、失败原子性和合法前置链测试。临时文件使用固定的测试专属文件名，逐个删除自身文件。
+- `.github/workflows/godot-cloud-validation.yml` 更新 QuestManager 测试完成标记，以便 CI 执行扩展后的测试脚本。
+- 存档 schema 未改变；旧存档的 counts/completed 转换行为保持原样。
+- 验证边界：GitHub 源码静态审查与提交完成；当前未在本执行环境运行 Godot 4.7.2。等待分支 push 触发的 GitHub Actions；即使 CI 通过，也不替代 Android 真机验收。
+- 代码提交：`2512b0263a3285ea07c2e1d562b9977ee3199968`；后续兼容性调整：`d363606cf0dd2586af4e20c17ef2ac2945f3247e`；测试提交：`5fcff80984f58c5b4ec625f026557386421f9e1d`、`9c4135d65bce07a7bb460d40dda371adecbcd295`；CI workflow：`40af0b396cd9222870d7b48d18ef06547f2bb846`。
+- 下一步：核查 Godot 4.7.2 CI 实际结果；若解析或测试失败，按日志修复并再次运行；随后继续处理可玩闭环中未完成的交付交互与动画素材接入。
