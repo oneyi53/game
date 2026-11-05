@@ -10,6 +10,13 @@ var quests: Array = []
 var counts: Dictionary = {}
 var completed: Dictionary = {}
 
+func _is_integer_number(value: Variant) -> bool:
+	var value_type: int = typeof(value)
+	if value_type != TYPE_INT and value_type != TYPE_FLOAT:
+		return false
+	var number: float = float(value)
+	return is_finite(number) and number == floorf(number)
+
 func load_quests(config_path: String = "res://data/quests.json") -> bool:
 	if not FileAccess.file_exists(config_path):
 		error_message = "缺少配置文件：" + config_path
@@ -48,12 +55,12 @@ func load_quests(config_path: String = "res://data/quests.json") -> bool:
 			return false
 		seen[quest_id] = true
 		quest_by_id[quest_id] = entry
-		if typeof(entry["reward_gold"]) != TYPE_INT or int(entry["reward_gold"]) < 0:
+		if not _is_integer_number(entry["reward_gold"]) or int(entry["reward_gold"]) < 0:
 			error_message = "quests.json reward_gold 必须是非负整数，id：" + quest_id
 			return false
 		var objective_type: String = str(entry["objective_type"])
 		if objective_type in ["kill", "chest", "harvest", "explore", "deliver"]:
-			if not entry.has("count") or typeof(entry["count"]) != TYPE_INT or int(entry["count"]) <= 0:
+			if not entry.has("count") or not _is_integer_number(entry["count"]) or int(entry["count"]) <= 0:
 				error_message = "quests.json count 必须是正整数，id：" + quest_id
 				return false
 
