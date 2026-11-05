@@ -17,7 +17,8 @@ func default_data() -> Dictionary:
         "gold": 0,
         "chest_opened": false,
         "boss_defeated": false,
-        "player_position": null,
+        "map_id": "town",
+        "player_position": {"x": 600.0, "y": 610.0},
         "heroes": [],
     }
 
