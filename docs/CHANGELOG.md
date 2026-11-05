@@ -1,3 +1,16 @@
+## 2026-11-05 — DataLoader 原子加载与类型安全校验
+
+- 分支：`feat/reference-grade-world-exploration-2026-11-05`；仅开发分支改动，`main` 未修改。
+- 修改：`scripts/core/data_loader.gd`。
+- 加载策略：heroes/enemies/items 先在局部变量完成读取与验证；三份配置全部成功后才替换运行时数据。中途失败保留上一份完整有效快照，避免敌人字典、Boss ID 与其它配置出现新旧混合。
+- 校验：拒绝空白/非字符串 ID、bool/string 数值、非 bool 的 is_boss、非法 boss_role；检查 Boss leash_range/reward_gold 的数值有效性；成功后清空 error_message。
+- 兼容：未改变 JSON 文件结构、存档字段或 schema_version；缺省 boss_role 仍按 main 处理，兼容现有主 Boss 配置。
+- 验证：GitHub 当前分支源码与 data/enemies.json 静态核对；当前敌人配置共 12 条（10 普通、2 Boss）。未运行 Godot 4.7.2、未执行自动化测试、未导出 APK。
+- 提交：`35970a543807c2a56f624b21ed9dad5f038061c2`。
+- 后续：补充可注入配置路径的 DataLoader 单元测试，再由 Godot 4.7.2 CI/headless 与 Android 真机分别验证。
+
+---
+
 ## 2026-11-05 — M0 采集任务接线、Boss 第二攻击与碎片保底
 
 - 分支：`feat/reference-grade-world-exploration-2026-11-05`；仅开发分支改动，`main` 未修改。
