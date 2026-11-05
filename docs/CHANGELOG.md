@@ -1,3 +1,13 @@
+## 2026-11-05 — M0 采集任务接线、Boss 第二攻击与碎片保底
+
+- 分支：`feat/reference-grade-world-exploration-2026-11-05`；仅开发分支改动，`main` 未修改。
+- `scripts/progression/quest_manager.gd`：新增 `harvest`、`explore`、`deliver` 目标类型；新增资源采集、区域进入、物品交付更新入口；新增可选前置任务 gating；旧存档的 counts/completed 字段结构不变。配置加载增加目标类型、target_id、deliver item_id 和 prerequisite 引用校验。
+- `scripts/core/main.gd`：采集成功并入账后推进 harvest 任务；地图切换后推进 explore 任务并刷新任务显示。当前没有 NPC 交付系统，deliver 入口尚无实际调用方，不宣称交付玩法已完成。
+- `scripts/enemy/boss.gd`：新增独立锁定地面范围攻击，包含独立计时、0.8 秒预警、落点锁定、范围结算、阶段冷却与 leash 中断；结算按 Boss 所属地图过滤英雄。
+- `scripts/progression/recruitment_manager.gd`：新增碎片掉落保底计数，连续 10 次符合条件的普通敌人击杀未掉落时必定掉落；计数写入 recruitment 存档，旧存档缺字段默认为 0；招募刺客后停止计数和掉落。
+- 验证：已静态核对当前分支真实文件与调用点；未运行 Godot 4.7.2、headless、Android 导出或真机测试。上述改动目前均为代码提交，不能视为运行通过。
+- 后续：接入 NPC 交付交互后再配置 deliver 任务；对 Boss 预警投影、范围命中与阶段冷却进行 Godot 场景验证；运行配置校验、存档迁移和 M0 冒烟测试。
+
 ## 2026-11-05 — 采集三态首轮接入（未验证）
 
 - 分支：`feat/reference-grade-world-exploration-2026-11-05`。
