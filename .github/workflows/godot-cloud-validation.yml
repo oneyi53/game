@@ -113,6 +113,17 @@ jobs:
           fi
           grep -q "Quest manager tests: 13 passed" quest-manager-tests.log
 
+      - name: Run resource node tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_resource_node.gd 2>&1 | tee resource-node-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' resource-node-tests.log; then
+            echo "Resource node tests reported errors."
+            exit 1
+          fi
+          grep -q "Resource node tests: 6 passed" resource-node-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -137,4 +148,5 @@ jobs:
             hero-power-tests.log
             town-building-tests.log
             quest-manager-tests.log
+            resource-node-tests.log
           if-no-files-found: ignore
