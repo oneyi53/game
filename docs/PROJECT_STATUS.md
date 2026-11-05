@@ -1,3 +1,10 @@
+# 最新进展（2026-11-05 19:08：Quest 存档输入健壮性）
+
+- QuestManager `load_progress()` 现在只接受整数型数值作为任务计数（兼容整数值 float），只接受真正的 bool 作为完成标记；布尔/字符串/小数计数和字符串/数字完成标记会被忽略，不再通过 `int()`/`bool()` 隐式强制转换污染运行状态。
+- 新增 `tests/test_quest_manager.gd` 回归覆盖损坏存档值；正式存档结构不变，旧存档缺少任务字段仍保持默认进度。
+- 代码提交：`be75b9a711bf4a401d513612f37f4093738448dc`；测试提交：`58507fe7f93e0270273ca959a5281dd1225f5f54`。
+- 最新测试提交尚待 Godot 4.7.2 CI；尚未导出 APK、未进行 Android 真机验收。
+
 ## 2026-11-05 — Gemini 美术协作准备
 
 - 核对 `assets/art-v1/SPRITE_SPEC.md` 与 `scripts/character/hero.gd`：英雄目前仍以单张静态 PNG 为主体，只有程序化 bob、挤压、攻击倾斜和受击后仰；真正逐帧动画未完成。
