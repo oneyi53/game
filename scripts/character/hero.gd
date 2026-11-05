@@ -143,7 +143,7 @@ func _physics_process(delta: float) -> void:
         return
     var desired_velocity: Vector2 = Vector2.ZERO
     if is_captain:
-        desired_velocity = move_input.limit_length(1.0) * move_speed
+        desired_velocity = move_input * move_speed
     elif captain_ref != null:
         var target_pos: Vector2 = captain_ref.global_position + formation_offset
         var diff: Vector2 = target_pos - global_position
@@ -343,9 +343,9 @@ func _draw() -> void:
     var body_rotation: float = -attack_direction.y * attack_lean * 0.55 if attacking else 0.0
     draw_set_transform(offset + Vector2(-facing_sign * hit_recoil, bob), body_rotation, Vector2(facing_sign * body_scale.x, body_scale.y))
     if texture != null:
-        draw_texture_rect(texture, Rect2(-48.0, -90.0, 96.0, 96.0), false, Color(1.0, 0.62, 0.62) if hit_flash else Color.WHITE)
+        draw_texture_rect(texture, Rect2(-72.0, -138.0, 144.0, 144.0), false, Color(1.0, 0.62, 0.62) if hit_flash else Color.WHITE)
     else:
-        draw_circle(Vector2.ZERO, 18.0, hero_color)
+        draw_circle(Vector2.ZERO, 27.0, hero_color)
     draw_set_transform(offset)
     if attack_flash_remaining > 0.0:
         var progress: float = 1.0 - attack_flash_remaining / maxf(attack_flash_total, 0.01)
@@ -356,6 +356,6 @@ func _draw() -> void:
         draw_arc(Vector2.ZERO, 30.0, -1.05 + progress * 0.45, 1.05 + progress * 0.45, 20, Color(1.0, 0.9, 0.58, slash_alpha), 5.0)
         draw_line(Vector2(-8.0, -18.0), Vector2(22.0, 0.0), Color(1.0, 1.0, 0.86, slash_alpha), 3.0)
         draw_set_transform(offset)
-    draw_rect(Rect2(-24.0, -98.0, 48.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
-    var fill: float = 48.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-24.0, -98.0, fill, 5.0), Color(0.2, 0.9, 0.3))
+    draw_rect(Rect2(-32.0, -148.0, 64.0, 6.0), Color(0.08, 0.08, 0.08, 0.9))
+    var fill: float = 64.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-32.0, -148.0, fill, 6.0), Color(0.2, 0.9, 0.3))

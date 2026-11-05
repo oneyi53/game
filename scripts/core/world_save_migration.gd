@@ -34,6 +34,15 @@ static func migrate_save(save_data: Dictionary) -> Dictionary:
     var result: Dictionary = save_data.duplicate(true)
     var unlocked: Dictionary = _unlocked_maps(save_data)
 
+    if not save_data.has("map_id") and save_data.get("player_position", null) == null:
+        result["map_id"] = TOWN
+        result["player_position"] = _position_to_data(SPAWNS[TOWN])
+        return {
+            "data": result,
+            "migrated": true,
+            "map_id": TOWN
+        }
+
     if save_data.has("map_id"):
         var saved_map_id: String = str(save_data.get("map_id", ""))
         var safe_map_id: String = saved_map_id if MAP_IDS.has(saved_map_id) and bool(unlocked.get(saved_map_id, false)) else MOSS_CROWN
@@ -68,12 +77,15 @@ static func _unlocked_maps(save_data: Dictionary) -> Dictionary:
     var elite_defeated: bool = bool(save_data.get("elite_defeated", false))
     var quests: Dictionary = save_data.get("quests", {}) if save_data.get("quests", {}) is Dictionary else {}
     var completed_quests: Dictionary = quests.get("completed", {}) if quests.get("completed", {}) is Dictionary else {}
+    # Old saves may predate this quest ID; an already-defeated elite boss
+    # is treated as completion for migration compatibility only.
+    var moss_quest_done: bool = bool(completed_quests.get("side_moss_crown_king", elite_defeated))
     var valley_quest_done: bool = bool(completed_quests.get("side_valley_puppet", false))
     return {
         TOWN: true,
         MOSS_CROWN: true,
-        FALLEN_LEAF: elite_defeated,
-        MORNING_DEW: elite_defeated and valley_quest_done
+        FALLEN_LEAF: elite_defeated and moss_quest_done,
+        MORNING_DEW: elite_defeated and moss_quest_done and valley_quest_done
     }
 
 

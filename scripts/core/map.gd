@@ -6,25 +6,25 @@ const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
 const TREE_SCRIPT = preload("res://scripts/core/tree_visual.gd")
 const LANDMARK_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
 const TOWN_BUILDINGS = preload("res://scripts/core/town_building_registry.gd")
-const TILE: int = 64
+const TILE: int = 128
 
 signal building_pressed(building_id: String)
 
 const DECORATIONS := {
     "town": {
-        "trees": [Vector2(160, 170), Vector2(1040, 170), Vector2(160, 740), Vector2(1040, 740)],
+        "trees": [Vector2(160, 170), Vector2(1040, 170), Vector2(160, 740), Vector2(1040, 740), Vector2(340, 180), Vector2(860, 180), Vector2(1240, 420), Vector2(220, 520), Vector2(1180, 900), Vector2(420, 1120), Vector2(900, 1180), Vector2(1360, 1120)],
         "landmarks": [{"kind": "fountain", "position": Vector2(600, 450), "radius": 34.0}]
     },
     "moss_crown": {
-        "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820)],
+        "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820), Vector2(1280, 180), Vector2(1380, 480), Vector2(1260, 980), Vector2(1040, 1220), Vector2(760, 1160), Vector2(360, 1180), Vector2(120, 1080), Vector2(80, 300), Vector2(480, 260), Vector2(680, 940)],
         "landmarks": [{"kind": "tower", "position": Vector2(260, 300), "radius": 30.0}, {"kind": "fountain", "position": Vector2(920, 500), "radius": 28.0}]
     },
     "fallen_leaf": {
-        "trees": [Vector2(110, 130), Vector2(310, 110), Vector2(1080, 150), Vector2(980, 760), Vector2(140, 760), Vector2(420, 800), Vector2(180, 500), Vector2(1040, 560)],
+        "trees": [Vector2(110, 130), Vector2(310, 110), Vector2(1080, 150), Vector2(980, 760), Vector2(140, 760), Vector2(420, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(1320, 240), Vector2(1320, 1040), Vector2(1080, 1220), Vector2(720, 1180), Vector2(360, 1120), Vector2(80, 980), Vector2(80, 320), Vector2(520, 200), Vector2(820, 360), Vector2(1180, 520)],
         "landmarks": [{"kind": "tree_cluster", "position": Vector2(620, 280), "radius": 36.0}]
     },
     "morning_dew": {
-        "trees": [Vector2(100, 160), Vector2(300, 140), Vector2(1080, 140), Vector2(980, 220), Vector2(140, 760), Vector2(420, 790), Vector2(1080, 740), Vector2(900, 800)],
+        "trees": [Vector2(100, 160), Vector2(300, 140), Vector2(1080, 140), Vector2(980, 220), Vector2(140, 760), Vector2(420, 790), Vector2(1080, 740), Vector2(900, 800), Vector2(1320, 300), Vector2(1260, 920), Vector2(1020, 1200), Vector2(660, 1180), Vector2(300, 1120), Vector2(80, 960), Vector2(80, 360), Vector2(520, 240), Vector2(820, 420), Vector2(1180, 560)],
         "landmarks": [{"kind": "tree_cluster", "position": Vector2(600, 450), "radius": 36.0}]
     }
 }
@@ -139,39 +139,19 @@ func _draw_exploration_paths() -> void:
         draw_polyline(projected, Color(0.82, 0.73, 0.5, 0.52), 2.0, true)
 
 func _draw() -> void:
-    var manager = WorldMaps.new()
-    var bounds: Rect2 = manager.map_bounds(active_map_id)
+    var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     var town: bool = active_map_id == WorldMaps.TOWN
-    var background: Color = Color(0.22, 0.38, 0.25) if town else Color(0.34, 0.62, 0.34)
-    draw_rect(Rect2(-1000.0, -1000.0, 3400.0, 2700.0), background)
-    for xi in range(0, int(bounds.size.x), TILE):
-        for yi in range(0, int(bounds.size.y), TILE):
-            var odd: bool = (int(xi / TILE) + int(yi / TILE)) % 2 == 0
-            var color: Color
-            if town:
-                color = Color(0.66, 0.59, 0.43) if odd else Color(0.72, 0.65, 0.49)
-            elif active_map_id == WorldMaps.FALLEN_LEAF:
-                color = Color(0.55, 0.58, 0.31) if odd else Color(0.62, 0.61, 0.34)
-            elif active_map_id == WorldMaps.MORNING_DEW:
-                color = Color(0.37, 0.69, 0.55) if odd else Color(0.43, 0.75, 0.61)
-            else:
-                color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
-            _draw_ground_tile(xi, yi, color)
+    _draw_fullscreen_ground(bounds, town)
     _draw_exploration_paths()
-    var outline := _projected_rect(bounds)
-    outline.append(outline[0])
-    draw_polyline(outline, Color(0.2, 0.35, 0.2), 5.0, true)
-    var title: String = manager.map_name(active_map_id)
     var font = ThemeDB.fallback_font
-    if font != null:
-        var label_pos: Vector2 = WorldProjectionScript.world_to_screen(bounds.position + Vector2(40.0, 55.0))
-        var label_width: float = font.get_string_size(title).x + 34.0
-        draw_rect(Rect2(label_pos.x - 12.0, label_pos.y - 27.0, label_width, 38.0), Color(0.08, 0.19, 0.12, 0.82))
-        draw_string(font, label_pos, title, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.96, 0.94, 0.78))
     if town:
-        for point in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
-            _draw_ground_tile(int(point.x), int(point.y), Color(0.82, 0.75, 0.61))
         _draw_town_buildings()
+        var exit_screen: Vector2 = WorldProjectionScript.world_to_screen(Vector2(1460.0, 700.0))
+        draw_circle(exit_screen, 38.0, Color(0.08, 0.16, 0.1, 0.75))
+        draw_circle(exit_screen, 28.0, Color(0.75, 0.67, 0.36))
+        draw_circle(exit_screen, 19.0, Color(0.2, 0.42, 0.25))
+        if font != null:
+            draw_string(font, exit_screen + Vector2(-52.0, 58.0), "森林入口", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(1.0, 0.95, 0.75))
     elif active_map_id == WorldMaps.FALLEN_LEAF:
         for point in [Vector2(240, 240), Vector2(420, 300), Vector2(760, 260), Vector2(940, 620)]:
             _draw_dot(point, 5.0, Color(0.84, 0.65, 0.27))
@@ -181,6 +161,44 @@ func _draw() -> void:
     else:
         for point in [Vector2(260, 480), Vector2(500, 620), Vector2(900, 480), Vector2(1100, 700)]:
             _draw_dot(point, 4.0, Color(1.0, 0.85, 0.2))
+
+
+func _draw_fullscreen_ground(bounds: Rect2, town: bool) -> void:
+    var base: Color
+    var detail: Color
+    if town:
+        base = Color(0.48, 0.39, 0.29)
+        detail = Color(0.72, 0.61, 0.43, 0.24)
+    elif active_map_id == WorldMaps.FALLEN_LEAF:
+        base = Color(0.35, 0.39, 0.22)
+        detail = Color(0.73, 0.61, 0.31, 0.2)
+    elif active_map_id == WorldMaps.MORNING_DEW:
+        base = Color(0.22, 0.48, 0.39)
+        detail = Color(0.64, 0.84, 0.68, 0.2)
+    else:
+        base = Color(0.27, 0.49, 0.24)
+        detail = Color(0.7, 0.83, 0.43, 0.2)
+    # The ground is a portrait rectangle, not a small isometric diamond.
+    # It continues beyond the logical walkable bounds so no empty wedges
+    # appear around the screen while the camera tracks the captain.
+    draw_rect(Rect2(bounds.position - Vector2(420.0, 180.0), bounds.size + Vector2(840.0, 360.0)), base)
+    var cell_size: int = 64
+    var columns: int = int(ceil(bounds.size.x / float(cell_size))) + 1
+    var rows: int = int(ceil(bounds.size.y / float(cell_size))) + 1
+    for cell_x in range(-2, columns + 2):
+        for cell_y in range(-2, rows + 2):
+            var seed_value: int = abs(cell_x * 37 + cell_y * 61 + cell_x * cell_y * 13) % 17
+            var rect := Rect2(
+                bounds.position.x + float(cell_x * cell_size),
+                bounds.position.y + float(cell_y * cell_size),
+                float(cell_size),
+                float(cell_size)
+            )
+            if seed_value % 3 == 0:
+                draw_rect(rect, detail)
+            var tuft := rect.position + Vector2(10.0 + float(seed_value % 23), 12.0 + float((seed_value * 7) % 31))
+            draw_line(tuft, tuft + Vector2(3.0, -5.0), detail, 2.0)
+            draw_line(tuft + Vector2(4.0, 2.0), tuft + Vector2(8.0, -3.0), detail, 2.0)
 
 func _draw_town_buildings() -> void:
     var font = ThemeDB.fallback_font

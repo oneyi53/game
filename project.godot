@@ -4,14 +4,15 @@ config_version=5
 [application]
 config/name="Hero World"
 config/version="1.0"
-config/description="Hero World: a bright, single-player 2D top-down RPG. Explore the forest, recruit heroes, and clear the fog."
+config/description="Hero World: a portrait, single-player isometric RPG. Explore a full-screen world, follow quests, recruit heroes, and uncover new regions."
 config/icon="res://assets/art-v1/branding/icon.png"
 run/main_scene="res://scenes/main.tscn"
 
 [display]
 window/size/viewport_width=720
 window/size/viewport_height=1280
-window/handheld/orientation="portrait"
+window/handheld/orientation=1
 
 [rendering]
 renderer/rendering_method="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
