@@ -11,7 +11,8 @@ func _initialize() -> void:
     _test_partial_edge_cells_are_counted_once()
     _test_custom_map_dimensions()
     _test_invalid_dimensions_are_not_applicable()
-    print("Exploration fog tests: 7 passed")
+    _test_town_exploration_is_not_applicable()
+    print("Exploration fog tests: 8 passed")
     quit()
 
 func _test_empty_region_is_zero() -> void:
@@ -52,3 +53,11 @@ func _test_invalid_dimensions_are_not_applicable() -> void:
     var zero_cell: Dictionary = Fog.calculate_exploration_stats([], Vector2(160.0, 160.0), 0.0)
     assert(zero_width["applicable"] == false)
     assert(zero_cell["applicable"] == false)
+
+func _test_town_exploration_is_not_applicable() -> void:
+    var fog = Fog.new()
+    fog.set_map_state(WorldMaps.TOWN, [])
+    var stats: Dictionary = fog.get_exploration_stats()
+    assert(stats["applicable"] == false)
+    assert(stats["percent"] == 0)
+    fog.free()
