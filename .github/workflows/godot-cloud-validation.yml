@@ -122,7 +122,7 @@ jobs:
             echo "Virtual joystick tests reported errors."
             exit 1
           fi
-          grep -q "Virtual joystick tests: 5 passed" virtual-joystick-tests.log
+          grep -q "Virtual joystick tests: 8 passed" virtual-joystick-tests.log
 
       - name: Run headless project smoke test
         shell: bash
