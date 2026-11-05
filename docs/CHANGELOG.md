@@ -477,3 +477,10 @@
 - QuestManager 运行测试通过，覆盖正式 10 条任务、Boss ID 与 is_boss 标记、击杀/宝箱、harvest/explore/deliver、旧存档读取、存档往返、重载进度保留、count/reward 边界、空/重复 ID、前置缺失/自环/多节点环、非法配置失败原子性及合法前置链。
 - 主场景 smoke 暴露的 ExplorationFog 类型实例化错误已修复，并在该 run 中通过。
 - 该结果是 Godot 4.7.2 CI/headless 通过，不代表 Android APK 导出或真机验收通过；未修改 main。
+
+
+## 2026-11-05 — M0 采集三态回归补强
+- 静态核对 `main.gd`、`resource_node.gd` 与 HUD：采集已是 1.2 秒过程态，不是即时完成；移动/速度/离开范围会中断，切图和打开面板也会取消；完成后才扣耗尽状态、发放木材、推进任务和保存。
+- 更新 `docs/MILESTONE_PLAN.md` 对 M0-4 的过期描述，记录当前真实实现与剩余真机验收边界。
+- 新增 `tests/test_resource_node.gd`，覆盖资源节点初始化、产量范围、单次耗尽、防止重复采集和旧存档耗尽状态恢复；接入 Godot 4.7.2 workflow。
+- 尚待最新 CI 验证；未导出 APK、未做 Android 真机测试。
