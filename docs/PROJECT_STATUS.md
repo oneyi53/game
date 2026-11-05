@@ -449,3 +449,12 @@ main 已经包含基础美术资源文件；PR #32 已将英雄、怪物、Boss�
 - 打开营火传送面板时执行相同中断，避免玩家在全屏面板期间后台完成采集。
 - 代码提交：`9a5c981ea158b500226917416a565ecf55c17499`。
 - 验证状态：已静态核对调用点；未运行 Godot 4.7.2、未导出 APK、未做 Android 真机测试。
+
+
+## 最新进展补充（2026-11-05：QuestManager 回归加固）
+
+- 已从当前开发分支真实源码确认此前候选审计中的风险：count/reward_gold 通过 int() 转换前未校验原始类型；前置只校验引用存在；重复 load_quests 会重置已有进度。
+- 已修复：严格整数与 ID 校验、前置依赖环检测、可选配置路径、配置验证失败保持运行时快照、同 ID 进度在配置重载时保留；旧存档 counts/completed 转换和存档 schema 不变。
+- 已扩展 QuestManager 回归测试及 Godot 4.7.2 CI 调用，覆盖当前 10 条正式任务、kill/boss/chest/harvest/explore/deliver 事件、数值边界、ID/依赖校验、原子失败与合法前置链。
+- 代码和测试已提交至 `feat/reference-grade-world-exploration-2026-11-05`；未修改 main。
+- 验证状态：尚未在本执行环境运行 Godot 4.7.2；需等待 GitHub Actions 真实结果。CI/headless 通过仍不代表 Android 真机通过。
