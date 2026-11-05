@@ -747,14 +747,17 @@ func _process(delta: float) -> void:
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(float(captain.rage), captain.rage >= Hero.SKILL_RAGE_COST)
-    _update_resource_harvest(delta)
-    _refresh_resource_prompt()
-    _update_exploration(delta)
+    # Resolve this frame's movement input before checking harvest cancellation;
+    # otherwise the harvest state observes the previous frame and can complete
+    # one tick after the player has started moving.
     var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
         screen_input = joystick.vector
     var world_input := Vector2(screen_input.x + 2.0 * screen_input.y, -screen_input.x + 2.0 * screen_input.y)
     captain.move_input = world_input.normalized()
+    _update_resource_harvest(delta)
+    _refresh_resource_prompt()
+    _update_exploration(delta)
     _tick_respawns(delta)
 
 func _update_exploration(delta: float) -> void:
@@ -858,6 +861,16 @@ func _refresh_resource_prompt() -> void:
         return
     if harvest_target != null and is_instance_valid(harvest_target):
         hud.set_interact_prompt("采集中…")
+        return
+    # Keep interaction affordances aligned with the actual interaction
+    # priority: campfire first, then chest, then resource nodes.
+    if campfire_node != null and campfire_node.visible and camp_manager != null and not camp_manager.campfire_order.is_empty():
+        var campfire_entry = camp_manager.campfire(camp_manager.campfire_order[0])
+        if campfire_entry != null and captain.global_position.distance_to(campfire_node.global_position) < 80.0:
+            hud.set_interact_prompt("传送" if camp_manager.is_campfire_unlocked(str(campfire_entry["id"])) else "解锁营火")
+            return
+    if chest_node != null and chest_node.visible and captain.global_position.distance_to(chest_node.global_position) < 80.0:
+        hud.set_interact_prompt("开启宝箱" if not chest_node.is_open else "已开启")
         return
     var nearest_node: Node2D = _nearest_resource_node(90.0)
     if nearest_node == null:
