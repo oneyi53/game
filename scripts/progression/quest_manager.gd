@@ -116,13 +116,11 @@ func load_progress(saved) -> void:
 	if saved_counts is Dictionary:
 		for quest_id in counts.keys():
 			if saved_counts.has(quest_id):
-				var value = saved_counts[quest_id]
-				if typeof(value) == TYPE_INT:
-					counts[quest_id] = maxi(0, value)
+				counts[quest_id] = maxi(0, int(saved_counts[quest_id]))
 	if saved_completed is Dictionary:
 		for quest_id in completed.keys():
-			if saved_completed.has(quest_id) and typeof(saved_completed[quest_id]) == TYPE_BOOL:
-				completed[quest_id] = saved_completed[quest_id]
+			if saved_completed.has(quest_id):
+				completed[quest_id] = bool(saved_completed[quest_id])
 
 func save_progress() -> Dictionary:
 	return {"counts": counts.duplicate(), "completed": completed.duplicate()}
