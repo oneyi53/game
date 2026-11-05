@@ -311,3 +311,9 @@
 - 严重分叉的旧 2.5D/地图/美术分支不整体合并，只逐文件审查、迁移有效实现；不强制改写或删除历史分支。
 - 本轮仅完成审计、PR 描述清理与治理记录；未完成旧分支运行时代码重构，未修改 main 运行时代码，未产出新 APK，未进行真机验收。
 - 下一步在统一体验分支实现地图 vertical slice、镜头与角色动作反馈，并逐项测试。
+
+## 2026-11-05 — Hero movement feel pass
+- `scripts/character/hero.gd`: added acceleration/braking via `Vector2.move_toward`, distance-aware follower catch-up, horizontal facing, and subtle procedural body bob.
+- Kept the static-PNG limitation explicit; this is not sprite-sheet animation.
+- Did not enlarge map bounds before projection/camera/collision/save-coordinate migration is designed and tested.
+- Runtime validation and Android APK export remain pending.
