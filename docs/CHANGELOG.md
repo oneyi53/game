@@ -7,7 +7,7 @@
 - 数据约定：任务与阶段状态均由外部权威管理器提供；UI 仅读取字段。未接入 Main/HUD，也未定义每日规则、阈值、时区、奖励内容或存档字段。
 - 红点：main 当前没有 `scripts/ui/components/red_dot_indicator.gd`，本面板不依赖未合并组件，也不自行添加红点。
 - 存档兼容：不改存档格式、schema_version 或既有核心管理器。
-- 验证：新增 6 项 headless UI 检查并接入 Godot 4.7.2 CI；本次尚未取得 CI 结果，状态为待验证。
+- 验证：新增 7 项 headless UI 检查并接入 Godot 4.7.2 CI；本次尚未取得 CI 结果，状态为待验证。
 - 下一步：Godot CI 通过后审查 PR；后续由单独集成任务连接 DailyActivityManager 和领奖原子保存策略。
 
 # 开发变更日志
