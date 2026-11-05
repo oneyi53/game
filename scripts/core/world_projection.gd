@@ -6,8 +6,8 @@ extends RefCounted
 # is rotated so the playable land fills a 720x1280 mobile viewport.
 const MAP_WIDTH: float = 1600.0
 const MAP_HEIGHT: float = 1400.0
-const ISO_X_SCALE: float = 0.25
-const ISO_Y_SCALE: float = 0.5
+const ISO_X_SCALE: float = 0.4
+const ISO_Y_SCALE: float = 0.8
 const VERTICAL_OFFSET: float = MAP_HEIGHT * ISO_Y_SCALE
 
 static func world_to_screen(world_position: Vector2) -> Vector2:
