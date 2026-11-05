@@ -336,3 +336,7 @@
 ## 2026-11-05 — Outdoor exploration routes
 - Added branching, layered trail rendering to the three outdoor maps in `scripts/core/map.gd`. Routes use map-local coordinates and existing isometric projection; gameplay bounds and save coordinates are unchanged.
 - Runtime validation pending.
+
+## 2026-11-05 — Align map bounds and encounter coordinates
+- Expanded logical map bounds and isometric projection from 1200×900 to 1600×1400 so late-region enemy spawn coordinates are reachable.
+- Extended valley/grove trails into the newly reachable space. Runtime and save migration regression checks remain pending.
