@@ -768,7 +768,7 @@ func _process(delta: float) -> void:
     var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
         screen_input = joystick.vector
-    var world_input := Vector2(screen_input.x + 2.0 * screen_input.y, -screen_input.x + 2.0 * screen_input.y)
+    var world_input: Vector2 = WorldProjectionScript.screen_to_world_direction(screen_input)
     captain.move_input = world_input.normalized()
     _update_resource_harvest(delta)
     _refresh_resource_prompt()
