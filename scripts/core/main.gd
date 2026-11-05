@@ -313,6 +313,7 @@ func _ready() -> void:
     camp_panel.hero_panel_requested.connect(_on_camp_hero_panel_pressed)
     camp_panel.visible = false
     _refresh_quest_label()
+    hud.set_region_name(world_map_manager.map_name(active_map_id))
     hero_panel.set_heroes(heroes)
     hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager, equipment_manager, camp_manager, backpack_manager.items)
     hero_panel.leader_requested.connect(_on_formation_leader_requested)
@@ -696,6 +697,7 @@ func _switch_map(target_map_id: String) -> void:
     harvest_target = null
     harvest_timer = 0.0
     active_map_id = target_map_id
+    hud.set_region_name(world_map_manager.map_name(active_map_id))
     quest_manager.on_region_entered(active_map_id)
     _refresh_quest_label()
     $Map.set_active_map(active_map_id)
