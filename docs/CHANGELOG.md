@@ -328,3 +328,7 @@
 - `scripts/enemy/enemy.gd`: added a short attack wind-up, visible warning ring, range re-check before damage, interruption on hit, hit flash, and knockback response.
 - Independently implemented in GDScript from general combat-design principles; no unlicensed upstream code was copied.
 - Godot runtime validation and Android export are still pending.
+
+## 2026-11-05 — Hero attack feedback
+- Added a directional slash arc for hero auto-attacks and a longer visual burst for the captain skill in `scripts/character/hero.gd`.
+- This is a procedural combat effect over static original PNG art, not frame-based character animation. Runtime validation/export remain pending.
