@@ -1,5 +1,26 @@
 # 开发变更日志
 
+## 2026-11-05 — 摇杆交互规范纠正：全屏浮动式（CI 待复验）
+
+- 用户明确确认：摇杆必须像对标游戏一样全屏浮动，今后不得改回固定位置/固定触控区域。
+- 空闲提示位置仍按参考截图约 45% 屏宽、70% 屏高；该位置只是视觉待机提示，不是触控限制。
+- 任意未被 UI 控件消费的屏幕触点均可启动摇杆；底盘跟随按下位置，靠近屏幕边缘时向内限位；摇杆帽按相对拖动方向/力度输出向量；松手或窗口失焦时归零并回到空闲提示位置。
+- 修改：`scripts/ui/virtual_joystick.gd`、`tests/test_virtual_joystick.gd`、`.github/workflows/godot-cloud-validation.yml`、`docs/PROJECT_STATUS.md`。
+- 新增 8 项回归断言，覆盖空闲提示位置、全屏可触控、越界排除、底盘跟随、方向限幅、松手归零和边缘限位；Godot 4.7.2 CI 待复验。
+- 不改变 Main 移动向量消费逻辑、战斗、存档或其他玩法规则。
+
+
+## 2026-11-05 — 对标竖屏 RPG HUD 布局第一阶段（验证中）
+
+- 分支：`feat/reference-hud-layout-2026-11-05`，基于 main `2903d0fc83bf567bf3428ae0f0b2c99991ab23d5`。
+- 修改文件：`scripts/ui/virtual_joystick.gd`、`scripts/ui/hud.gd`、`tests/test_virtual_joystick.gd`、`.github/workflows/godot-cloud-validation.yml`、项目状态与本日志。
+- 变更：摇杆改为固定半透明圆形底盘，默认视口位置约 (45%, 70%)；增加底盘附近触控起点判定、拖动限幅、松手/失焦归零。HUD 调整为顶部资源条、左侧英雄/成长入口、右侧世界操作入口和任务信息区，并统一按钮配色/圆角。
+- 兼容性：保留 Hud 的既有信号名称与 Main 连接方式；不改战斗、角色移动向量消费、任务、传送、资源、存档和数据规则。
+- 测试：新增 5 项虚拟摇杆中心位置、触控边界、方向限幅和归零测试，接入 Godot 4.7.2 CI。
+- 验证结果：等待本分支 CI；Android 真机与多分辨率验收未完成。
+- 下一步：根据 CI 结果修复脚本/场景问题；随后补齐顶部角色信息与右侧任务/活动视觉层，并通过 APK 真机检查触控区、系统安全区和按钮遮挡。
+
+
 ## 2026-11-04 — 主城建筑实体入口（PR #41 已合并）
 
 - PR：[#41](https://github.com/oneyi53/game/pull/41)，分支：`feat/town-building-entrances-2026-11-04`。
