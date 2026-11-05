@@ -12,19 +12,19 @@ signal building_pressed(building_id: String)
 
 const DECORATIONS := {
     "town": {
-        "trees": [Vector2(160, 170), Vector2(1040, 170), Vector2(160, 740), Vector2(1040, 740)],
+        "trees": [Vector2(160, 170), Vector2(1040, 170), Vector2(160, 740), Vector2(1040, 740), Vector2(340, 180), Vector2(860, 180), Vector2(1240, 420), Vector2(220, 520), Vector2(1180, 900), Vector2(420, 1120), Vector2(900, 1180), Vector2(1360, 1120)],
         "landmarks": [{"kind": "fountain", "position": Vector2(600, 450), "radius": 34.0}]
     },
     "moss_crown": {
-        "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820)],
+        "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820), Vector2(1280, 180), Vector2(1380, 480), Vector2(1260, 980), Vector2(1040, 1220), Vector2(760, 1160), Vector2(360, 1180), Vector2(120, 1080), Vector2(80, 300), Vector2(480, 260), Vector2(680, 940)],
         "landmarks": [{"kind": "tower", "position": Vector2(260, 300), "radius": 30.0}, {"kind": "fountain", "position": Vector2(920, 500), "radius": 28.0}]
     },
     "fallen_leaf": {
-        "trees": [Vector2(110, 130), Vector2(310, 110), Vector2(1080, 150), Vector2(980, 760), Vector2(140, 760), Vector2(420, 800), Vector2(180, 500), Vector2(1040, 560)],
+        "trees": [Vector2(110, 130), Vector2(310, 110), Vector2(1080, 150), Vector2(980, 760), Vector2(140, 760), Vector2(420, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(1320, 240), Vector2(1320, 1040), Vector2(1080, 1220), Vector2(720, 1180), Vector2(360, 1120), Vector2(80, 980), Vector2(80, 320), Vector2(520, 200), Vector2(820, 360), Vector2(1180, 520)],
         "landmarks": [{"kind": "tree_cluster", "position": Vector2(620, 280), "radius": 36.0}]
     },
     "morning_dew": {
-        "trees": [Vector2(100, 160), Vector2(300, 140), Vector2(1080, 140), Vector2(980, 220), Vector2(140, 760), Vector2(420, 790), Vector2(1080, 740), Vector2(900, 800)],
+        "trees": [Vector2(100, 160), Vector2(300, 140), Vector2(1080, 140), Vector2(980, 220), Vector2(140, 760), Vector2(420, 790), Vector2(1080, 740), Vector2(900, 800), Vector2(1320, 300), Vector2(1260, 920), Vector2(1020, 1200), Vector2(660, 1180), Vector2(300, 1120), Vector2(80, 960), Vector2(80, 360), Vector2(520, 240), Vector2(820, 420), Vector2(1180, 560)],
         "landmarks": [{"kind": "tree_cluster", "position": Vector2(600, 450), "radius": 36.0}]
     }
 }
