@@ -66,6 +66,16 @@ func _style_label(label: Label, font_size: int, font_color: Color) -> void:
     label.add_theme_color_override("font_shadow_color", Color(0.03, 0.06, 0.04, 0.95))
     label.add_theme_constant_override("shadow_offset_x", 1)
     label.add_theme_constant_override("shadow_offset_y", 2)
+    var plate := StyleBoxFlat.new()
+    plate.bg_color = Color(0.035, 0.075, 0.055, 0.78)
+    plate.border_color = Color(0.72, 0.66, 0.43, 0.48)
+    plate.set_border_width_all(1)
+    plate.set_corner_radius_all(12)
+    plate.content_margin_left = 10.0
+    plate.content_margin_right = 10.0
+    plate.content_margin_top = 5.0
+    plate.content_margin_bottom = 5.0
+    label.add_theme_stylebox_override("normal", plate)
 
 
 func _style_button(button: Button, fill: Color, font_size: int) -> void:
