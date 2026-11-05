@@ -139,7 +139,6 @@ func _draw_exploration_paths() -> void:
         draw_polyline(projected, Color(0.82, 0.73, 0.5, 0.52), 2.0, true)
 
 func _draw() -> void:
-    var manager = WorldMaps.new()
     var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     var town: bool = active_map_id == WorldMaps.TOWN
     _draw_fullscreen_ground(bounds, town)
