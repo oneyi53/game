@@ -105,6 +105,39 @@ func _draw_ground_tile(x: int, y: int, color: Color) -> void:
 func _draw_dot(world_position: Vector2, radius: float, color: Color) -> void:
     draw_circle(WorldProjectionScript.world_to_screen(world_position), radius, color)
 
+func _draw_exploration_paths() -> void:
+    # Readable route network: outer earth shoulder plus a lighter worn trail.
+    # Coordinates remain map-local so camera, collision and save positions agree.
+    var routes: Array = []
+    if active_map_id == WorldMaps.MOSS_CROWN:
+        routes = [
+            [Vector2(600, 620), Vector2(520, 560), Vector2(430, 500), Vector2(350, 420), Vector2(300, 320)],
+            [Vector2(430, 500), Vector2(520, 420), Vector2(610, 350), Vector2(700, 300), Vector2(780, 250)],
+            [Vector2(520, 560), Vector2(640, 610), Vector2(760, 600), Vector2(880, 560), Vector2(980, 500)],
+            [Vector2(640, 610), Vector2(700, 700), Vector2(800, 760), Vector2(900, 790)]
+        ]
+    elif active_map_id == WorldMaps.FALLEN_LEAF:
+        routes = [
+            [Vector2(600, 650), Vector2(500, 570), Vector2(420, 480), Vector2(360, 380), Vector2(300, 260)],
+            [Vector2(420, 480), Vector2(540, 420), Vector2(660, 360), Vector2(760, 300)],
+            [Vector2(540, 420), Vector2(660, 500), Vector2(780, 570), Vector2(940, 620)]
+        ]
+    elif active_map_id == WorldMaps.MORNING_DEW:
+        routes = [
+            [Vector2(600, 650), Vector2(500, 570), Vector2(420, 480), Vector2(360, 380), Vector2(260, 260)],
+            [Vector2(420, 480), Vector2(560, 420), Vector2(700, 360), Vector2(860, 280)],
+            [Vector2(560, 420), Vector2(660, 520), Vector2(760, 600), Vector2(900, 650), Vector2(1040, 660)]
+        ]
+    else:
+        return
+    for route in routes:
+        var projected := PackedVector2Array()
+        for point in route:
+            projected.append(WorldProjectionScript.world_to_screen(point))
+        draw_polyline(projected, Color(0.28, 0.24, 0.16, 0.72), 27.0, true)
+        draw_polyline(projected, Color(0.72, 0.62, 0.39, 0.88), 19.0, true)
+        draw_polyline(projected, Color(0.82, 0.73, 0.5, 0.52), 2.0, true)
+
 func _draw() -> void:
     var manager = WorldMaps.new()
     var bounds: Rect2 = manager.map_bounds(active_map_id)
@@ -124,6 +157,7 @@ func _draw() -> void:
             else:
                 color = Color(0.45, 0.76, 0.36) if odd else Color(0.5, 0.8, 0.4)
             _draw_ground_tile(xi, yi, color)
+    _draw_exploration_paths()
     var outline := _projected_rect(bounds)
     outline.append(outline[0])
     draw_polyline(outline, Color(0.2, 0.35, 0.2), 5.0, true)
