@@ -26,12 +26,12 @@ func _initialize() -> void:
 func _test_map_local_clamp_contract() -> void:
     var clamped: Vector2 = WorldMaps.clamp_position(Vector2(-200.0, 1400.0))
     assert(is_equal_approx(clamped.x, 32.0))
-    assert(is_equal_approx(clamped.y, 868.0))
+    assert(is_equal_approx(clamped.y, 1368.0))
     var maps = WorldMaps.new()
     for map_id in [WorldMaps.TOWN, WorldMaps.MOSS_CROWN, WorldMaps.FALLEN_LEAF, WorldMaps.MORNING_DEW]:
         var spawn: Vector2 = maps.spawn_position(map_id)
-        assert(spawn.x >= 32.0 and spawn.x <= 1168.0)
-        assert(spawn.y >= 32.0 and spawn.y <= 868.0)
+        assert(spawn.x >= 32.0 and spawn.x <= 1568.0)
+        assert(spawn.y >= 32.0 and spawn.y <= 1368.0)
 
 
 func _test_map_unlock_gates() -> void:
@@ -56,8 +56,8 @@ func _test_projection_bounds_and_depth() -> void:
     var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     assert(is_equal_approx(bounds.position.x, 0.0))
     assert(is_equal_approx(bounds.position.y, 0.0))
-    assert(is_equal_approx(bounds.size.x, 1050.0))
-    assert(is_equal_approx(bounds.size.y, 525.0))
+    assert(is_equal_approx(bounds.size.x, 1500.0))
+    assert(is_equal_approx(bounds.size.y, 750.0))
     assert(WorldProjectionScript.screen_depth(Vector2(500.0, 500.0)) > WorldProjectionScript.screen_depth(Vector2(200.0, 200.0)))
 
 
