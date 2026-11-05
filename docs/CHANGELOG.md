@@ -340,3 +340,9 @@
 ## 2026-11-05 — Align map bounds and encounter coordinates
 - Expanded logical map bounds and isometric projection from 1200×900 to 1600×1400 so late-region enemy spawn coordinates are reachable.
 - Extended valley/grove trails into the newly reachable space. Runtime and save migration regression checks remain pending.
+
+
+## 2026-11-05 — Resource gathering vertical slice
+- Added six persistent wood-gathering nodes across the three outdoor regions, with proximity interaction, harvest feedback, wood-cap handling and save persistence.
+- Added a reusable procedural ResourceNode script; depleted nodes remain depleted across map changes and restarts.
+- Runtime/parser validation and APK export remain pending.
