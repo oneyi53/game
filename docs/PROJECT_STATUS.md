@@ -1,5 +1,7 @@
 # 最新进展（2026-11-05：探索度 API 首轮实现）
 
+- CI 调度说明：连续提交期间前几次 push workflow 被 concurrency 规则取消；当前代码已停止连续写入，等待最新提交触发完整验证。此前取消不代表测试失败。
+
 - 分支：`feat/exploration-progression-foundation-2026-11-05`。
 - `scripts/core/exploration_fog.gd`：新增探索度统计 API，返回适用状态、已探索有效格数、总格数、比例和整数百分比；按地图尺寸动态计算网格分母；过滤非法格式、负数、越界格和非规范数字键，重复格只计一次；主城不适用。
 - `tests/test_exploration_fog.gd`：新增 7 项回归，覆盖空地图、默认 360 格、重复格、非法/越界格、边缘格、自定义地图尺寸、非法尺寸。
