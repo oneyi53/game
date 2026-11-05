@@ -140,36 +140,12 @@ func _draw_exploration_paths() -> void:
 
 func _draw() -> void:
     var manager = WorldMaps.new()
-    var bounds: Rect2 = manager.map_bounds(active_map_id)
+    var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     var town: bool = active_map_id == WorldMaps.TOWN
-    var background: Color = Color(0.22, 0.38, 0.25) if town else Color(0.34, 0.62, 0.34)
-    draw_rect(Rect2(-1000.0, -1000.0, 3400.0, 2700.0), background)
-    for xi in range(0, int(bounds.size.x), TILE):
-        for yi in range(0, int(bounds.size.y), TILE):
-            var color: Color
-            if town:
-                color = Color(0.62, 0.53, 0.38)
-            elif active_map_id == WorldMaps.FALLEN_LEAF:
-                color = Color(0.49, 0.51, 0.27)
-            elif active_map_id == WorldMaps.MORNING_DEW:
-                color = Color(0.31, 0.61, 0.48)
-            else:
-                color = Color(0.37, 0.67, 0.31)
-            # Stable low-contrast variation breaks the old chessboard look
-            # while keeping every tile deterministic across devices/saves.
-            var cell_x: int = int(xi / TILE)
-            var cell_y: int = int(yi / TILE)
-            var noise_value: int = abs(cell_x * 17 + cell_y * 31 + cell_x * cell_y * 7) % 9
-            color = color.lightened(float(noise_value) * 0.009)
-            _draw_ground_tile(xi, yi, color)
+    _draw_fullscreen_ground(bounds, town)
     _draw_exploration_paths()
-    var outline := _projected_rect(bounds)
-    outline.append(outline[0])
-    draw_polyline(outline, Color(0.2, 0.35, 0.2), 5.0, true)
     var font = ThemeDB.fallback_font
     if town:
-        for point in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
-            _draw_ground_tile(int(point.x), int(point.y), Color(0.82, 0.75, 0.61))
         _draw_town_buildings()
         var exit_screen: Vector2 = WorldProjectionScript.world_to_screen(Vector2(1460.0, 700.0))
         draw_circle(exit_screen, 38.0, Color(0.08, 0.16, 0.1, 0.75))
@@ -186,6 +162,44 @@ func _draw() -> void:
     else:
         for point in [Vector2(260, 480), Vector2(500, 620), Vector2(900, 480), Vector2(1100, 700)]:
             _draw_dot(point, 4.0, Color(1.0, 0.85, 0.2))
+
+
+func _draw_fullscreen_ground(bounds: Rect2, town: bool) -> void:
+    var base: Color
+    var detail: Color
+    if town:
+        base = Color(0.48, 0.39, 0.29)
+        detail = Color(0.72, 0.61, 0.43, 0.24)
+    elif active_map_id == WorldMaps.FALLEN_LEAF:
+        base = Color(0.35, 0.39, 0.22)
+        detail = Color(0.73, 0.61, 0.31, 0.2)
+    elif active_map_id == WorldMaps.MORNING_DEW:
+        base = Color(0.22, 0.48, 0.39)
+        detail = Color(0.64, 0.84, 0.68, 0.2)
+    else:
+        base = Color(0.27, 0.49, 0.24)
+        detail = Color(0.7, 0.83, 0.43, 0.2)
+    # The ground is a portrait rectangle, not a small isometric diamond.
+    # It continues beyond the logical walkable bounds so no empty wedges
+    # appear around the screen while the camera tracks the captain.
+    draw_rect(Rect2(bounds.position - Vector2(420.0, 180.0), bounds.size + Vector2(840.0, 360.0)), base)
+    var cell_size: int = 64
+    var columns: int = int(ceil(bounds.size.x / float(cell_size))) + 1
+    var rows: int = int(ceil(bounds.size.y / float(cell_size))) + 1
+    for cell_x in range(-2, columns + 2):
+        for cell_y in range(-2, rows + 2):
+            var seed_value: int = abs(cell_x * 37 + cell_y * 61 + cell_x * cell_y * 13) % 17
+            var rect := Rect2(
+                bounds.position.x + float(cell_x * cell_size),
+                bounds.position.y + float(cell_y * cell_size),
+                float(cell_size),
+                float(cell_size)
+            )
+            if seed_value % 3 == 0:
+                draw_rect(rect, detail)
+            var tuft := rect.position + Vector2(10.0 + float(seed_value % 23), 12.0 + float((seed_value * 7) % 31))
+            draw_line(tuft, tuft + Vector2(3.0, -5.0), detail, 2.0)
+            draw_line(tuft + Vector2(4.0, 2.0), tuft + Vector2(8.0, -3.0), detail, 2.0)
 
 func _draw_town_buildings() -> void:
     var font = ThemeDB.fallback_font
