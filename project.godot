@@ -11,7 +11,7 @@ run/main_scene="res://scenes/main.tscn"
 [display]
 window/size/viewport_width=720
 window/size/viewport_height=1280
-window/handheld/orientation="portrait"
+window/handheld/orientation=1
 
 [rendering]
 renderer/rendering_method="gl_compatibility"
