@@ -16,6 +16,8 @@ var entry_order: Array = []
 var fragment_drop_chance: float = 0.0
 var recruited: Dictionary = {}
 var fragments: int = 0
+var fragment_pity_kills: int = 0
+const FRAGMENT_PITY_KILL_LIMIT: int = 10
 
 func load_all(hero_ids: Array) -> bool:
     var path: String = "res://data/recruitment.json"
@@ -71,6 +73,7 @@ func load_all(hero_ids: Array) -> bool:
 func load_saved(saved, had_save: bool, hero_ids: Array) -> void:
     recruited.clear()
     fragments = 0
+    fragment_pity_kills = 0
     var has_field: bool = saved is Dictionary and saved.has("recruited")
     if had_save and not has_field:
         # Old save from the full-roster prototype: keep everything.
@@ -80,6 +83,7 @@ func load_saved(saved, had_save: bool, hero_ids: Array) -> void:
     if saved is Dictionary:
         if saved.has("fragments"):
             fragments = maxi(0, int(saved["fragments"]))
+        fragment_pity_kills = clampi(int(saved.get("fragment_pity_kills", 0)), 0, FRAGMENT_PITY_KILL_LIMIT - 1)
         var saved_recruited = saved.get("recruited", {})
         if saved_recruited is Dictionary:
             for hero_id in hero_ids:
@@ -97,7 +101,7 @@ func _is_start_type(hero_id: String) -> bool:
     return entry != null and str(entry["unlock_type"]) == "start"
 
 func save_data() -> Dictionary:
-    return {"recruited": recruited.duplicate(), "fragments": fragments}
+    return {"recruited": recruited.duplicate(), "fragments": fragments, "fragment_pity_kills": fragment_pity_kills}
 
 func entry(hero_id: String):
     return entries.get(hero_id, null)
@@ -121,6 +125,18 @@ func recruit(hero_id: String) -> bool:
 func add_fragment() -> int:
     fragments += 1
     return fragments
+
+func should_drop_fragment() -> bool:
+    if is_recruited("assassin"):
+        fragment_pity_kills = 0
+        return false
+    fragment_pity_kills += 1
+    var guaranteed: bool = fragment_pity_kills >= FRAGMENT_PITY_KILL_LIMIT
+    var dropped: bool = guaranteed or randf() < fragment_drop_chance
+    if dropped:
+        fragment_pity_kills = 0
+    return dropped
+
 
 func synthesize_with_fragments(hero_id: String) -> bool:
     if not entries.has(hero_id) or is_recruited(hero_id):
