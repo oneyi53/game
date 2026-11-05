@@ -20,7 +20,9 @@ func _initialize() -> void:
     _test_enemy_map_assignment()
     _test_projection_bounds_and_depth()
     _test_camera_limits_match_projected_bounds()
-    print("World coordinate tests: 14 passed")
+    _test_new_game_starts_in_town()
+    _test_project_orientation_is_portrait()
+    print("World coordinate tests: 16 passed")
     quit()
 
 
@@ -40,11 +42,12 @@ func _test_map_unlock_gates() -> void:
     var maps = WorldMaps.new()
     assert(maps.is_unlocked(WorldMaps.TOWN, false, false, false))
     assert(maps.is_unlocked(WorldMaps.MOSS_CROWN, false, false, false))
-    assert(not maps.is_unlocked(WorldMaps.FALLEN_LEAF, false, false, false))
-    assert(not maps.is_unlocked(WorldMaps.FALLEN_LEAF, true, false, false))
-    assert(maps.is_unlocked(WorldMaps.FALLEN_LEAF, false, true, false))
-    assert(not maps.is_unlocked(WorldMaps.MORNING_DEW, true, true, false))
-    assert(maps.is_unlocked(WorldMaps.MORNING_DEW, true, true, true))
+    assert(not maps.is_unlocked(WorldMaps.FALLEN_LEAF, false, true, false, false))
+    assert(not maps.is_unlocked(WorldMaps.FALLEN_LEAF, true, true, false, false))
+    assert(maps.is_unlocked(WorldMaps.FALLEN_LEAF, false, true, false, true))
+    assert(not maps.is_unlocked(WorldMaps.MORNING_DEW, true, true, false, true))
+    assert(not maps.is_unlocked(WorldMaps.MORNING_DEW, true, true, true, false))
+    assert(maps.is_unlocked(WorldMaps.MORNING_DEW, true, true, true, true))
 
 
 func _test_enemy_map_assignment() -> void:
@@ -169,10 +172,23 @@ func _test_locked_new_format_map_falls_back_without_rescaling() -> void:
 func _test_missing_position_uses_spawn() -> void:
     var input := {"boss_defeated": false}
     var result: Dictionary = Migration.migrate_save(input)
-    assert(result["map_id"] == Migration.MOSS_CROWN)
+    assert(result["map_id"] == Migration.TOWN)
     var pos: Dictionary = result["data"]["player_position"]
     assert(is_equal_approx(float(pos["x"]), 600.0))
-    assert(is_equal_approx(float(pos["y"]), 620.0))
+    assert(is_equal_approx(float(pos["y"]), 610.0))
+
+
+
+func _test_new_game_starts_in_town() -> void:
+    var result: Dictionary = Migration.migrate_save({"player_position": null})
+    assert(result["map_id"] == Migration.TOWN)
+    var pos: Dictionary = result["data"]["player_position"]
+    assert(is_equal_approx(float(pos["x"]), 600.0))
+    assert(is_equal_approx(float(pos["y"]), 610.0))
+
+
+func _test_project_orientation_is_portrait() -> void:
+    assert(int(ProjectSettings.get_setting("display/window/handheld/orientation", -1)) == 1)
 
 func _test_camera_limits_match_projected_bounds() -> void:
     var instance = MainScene.instantiate()
