@@ -332,3 +332,7 @@
 ## 2026-11-05 — Hero attack feedback
 - Added a directional slash arc for hero auto-attacks and a longer visual burst for the captain skill in `scripts/character/hero.gd`.
 - This is a procedural combat effect over static original PNG art, not frame-based character animation. Runtime validation/export remain pending.
+
+## 2026-11-05 — Outdoor exploration routes
+- Added branching, layered trail rendering to the three outdoor maps in `scripts/core/map.gd`. Routes use map-local coordinates and existing isometric projection; gameplay bounds and save coordinates are unchanged.
+- Runtime validation pending.
