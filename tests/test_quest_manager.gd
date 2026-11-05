@@ -17,6 +17,7 @@ func _initialize() -> void:
     _test_saved_completed_quest_does_not_emit_again()
     _test_reload_preserves_progress()
     _test_config_validation_and_dependency_cycles()
+    _test_harvest_explore_and_delivery_events()
     print("Quest manager tests completed")
     quit()
 
@@ -188,6 +189,12 @@ func _test_config_validation_and_dependency_cycles() -> void:
     invalid["count"] = 1.5
     _assert_invalid_config([invalid], "fractional count")
     invalid = q.duplicate(true)
+    invalid["count"] = 0
+    _assert_invalid_config([invalid], "zero count")
+    invalid = q.duplicate(true)
+    invalid["count"] = -1
+    _assert_invalid_config([invalid], "negative count")
+    invalid = q.duplicate(true)
     invalid["reward_gold"] = true
     _assert_invalid_config([invalid], "boolean reward")
     invalid = q.duplicate(true)
@@ -196,6 +203,9 @@ func _test_config_validation_and_dependency_cycles() -> void:
     invalid = q.duplicate(true)
     invalid["reward_gold"] = 1.5
     _assert_invalid_config([invalid], "fractional reward")
+    invalid = q.duplicate(true)
+    invalid["reward_gold"] = -1
+    _assert_invalid_config([invalid], "negative reward")
     invalid = q.duplicate(true)
     invalid["id"] = ""
     _assert_invalid_config([invalid], "empty ID")
@@ -222,3 +232,32 @@ func _test_config_validation_and_dependency_cycles() -> void:
     assert(manager.is_completed("first"))
     assert(manager.is_completed("second"), "dependent quest should unlock after prerequisite")
     DirAccess.remove_absolute(ProjectSettings.globalize_path(valid_path))
+
+func _test_harvest_explore_and_delivery_events() -> void:
+    var harvest := _minimal_quest("harvest_q")
+    harvest["objective_type"] = "harvest"
+    harvest["target_id"] = "wood_node"
+    var explore := _minimal_quest("explore_q")
+    explore["objective_type"] = "explore"
+    explore["target_id"] = "region_b"
+    var deliver := _minimal_quest("deliver_q")
+    deliver["objective_type"] = "deliver"
+    deliver["target_id"] = "npc_a"
+    deliver["item_id"] = "herb"
+    var path := _write_temp_quests([harvest, explore, deliver])
+    var manager = QuestManagerScript.new()
+    assert(manager.load_quests(path), manager.error_message)
+    manager.on_resource_harvested("wrong_node")
+    manager.on_region_entered("wrong_region")
+    manager.on_item_delivered("wrong_npc", "herb")
+    manager.on_item_delivered("npc_a", "wrong_item")
+    assert(int(manager.counts["harvest_q"]) == 0)
+    assert(int(manager.counts["explore_q"]) == 0)
+    assert(int(manager.counts["deliver_q"]) == 0)
+    manager.on_resource_harvested("wood_node")
+    manager.on_region_entered("region_b")
+    manager.on_item_delivered("npc_a", "herb")
+    assert(manager.is_completed("harvest_q"))
+    assert(manager.is_completed("explore_q"))
+    assert(manager.is_completed("deliver_q"))
+    DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
