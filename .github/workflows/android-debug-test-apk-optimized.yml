@@ -88,11 +88,11 @@ jobs:
           GODOT_DIR="$GITHUB_WORKSPACE/.godot-toolchain"
           TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
           mkdir -p "$GODOT_DIR" "$TEMPLATE_DIR"
-          GODOT_BIN="$(find "$GODOT_DIR" -maxdepth 2 -type f -name 'Godot_v${GODOT_VERSION}*linux.x86_64' -print -quit || true)"
+          GODOT_BIN="$(find "$GODOT_DIR" -maxdepth 4 -type f -name "Godot_v${GODOT_VERSION}*linux.x86_64" -print -quit || true)"
           if [ -z "$GODOT_BIN" ]; then
             curl -fsSL --retry 3 --retry-delay 2 -o "$RUNNER_TEMP/godot.zip" "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
             unzip -oq "$RUNNER_TEMP/godot.zip" -d "$GODOT_DIR"
-            GODOT_BIN="$(find "$GODOT_DIR" -maxdepth 2 -type f -name 'Godot_v${GODOT_VERSION}*linux.x86_64' -print -quit)"
+            GODOT_BIN="$(find "$GODOT_DIR" -maxdepth 4 -type f -name "Godot_v${GODOT_VERSION}*linux.x86_64" -print -quit)"
           fi
           chmod +x "$GODOT_BIN"
           if [ ! -s "$TEMPLATE_DIR/android_source.zip" ]; then
