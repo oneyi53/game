@@ -50,8 +50,25 @@ func load_quests() -> bool:
         if not entry.has("reward_gold") or int(entry["reward_gold"]) < 0:
             error_message = "quests.json 缺少非负整数 reward_gold，id：" + str(entry["id"])
             return false
-        if str(entry["objective_type"]) in ["kill", "chest"] and (not entry.has("count") or int(entry["count"]) <= 0):
+        if str(entry["objective_type"]) in ["kill", "chest", "harvest", "explore", "deliver"] and (not entry.has("count") or int(entry["count"]) <= 0):
             error_message = "quests.json 计数任务缺少正整数 count，id：" + str(entry["id"])
+            return false
+    var supported_objectives: Array[String] = ["kill", "boss", "chest", "harvest", "explore", "deliver"]
+    for entry in data:
+        var objective_type: String = str(entry["objective_type"])
+        if objective_type not in supported_objectives:
+            error_message = "quests.json 未知 objective_type：" + objective_type
+            return false
+        if objective_type in ["harvest", "explore", "deliver"] and str(entry.get("target_id", "")) == "":
+            error_message = "quests.json 新目标类型缺少 target_id，id：" + str(entry["id"])
+            return false
+        if objective_type == "deliver" and str(entry.get("item_id", "")) == "":
+            error_message = "交付任务缺少 item_id，id：" + str(entry["id"])
+            return false
+    for entry in data:
+        var prerequisite: String = str(entry.get("prerequisite", ""))
+        if prerequisite != "" and not seen.has(prerequisite):
+            error_message = "quests.json 前置任务不存在：" + prerequisite
             return false
     quests = data
     for quest in quests:
@@ -82,7 +99,7 @@ func is_completed(quest_id: String) -> bool:
 func on_enemy_killed(enemy_id: String, is_boss: bool) -> void:
     for quest in quests:
         var quest_id: String = str(quest["id"])
-        if completed[quest_id]:
+        if completed[quest_id] or not _is_available(quest):
             continue
         var objective: String = str(quest["objective_type"])
         # A boss quest with a target_id only completes on that boss,
@@ -98,12 +115,50 @@ func on_enemy_killed(enemy_id: String, is_boss: bool) -> void:
 func on_chest_opened() -> void:
     for quest in quests:
         var quest_id: String = str(quest["id"])
-        if completed[quest_id]:
+        if completed[quest_id] or not _is_available(quest):
             continue
         if str(quest["objective_type"]) == "chest":
             counts[quest_id] = int(counts[quest_id]) + 1
             if int(counts[quest_id]) >= int(quest["count"]):
                 _complete(quest)
+
+func on_resource_harvested(resource_id: String) -> void:
+    _advance_matching_objective("harvest", resource_id)
+
+func on_region_entered(region_id: String) -> void:
+    _advance_matching_objective("explore", region_id)
+
+func on_item_delivered(npc_id: String, item_id: String) -> void:
+    for quest in quests:
+        var quest_id: String = str(quest["id"])
+        if completed[quest_id] or not _is_available(quest):
+            continue
+        if str(quest["objective_type"]) != "deliver":
+            continue
+        if str(quest.get("target_id", "")) != npc_id or str(quest.get("item_id", "")) != item_id:
+            continue
+        _increment_objective(quest)
+
+func _advance_matching_objective(objective_type: String, target_id: String) -> void:
+    for quest in quests:
+        var quest_id: String = str(quest["id"])
+        if completed[quest_id] or not _is_available(quest):
+            continue
+        if str(quest["objective_type"]) != objective_type:
+            continue
+        if str(quest.get("target_id", "")) != target_id:
+            continue
+        _increment_objective(quest)
+
+func _increment_objective(quest: Dictionary) -> void:
+    var quest_id: String = str(quest["id"])
+    counts[quest_id] = int(counts[quest_id]) + 1
+    if int(counts[quest_id]) >= int(quest["count"]):
+        _complete(quest)
+
+func _is_available(quest: Dictionary) -> bool:
+    var prerequisite: String = str(quest.get("prerequisite", ""))
+    return prerequisite == "" or bool(completed.get(prerequisite, false))
 
 func _complete(quest: Dictionary) -> void:
     var quest_id: String = str(quest["id"])
