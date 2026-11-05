@@ -67,7 +67,7 @@ var formation_manager: FormationManager = null
 var level_manager: LevelManager = null
 var pending_offline: Dictionary = {}
 var world_map_manager: WorldMapManager = WorldMapManagerScript.new()
-var active_map_id: String = WorldMapManagerScript.MOSS_CROWN
+var active_map_id: String = WorldMapManagerScript.TOWN
 var map_positions: Dictionary = {}
 var world_state_migrated: bool = false
 var campfire_node: Node2D = null
@@ -258,9 +258,9 @@ func _ready() -> void:
     var migration_result: Dictionary = WorldSaveMigrationScript.migrate_save(save_data)
     save_data = migration_result["data"]
     world_state_migrated = bool(migration_result.get("migrated", false))
-    active_map_id = str(migration_result.get("map_id", WorldMapManagerScript.MOSS_CROWN))
+    active_map_id = str(migration_result.get("map_id", WorldMapManagerScript.TOWN))
     if not world_map_manager.is_unlocked(active_map_id, boss_defeated, elite_defeated, valley_quest_done):
-        active_map_id = WorldMapManagerScript.MOSS_CROWN
+        active_map_id = WorldMapManagerScript.TOWN
     var saved_map_positions = save_data.get("map_positions", {})
     if saved_map_positions is Dictionary:
         for saved_map_id in saved_map_positions:
@@ -633,6 +633,10 @@ func _on_map_pressed() -> void:
     popup.add_item("苔冠空地", 1)
     popup.add_item("落叶幽谷", 2)
     popup.add_item("朝露林地", 3)
+    var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+    popup.set_item_disabled(1, not world_map_manager.is_unlocked(WorldMapManagerScript.MOSS_CROWN, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done))
+    popup.set_item_disabled(2, not world_map_manager.is_unlocked(WorldMapManagerScript.FALLEN_LEAF, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done))
+    popup.set_item_disabled(3, not world_map_manager.is_unlocked(WorldMapManagerScript.MORNING_DEW, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done))
     popup.id_pressed.connect(func(map_index: int):
         _on_map_selected(map_index)
         popup.queue_free()
@@ -648,8 +652,9 @@ func _on_map_selected(map_index: int) -> void:
         1: target_map_id = WorldMapManagerScript.MOSS_CROWN
         2: target_map_id = WorldMapManagerScript.FALLEN_LEAF
         3: target_map_id = WorldMapManagerScript.MORNING_DEW
-    if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done):
-        hud.show_message("该地图尚未解锁，先完成对应首领与任务")
+    var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+    if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
+        hud.show_message("该地图尚未解锁，先完成当前区域主线任务")
         return
     _switch_map(target_map_id)
 
@@ -679,8 +684,9 @@ func _apply_active_map_visibility() -> void:
 func _switch_map(target_map_id: String) -> void:
     if target_map_id == active_map_id or not world_map_manager.is_known_map(target_map_id) or captain == null:
         return
-    if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done):
-        hud.show_message("该地图尚未解锁")
+    var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+    if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
+        hud.show_message("该地图尚未解锁：请先完成当前区域任务")
         return
     map_positions[active_map_id] = captain.global_position
     for hero in heroes:
@@ -1336,6 +1342,8 @@ func _on_recruit_synthesize(hero_id: String) -> void:
     _save_game()
 
 func _on_quest_completed(quest_id: String, quest_name: String, complete_line: String, reward_gold: int) -> void:
+    if quest_id == "side_valley_puppet":
+        valley_quest_done = elite_defeated
     _refresh_quest_label()
     if reward_gold > 0:
         gold += reward_gold
