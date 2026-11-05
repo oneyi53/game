@@ -1,3 +1,12 @@
+## 2026-11-05 — 采集三态首轮接入（未验证）
+
+- 分支：`feat/reference-grade-world-exploration-2026-11-05`。
+- 修改：`scripts/core/main.gd`、`scripts/ui/hud.gd`。
+- 变更：资源交互加入 1.2 秒采集过程；移动/离开范围/切图中断；HUD 显示采集、采集中、已耗尽和木材满状态；采集完成后才入账、标记耗尽并保存。
+- 存档兼容：沿用既有 `harvested_resources` 字段，不新增存档字段。
+- 验证：静态检查调用链；未运行 Godot、未导出 APK、未进行真机测试。
+- 下一步：Godot 解析与场景运行测试；检查交互按钮优先级、采集中断、满仓、耗尽和重启恢复。
+
 ## 2026-11-05 — M0-M2 里程碑基线与冒烟测试建立
 
 - 分支：`feat/reference-grade-world-exploration-2026-11-05`。
