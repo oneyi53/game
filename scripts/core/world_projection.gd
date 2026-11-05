@@ -1,23 +1,24 @@
 class_name WorldProjection
 extends RefCounted
 
-# Isometric projection is render-only. Never write projected screen
-# positions back into CharacterBody2D.global_position or save data.
-
+# Portrait-oriented isometric projection. Logical world coordinates remain
+# unchanged for movement, combat and saves; only their rendered projection
+# is rotated so the playable land fills a 720x1280 mobile viewport.
 const MAP_WIDTH: float = 1600.0
 const MAP_HEIGHT: float = 1400.0
-const ISO_X_SCALE: float = 0.5
-const ISO_Y_SCALE: float = 0.25
-const HORIZONTAL_OFFSET: float = MAP_HEIGHT * ISO_X_SCALE
+const ISO_X_SCALE: float = 0.25
+const ISO_Y_SCALE: float = 0.5
+const VERTICAL_OFFSET: float = MAP_HEIGHT * ISO_Y_SCALE
 
 static func world_to_screen(world_position: Vector2) -> Vector2:
     return Vector2(
-        (world_position.x - world_position.y) * ISO_X_SCALE + HORIZONTAL_OFFSET,
-        (world_position.x + world_position.y) * ISO_Y_SCALE
+        (world_position.x + world_position.y) * ISO_X_SCALE,
+        (world_position.x - world_position.y) * ISO_Y_SCALE + VERTICAL_OFFSET
     )
 
+# Painter's order follows projected vertical depth in the portrait view.
 static func screen_depth(world_position: Vector2) -> float:
-    return world_position.x + world_position.y
+    return world_position.x - world_position.y
 
 static func world_rect_to_screen_polygon(rect: Rect2) -> PackedVector2Array:
     return PackedVector2Array([
