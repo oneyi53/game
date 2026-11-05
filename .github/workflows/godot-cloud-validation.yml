@@ -113,6 +113,17 @@ jobs:
           fi
           grep -q "Quest manager tests: 10 passed" quest-manager-tests.log
 
+      - name: Run daily activity panel UI tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_daily_activity_panel.gd 2>&1 | tee daily-activity-panel-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' daily-activity-panel-tests.log; then
+            echo "Daily activity panel tests reported errors."
+            exit 1
+          fi
+          grep -q "Daily activity panel tests: 7 passed" daily-activity-panel-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -136,5 +147,5 @@ jobs:
             reserve-hero-equipment-tests.log
             hero-power-tests.log
             town-building-tests.log
-            quest-manager-tests.log
+            quest-manager-tests.log\n            daily-activity-panel-tests.log
           if-no-files-found: ignore

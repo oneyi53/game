@@ -1,3 +1,15 @@
+## 2026-11-05 — 每日活跃度独立展示面板（PR 待验证）
+
+- 分支：`feat/daily-activity-panel-ui`（从当前 main 基线继续）。
+- 修改文件：`scripts/ui/daily_activity_panel.gd`、`scenes/ui/daily_activity_panel.tscn`、`tests/test_daily_activity_panel.gd`、`.github/workflows/godot-cloud-validation.yml`、本文档及 `docs/PROJECT_STATUS.md`。
+- 变更：新增可独立实例化的每日活跃度面板；展示总积分、任务名称/说明/进度/完成状态、阶段奖励锁定/可领取/已领取状态；任务与奖励列表支持滚动、长文本自动换行、空任务提示和重复刷新。
+- 接口：`set_snapshot(Dictionary)` 接收展示快照；`reward_claim_requested(reward_id)` 只发出领奖请求，面板不发放奖励、不计算积分、不保存状态；`close_requested` 发出关闭信号。
+- 数据约定：任务与阶段状态均由外部权威管理器提供；UI 仅读取字段。未接入 Main/HUD，也未定义每日规则、阈值、时区、奖励内容或存档字段。
+- 红点：main 当前没有 `scripts/ui/components/red_dot_indicator.gd`，本面板不依赖未合并组件，也不自行添加红点。
+- 存档兼容：不改存档格式、schema_version 或既有核心管理器。
+- 验证：新增 7 项 headless UI 检查并接入 Godot 4.7.2 CI；本次尚未取得 CI 结果，状态为待验证。
+- 下一步：Godot CI 通过后审查 PR；后续由单独集成任务连接 DailyActivityManager 和领奖原子保存策略。
+
 # 开发变更日志
 
 ## 2026-11-04 — 主城建筑实体入口（PR #41 已合并）
