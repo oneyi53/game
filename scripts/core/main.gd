@@ -884,7 +884,7 @@ func _update_resource_harvest(delta: float) -> void:
     harvest_timer = maxf(0.0, harvest_timer - delta)
     if harvest_timer > 0.0:
         return
-    var amount: int = harvest_target.harvest()
+    var amount: int = int(harvest_target.call("harvest"))
     if amount <= 0:
         hud.show_message("这里已经采集过了")
         harvest_target = null
