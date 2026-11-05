@@ -28,6 +28,7 @@ signal map_pressed
 @onready var teleport_button: Button = $TeleportButton
 @onready var map_button: Button = $MapButton
 @onready var map_name_label: Label = $MapNameLabel
+@onready var exploration_label: Label = $ExplorationLabel
 
 func _ready() -> void:
     skill_button.pressed.connect(_on_skill_button_pressed)
@@ -47,6 +48,8 @@ func _ready() -> void:
     _style_label(message_label, 17, Color(1.0, 0.94, 0.72))
     _style_label(cooldown_label, 16, Color(1.0, 0.9, 0.66))
     _style_label(map_name_label, 21, Color(1.0, 0.96, 0.78))
+    _style_label(exploration_label, 15, Color(0.78, 0.92, 0.72))
+    exploration_label.visible = false
     _style_button(skill_button, Color(0.66, 0.31, 0.12), 22)
     _style_button(interact_button, Color(0.2, 0.43, 0.25), 18)
     for button in [save_button, hero_button, equip_button, camp_button, backpack_button, recruit_button]:
@@ -58,6 +61,12 @@ func _ready() -> void:
 
 func set_region_name(region_name: String) -> void:
     map_name_label.text = region_name
+
+
+func set_exploration_stats(applicable: bool, percent: int = 0) -> void:
+    exploration_label.visible = applicable
+    if applicable:
+        exploration_label.text = "探索度 " + str(clampi(percent, 0, 100)) + "%"
 
 
 func _style_label(label: Label, font_size: int, font_color: Color) -> void:
