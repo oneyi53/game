@@ -113,6 +113,17 @@ jobs:
           fi
           grep -q "Quest manager tests: 14 passed" quest-manager-tests.log
 
+      - name: Run camp manager regression tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_camp_manager.gd 2>&1 | tee camp-manager-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' camp-manager-tests.log; then
+            echo "Camp manager tests reported errors."
+            exit 1
+          fi
+          grep -q "Camp manager tests: 4 passed" camp-manager-tests.log
+
       - name: Run resource node tests
         shell: bash
         run: |
@@ -148,5 +159,6 @@ jobs:
             hero-power-tests.log
             town-building-tests.log
             quest-manager-tests.log
+            camp-manager-tests.log
             resource-node-tests.log
           if-no-files-found: ignore
