@@ -129,5 +129,20 @@
     "target": "幽谷萤虫",
     "target_id": "valley_firefly",
     "type": "side"
+  },
+  {
+    "id": "side_return_to_town",
+    "name": "重返王朝营地",
+    "type": "side",
+    "objective_type": "explore",
+    "target_id": "town",
+    "count": 1,
+    "giver": "营地探索记录",
+    "location": "王朝营地",
+    "objective": "从野外返回王朝营地，确认补给与队伍状态。",
+    "opening_line": "「远行之后，回到营地整理收获吧。」",
+    "in_progress_line": "「营地就在后方，返回后就能完成记录。」",
+    "complete_line": "「欢迎回来，队伍已经准备好下一段旅程了！」",
+    "reward_gold": 20
   }
 ]
