@@ -145,22 +145,13 @@ jobs:
           timeout 20m "$GODOT_BIN" --headless --editor --path . --import 2>&1 | tee import.log
           echo "Import finished: $(date -u +%FT%TZ)"
 
-      - name: Install Android Gradle build template
-        shell: bash
-        timeout-minutes: 12
-        run: |
-          set -Eeuo pipefail
-          echo "Template install started: $(date -u +%FT%TZ)"
-          timeout 10m "$GODOT_BIN" --headless --editor --path . --install-android-build-template 2>&1 | tee android-template.log
-          echo "Template install finished: $(date -u +%FT%TZ)"
-
       - name: Export and verify debug APK
         shell: bash
         timeout-minutes: 50
         run: |
           set -Eeuo pipefail
           echo "APK export started: $(date -u +%FT%TZ)"
-          timeout 45m "$GODOT_BIN" --headless --path . --verbose --export-debug "Android" build/hero-world-test.apk 2>&1 | tee android-export.log
+          timeout 45m "$GODOT_BIN" --headless --path . --verbose --export-debug "Android" build/hero-world-test.apk --install-android-build-template 2>&1 | tee android-export.log
           test -s build/hero-world-test.apk
           file build/hero-world-test.apk
           sha256sum build/hero-world-test.apk
