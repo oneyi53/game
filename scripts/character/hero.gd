@@ -143,7 +143,7 @@ func _physics_process(delta: float) -> void:
         return
     var desired_velocity: Vector2 = Vector2.ZERO
     if is_captain:
-        desired_velocity = move_input.limit_length(1.0) * move_speed
+        desired_velocity = move_input * move_speed
     elif captain_ref != null:
         var target_pos: Vector2 = captain_ref.global_position + formation_offset
         var diff: Vector2 = target_pos - global_position
