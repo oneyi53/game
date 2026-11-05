@@ -259,7 +259,8 @@ func _ready() -> void:
     save_data = migration_result["data"]
     world_state_migrated = bool(migration_result.get("migrated", false))
     active_map_id = str(migration_result.get("map_id", WorldMapManagerScript.TOWN))
-    if not world_map_manager.is_unlocked(active_map_id, boss_defeated, elite_defeated, valley_quest_done):
+    var saved_moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+    if not world_map_manager.is_unlocked(active_map_id, boss_defeated, elite_defeated, valley_quest_done, saved_moss_quest_done):
         active_map_id = WorldMapManagerScript.TOWN
     var saved_map_positions = save_data.get("map_positions", {})
     if saved_map_positions is Dictionary:
@@ -991,9 +992,12 @@ func _refresh_teleport_destinations() -> void:
     _add_teleport_destination("town", "王朝营地", true, "返回安全区")
     _add_teleport_destination("forest_entry", "森林入口", true, "冒险起点")
     _add_teleport_destination("campfire", "营火据点", campfire_node != null, "已激活的营火")
-    _add_teleport_destination("moss_crown", "苔冠空地", true, "已开放")
-    _add_teleport_destination("fallen_leaf", "落叶幽谷", elite_defeated, "击败精英首领后开放")
-    _add_teleport_destination("morning_dew", "朝露林地", valley_quest_done, "完成落叶幽谷主线后开放")
+    var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+    var fallen_leaf_open: bool = world_map_manager.is_unlocked(WorldMapManagerScript.FALLEN_LEAF, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done)
+    var morning_dew_open: bool = world_map_manager.is_unlocked(WorldMapManagerScript.MORNING_DEW, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done)
+    _add_teleport_destination("moss_crown", "苔冠空地", true, "首个探索区域")
+    _add_teleport_destination("fallen_leaf", "落叶幽谷", fallen_leaf_open, "完成苔冠区域主线后开放")
+    _add_teleport_destination("morning_dew", "朝露林地", morning_dew_open, "完成落叶幽谷主线后开放")
 
 func _add_teleport_destination(destination_id: String, label: String, available: bool, hint: String) -> void:
     var button := Button.new()
@@ -1051,14 +1055,16 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
             destination_name = "苔冠空地"
         "fallen_leaf":
             target_map_id = WorldMapManagerScript.FALLEN_LEAF
-            if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done):
+            var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+            if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
                 hud.show_message("击败精英首领后才能前往落叶幽谷")
                 return
             destination = world_map_manager.spawn_position(target_map_id)
             destination_name = "落叶幽谷"
         "morning_dew":
             target_map_id = WorldMapManagerScript.MORNING_DEW
-            if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done):
+            var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+            if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
                 hud.show_message("完成落叶幽谷主线后才能前往朝露林地")
                 return
             destination = world_map_manager.spawn_position(target_map_id)
