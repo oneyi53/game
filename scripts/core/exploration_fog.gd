@@ -10,6 +10,40 @@ const FOG_COLOR := Color(0.025, 0.045, 0.04, 0.92)
 var active_map_id: String = WorldMaps.MOSS_CROWN
 var explored: Dictionary = {}
 
+static func calculate_exploration_stats(saved_cells: Array, map_size: Vector2 = WorldMaps.MAP_SIZE, cell_size: float = CELL_SIZE) -> Dictionary:
+    if map_size.x <= 0.0 or map_size.y <= 0.0 or cell_size <= 0.0:
+        return {"applicable": false, "explored_cells": 0, "total_cells": 0, "ratio": 0.0, "percent": 0}
+    var columns: int = int(ceil(map_size.x / cell_size))
+    var rows: int = int(ceil(map_size.y / cell_size))
+    var total_cells: int = columns * rows
+    var valid_cells: Dictionary = {}
+    for value in saved_cells:
+        var key: String = str(value)
+        var parts: PackedStringArray = key.split(":")
+        if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
+            continue
+        var cell_x: int = int(parts[0])
+        var cell_y: int = int(parts[1])
+        if str(cell_x) != parts[0] or str(cell_y) != parts[1]:
+            continue
+        if cell_x < 0 or cell_x >= columns or cell_y < 0 or cell_y >= rows:
+            continue
+        valid_cells[key] = true
+    var explored_count: int = valid_cells.size()
+    var ratio: float = float(explored_count) / float(total_cells)
+    return {
+        "applicable": true,
+        "explored_cells": explored_count,
+        "total_cells": total_cells,
+        "ratio": ratio,
+        "percent": int(round(ratio * 100.0))
+    }
+
+func get_exploration_stats() -> Dictionary:
+    if active_map_id == WorldMaps.TOWN:
+        return {"applicable": false, "explored_cells": 0, "total_cells": 0, "ratio": 0.0, "percent": 0}
+    return calculate_exploration_stats(get_saved_cells())
+
 func set_map_state(map_id: String, saved_cells: Array) -> void:
     active_map_id = map_id
     explored.clear()
