@@ -34,9 +34,9 @@ var move_input: Vector2 = Vector2.ZERO
 var formation_offset: Vector2 = Vector2.ZERO
 var captain_ref: Hero = null
 var attack_timer: float = 0.0
-var skill_cooldown_total: float = 5.0
-var skill_cooldown_remaining: float = 0.0
-var skill_ready: bool = true
+var rage: int = 0
+const MAX_RAGE: int = 10
+const SKILL_RAGE_COST: int = 3
 var is_healer: bool = false
 var is_assassin: bool = false
 var crit_chance: float = 0.0
@@ -136,11 +136,6 @@ func _physics_process(delta: float) -> void:
         velocity = Vector2.ZERO
         move_and_slide()
         return
-    if skill_cooldown_remaining > 0.0:
-        skill_cooldown_remaining -= delta
-        if skill_cooldown_remaining <= 0.0:
-            skill_cooldown_remaining = 0.0
-            skill_ready = true
     var desired_velocity: Vector2 = Vector2.ZERO
     if is_captain:
         desired_velocity = move_input.limit_length(1.0) * move_speed
@@ -261,6 +256,7 @@ func _scan_and_attack() -> void:
     queue_redraw()
     if best.has_method("take_damage"):
         best.take_damage(final_damage)
+        rage = mini(MAX_RAGE, rage + 1)
 
 func take_damage(amount: int) -> void:
     if dead:
@@ -285,10 +281,9 @@ func respawn(at_position: Vector2) -> void:
     hp_changed.emit(self)
 
 func use_skill() -> bool:
-    if not is_captain or not skill_ready:
+    if not is_captain or rage < SKILL_RAGE_COST:
         return false
-    skill_ready = false
-    skill_cooldown_remaining = skill_cooldown_total
+    rage -= SKILL_RAGE_COST
     for enemy in get_tree().get_nodes_in_group("enemies"):
         if enemy == null:
             continue
