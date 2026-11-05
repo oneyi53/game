@@ -114,12 +114,12 @@ jobs:
           p = Path("project.godot")
           s = p.read_text()
           key = "textures/vram_compression/import_etc2_astc"
-          if re.search(r"(?m)^" + re.escape(key) + r"\\s*=", s):
-              s = re.sub(r"(?m)^" + re.escape(key) + r"\\s*=.*$", key + "=true", s)
+          if re.search(r"(?m)^" + re.escape(key) + r"\s*=", s):
+              s = re.sub(r"(?m)^" + re.escape(key) + r"\s*=.*$", key + "=true", s)
           elif "[rendering]" in s:
-              s = s.replace("[rendering]", "[rendering]\\n" + key + "=true", 1)
+              s = s.replace("[rendering]", "[rendering]\n" + key + "=true", 1)
           else:
-              s += "\\n[rendering]\\n" + key + "=true\\n"
+              s += "\n[rendering]\n" + key + "=true\\n"
           p.write_text(s)
           PY
           godot --headless --editor --path . --quit
