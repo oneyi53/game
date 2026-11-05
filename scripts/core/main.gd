@@ -1038,6 +1038,7 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
     var target_map_id: String = WorldMapManagerScript.MOSS_CROWN
     var destination: Vector2 = world_map_manager.spawn_position(target_map_id)
     var destination_name: String = ""
+    var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
     match destination_id:
         "town":
             target_map_id = WorldMapManagerScript.TOWN
@@ -1055,7 +1056,6 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
             destination_name = "苔冠空地"
         "fallen_leaf":
             target_map_id = WorldMapManagerScript.FALLEN_LEAF
-            var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
             if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
                 hud.show_message("击败精英首领后才能前往落叶幽谷")
                 return
@@ -1063,7 +1063,6 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
             destination_name = "落叶幽谷"
         "morning_dew":
             target_map_id = WorldMapManagerScript.MORNING_DEW
-            var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
             if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
                 hud.show_message("完成落叶幽谷主线后才能前往朝露林地")
                 return
@@ -1464,6 +1463,25 @@ func _on_enemy_died(enemy) -> void:
         _grant_party_xp(level_manager.xp_per_boss)
         quest_manager.on_enemy_killed(str(enemy.enemy_id), true)
         _refresh_quest_label()
+        # Spawn the next boss in the same session. Previously it only appeared
+        # after restarting because _spawn_enemies() handled the saved state.
+        if not elite_defeated:
+            var elite_data = data_loader.get_enemy(data_loader.elite_boss_id)
+            if elite_data == null:
+                config_failed = true
+                error_label.text = "配置错误，无法启动：" + data_loader.error_message
+                push_error(error_label.text)
+                return
+            elite_boss = BOSS_SCENE.instantiate()
+            elite_boss.setup(elite_data)
+            elite_boss.global_position = world_map_manager.enemy_spawn_position(data_loader.elite_boss_id)
+            elite_boss.spawn_position = elite_boss.global_position
+            elite_boss.set_meta("world_map_id", world_map_manager.map_for_enemy(data_loader.elite_boss_id))
+            enemies_root.add_child(elite_boss)
+            elite_boss.add_to_group("enemies")
+            elite_boss.died.connect(_on_enemy_died)
+            enemies.append(elite_boss)
+            _apply_active_map_visibility()
         _save_game()
         return
     if enemy == elite_boss:
