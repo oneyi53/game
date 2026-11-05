@@ -8,6 +8,7 @@ func _initialize() -> void:
     _test_real_quest_table_is_valid()
     _test_old_save_without_quest_progress_defaults_to_zero()
     _test_progress_load_clamps_negative_counts_and_ignores_unknown_ids()
+    _test_progress_load_ignores_malformed_values()
     _test_progress_serialization_round_trip()
     _test_kill_progress_requires_matching_enemy()
     _test_kill_threshold_emits_reward_once()
@@ -18,7 +19,7 @@ func _initialize() -> void:
     _test_reload_preserves_progress()
     _test_config_validation_and_dependency_cycles()
     _test_harvest_explore_and_delivery_events()
-    print("Quest manager tests: 13 passed")
+    print("Quest manager tests: 14 passed")
     quit()
 
 func _new_manager() -> QuestManager:
@@ -57,6 +58,31 @@ func _test_progress_load_clamps_negative_counts_and_ignores_unknown_ids() -> voi
     assert(manager.is_completed("side_wolf_threat"))
     assert(not manager.counts.has("removed_quest"))
     assert(not manager.completed.has("removed_quest"))
+
+func _test_progress_load_ignores_malformed_values() -> void:
+    var manager = _new_manager()
+    manager.load_progress({
+        "counts": {
+            "side_slime_trouble": true,
+            "side_wolf_threat": "3",
+            "side_lost_chest": 1.5,
+            "side_return_to_town": false
+        },
+        "completed": {
+            "side_slime_trouble": "true",
+            "side_wolf_threat": 1,
+            "side_lost_chest": false,
+            "side_return_to_town": 0
+        }
+    })
+    assert(int(manager.counts["side_slime_trouble"]) == 0)
+    assert(int(manager.counts["side_wolf_threat"]) == 0)
+    assert(int(manager.counts["side_lost_chest"]) == 0)
+    assert(int(manager.counts["side_return_to_town"]) == 0)
+    assert(not manager.is_completed("side_slime_trouble"))
+    assert(not manager.is_completed("side_wolf_threat"))
+    assert(not manager.is_completed("side_lost_chest"))
+    assert(not manager.is_completed("side_return_to_town"))
 
 func _test_progress_serialization_round_trip() -> void:
     var manager = _new_manager()
