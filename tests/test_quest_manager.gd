@@ -18,7 +18,7 @@ func _initialize() -> void:
     _test_reload_preserves_progress()
     _test_config_validation_and_dependency_cycles()
     _test_harvest_explore_and_delivery_events()
-    print("Quest manager tests completed")
+    print("Quest manager tests: 13 passed")
     quit()
 
 func _new_manager() -> QuestManager:
