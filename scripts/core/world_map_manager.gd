@@ -33,14 +33,17 @@ func spawn_position(map_id: String) -> Vector2:
 func is_safe_map(map_id: String) -> bool:
     return bool(MAPS.get(map_id, MAPS[TOWN])["safe"])
 
-func is_unlocked(map_id: String, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool) -> bool:
+func is_unlocked(map_id: String, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool = false) -> bool:
     match map_id:
         TOWN, MOSS_CROWN:
+            # The starter forest is the first destination of the opening quest.
             return true
         FALLEN_LEAF:
-            return elite_defeated
+            # The next region opens only after its preceding boss quest is complete.
+            return elite_defeated and moss_crown_quest_done
         MORNING_DEW:
-            return elite_defeated and valley_quest_done
+            # The final region follows completion of the valley's main quest.
+            return elite_defeated and moss_crown_quest_done and valley_quest_done
         _:
             return false
 
