@@ -690,6 +690,8 @@ func _switch_map(target_map_id: String) -> void:
     harvest_target = null
     harvest_timer = 0.0
     active_map_id = target_map_id
+    quest_manager.on_region_entered(active_map_id)
+    _refresh_quest_label()
     $Map.set_active_map(active_map_id)
     if exploration_fog != null:
         exploration_fog.set_map_state(active_map_id, explored_map_cells.get(active_map_id, []))
@@ -904,11 +906,14 @@ func _update_resource_harvest(delta: float) -> void:
         return
     var credited: int = mini(amount, maxi(0, wood_cap - wood))
     wood += credited
-    harvested_resource_ids.append(str(harvest_target.get("resource_id")))
+    var resource_id: String = str(harvest_target.get("resource_id"))
+    harvested_resource_ids.append(resource_id)
     var resource_name: String = str(harvest_target.get("resource_name"))
     harvest_target = null
     hud.set_wood(wood, wood_cap)
     hud.show_message("采集 " + resource_name + "，木材 +" + str(credited))
+    quest_manager.on_resource_harvested(resource_id)
+    _refresh_quest_label()
     _save_game()
 
 func _on_campfire_interact(entry: Dictionary) -> void:
