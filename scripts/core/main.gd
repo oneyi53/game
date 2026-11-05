@@ -752,6 +752,11 @@ func _update_world_visuals() -> void:
 func _process(delta: float) -> void:
     if config_failed or captain == null:
         return
+    # The starter hub leads into the first forest by walking to its gate.
+    # Later biomes advance automatically when their main regional task ends.
+    if active_map_id == WorldMapManagerScript.TOWN and captain.global_position.distance_to(Vector2(1460.0, 700.0)) <= 84.0:
+        _switch_map(WorldMapManagerScript.MOSS_CROWN)
+        return
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(float(captain.rage), captain.rage >= Hero.SKILL_RAGE_COST)
@@ -1372,6 +1377,12 @@ func _on_quest_completed(quest_id: String, quest_name: String, complete_line: St
         if hero_panel.visible:
             hero_panel.refresh()
         hud.show_message("新英雄加入：" + hero_name + "！")
+    # The completed regional objective is the gate to the next full-screen biome.
+    # Defer the transition so quest signal handlers finish before nodes are moved.
+    if quest_id == "side_moss_crown_king":
+        call_deferred("_switch_map", WorldMapManagerScript.FALLEN_LEAF)
+    elif quest_id == "side_valley_puppet":
+        call_deferred("_switch_map", WorldMapManagerScript.MORNING_DEW)
     _save_game()
 
 func _on_loose_unequip(hero_id: String, slot: String) -> void:
