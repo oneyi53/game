@@ -2,14 +2,14 @@ class_name WorldMapManager
 extends RefCounted
 
 # Each area is a self-contained logical world. Gameplay coordinates are
-# always map-local (0..1200, 0..900); projection is a render-only concern.
+# always map-local (0..1600, 0..1400); projection is a render-only concern.
 
 const TOWN := "town"
 const MOSS_CROWN := "moss_crown"
 const FALLEN_LEAF := "fallen_leaf"
 const MORNING_DEW := "morning_dew"
 
-const MAP_SIZE := Vector2(1200.0, 900.0)
+const MAP_SIZE := Vector2(1600.0, 1400.0)
 const DEFAULT_MARGIN := 32.0
 const MAPS := {
     TOWN: {"name": "王朝营地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 610.0), "safe": true},
