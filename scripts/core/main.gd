@@ -327,8 +327,8 @@ func _ready() -> void:
         # SaveManager preserves the previous valid save as backup before
         # replacing it with the map-local format.
         _save_game()
-    if not had_save:
-        hud.show_message("拖动屏幕移动，队伍会自动攻击；靠近树木、宝箱或营火，点击「交互」；技能按钮可手动释放。")
+    # No tutorial overlay: the control scheme must be immediately familiar
+    # to players coming from the reference game.
 
 func _spawn_heroes(save_data: Dictionary) -> void:
     # Only active formation members spawn. The first slot is the
