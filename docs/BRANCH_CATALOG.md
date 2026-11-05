@@ -257,3 +257,9 @@ PR #30、#31、#32 均已合并。当前远程 refs 请以 GitHub 实时分支�
 ## 2026-11-05 英雄动作反馈首轮
 - 当前原创英雄PNG均为单张静态立绘；Hero绘制层新增行走步态、攻击前倾和受击闪烁/后坐反馈，明确不等同逐帧动画。
 - 逐帧idle/walk/attack/hit/death素材仍待制作；未运行Godot/Android验证。
+
+
+## 2026-11-05 M0-M2 执行基线
+- 当前执行分支：`feat/reference-grade-world-exploration-2026-11-05`。
+- 冻结新系统开发，以垂直切片闭环为 P0；M0-M2 的任务、出口条件和质量门禁见 `docs/MILESTONE_PLAN.md`。
+- Android 真机 20 项冒烟用例见 `docs/SMOKE_TEST.md`；未执行的项目保持未执行，不得以 CI/headless 代替。
