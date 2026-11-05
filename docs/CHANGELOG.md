@@ -358,3 +358,10 @@
 - Exploration is stored per map in `explored_map_cells`, restored on map switches, and periodically saved after new cells are revealed. Older saves default to revealing the current starting area.
 - The fog draws above world actors and below the HUD. This first slice does not include line-of-sight occlusion, exploration percentage/rewards, or reference-game parameter verification.
 - Godot parsing/runtime, save regression, Android export and device validation remain pending.
+
+
+## 2026-11-05 — Offline reward cap
+- Raised the configured offline settlement cap from 8 to 12 hours in `data/offline.json`, following the user-provided reference document.
+- Kept current project gold/wood rates and the 10-minute threshold. Clarified that rates/threshold are project balance assumptions, while 12 hours is a supplied reference target, not a verified official parameter.
+- Did not add VIP multipliers, offline XP, rare-fragment RNG or offline quest progress. Runtime settlement remains single-player and saves immediately after applying rewards.
+- Godot runtime tests and APK validation are pending.
