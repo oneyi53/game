@@ -111,7 +111,7 @@ jobs:
             echo "Quest manager tests reported errors."
             exit 1
           fi
-          grep -q "Quest manager tests completed" quest-manager-tests.log
+          grep -q "Quest manager tests: 13 passed" quest-manager-tests.log
 
       - name: Run headless project smoke test
         shell: bash
