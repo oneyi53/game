@@ -4,8 +4,8 @@ extends RefCounted
 # Isometric projection is render-only. Never write projected screen
 # positions back into CharacterBody2D.global_position or save data.
 
-const MAP_WIDTH: float = 1200.0
-const MAP_HEIGHT: float = 900.0
+const MAP_WIDTH: float = 1600.0
+const MAP_HEIGHT: float = 1400.0
 const ISO_X_SCALE: float = 0.5
 const ISO_Y_SCALE: float = 0.25
 const HORIZONTAL_OFFSET: float = MAP_HEIGHT * ISO_X_SCALE
