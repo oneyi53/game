@@ -34,6 +34,7 @@ const ENEMY_SCENE: PackedScene = preload("res://scenes/enemy.tscn")
 const BOSS_SCENE: PackedScene = preload("res://scenes/boss.tscn")
 const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
 const RESOURCE_NODE_SCRIPT = preload("res://scripts/interactable/resource_node.gd")
+const EXPLORATION_FOG_SCRIPT = preload("res://scripts/core/exploration_fog.gd")
 const EFFECT_PLAYER = preload("res://scripts/fx/effect_player.gd")
 const EFFECT_ATLAS: Texture2D = preload("res://assets/art-v1/effects/effect_atlas.png")
 
@@ -72,6 +73,9 @@ var world_state_migrated: bool = false
 var campfire_node: Node2D = null
 var resource_nodes: Array = []
 var harvested_resource_ids: Array = []
+var explored_map_cells: Dictionary = {}
+var exploration_fog: ExplorationFog = null
+var exploration_save_cooldown: float = 0.0
 var heroes: Array = []
 var hero_hp_cache: Dictionary = {}
 var enemies: Array = []
@@ -209,6 +213,12 @@ func _ready() -> void:
     var saved_harvested_resources = save_data.get("harvested_resources", [])
     if saved_harvested_resources is Array:
         harvested_resource_ids = saved_harvested_resources.duplicate()
+    var saved_exploration = save_data.get("explored_map_cells", {})
+    if saved_exploration is Dictionary:
+        for saved_exploration_map in saved_exploration:
+            var cells = saved_exploration[saved_exploration_map]
+            if world_map_manager.is_known_map(str(saved_exploration_map)) and cells is Array:
+                explored_map_cells[str(saved_exploration_map)] = cells.duplicate()
     boss_defeated = bool(save_data.get("boss_defeated", false))
     elite_defeated = bool(save_data.get("elite_defeated", false))
     quest_manager.load_progress(save_data.get("quests", {}))
@@ -260,6 +270,14 @@ func _ready() -> void:
     _spawn_resource_nodes()
     $Map.set_active_map(active_map_id)
     $Map.building_pressed.connect(_on_town_building_pressed)
+    exploration_fog = Node2D.new()
+    exploration_fog.name = "ExplorationFog"
+    exploration_fog.set_script(EXPLORATION_FOG_SCRIPT)
+    exploration_fog.z_index = 200
+    add_child(exploration_fog)
+    exploration_fog.set_map_state(active_map_id, explored_map_cells.get(active_map_id, []))
+    if captain != null:
+        exploration_fog.reveal_around(captain.global_position)
     _apply_active_map_visibility()
     var chest_loot: Dictionary = data_loader.items["chest_loot"]
     chest_node.setup(int(chest_loot["gold"]), chest_opened)
@@ -588,6 +606,15 @@ func _tick_respawns(delta: float) -> void:
         _spawn_enemy_at(str(entry["id"]), entry["pos"])
 
 
+func _serialize_explored_map_cells() -> Dictionary:
+    if exploration_fog != null:
+        explored_map_cells[active_map_id] = exploration_fog.get_saved_cells()
+    var serialized: Dictionary = {}
+    for map_id in explored_map_cells:
+        serialized[str(map_id)] = explored_map_cells[map_id].duplicate()
+    return serialized
+
+
 func _serialize_map_positions() -> Dictionary:
     var serialized: Dictionary = {}
     for map_id in map_positions:
@@ -659,6 +686,8 @@ func _switch_map(target_map_id: String) -> void:
         hero.velocity = Vector2.ZERO
     active_map_id = target_map_id
     $Map.set_active_map(active_map_id)
+    if exploration_fog != null:
+        exploration_fog.set_map_state(active_map_id, explored_map_cells.get(active_map_id, []))
     var target_position: Vector2 = map_positions.get(active_map_id, world_map_manager.spawn_position(active_map_id))
     target_position = WorldMapManagerScript.clamp_position(target_position)
     for hero in heroes:
@@ -713,12 +742,25 @@ func _process(delta: float) -> void:
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
+    _update_exploration(delta)
     var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
         screen_input = joystick.vector
     var world_input := Vector2(screen_input.x + 2.0 * screen_input.y, -screen_input.x + 2.0 * screen_input.y)
     captain.move_input = world_input.normalized()
     _tick_respawns(delta)
+
+func _update_exploration(delta: float) -> void:
+    if exploration_fog == null or captain == null:
+        return
+    var revealed: int = exploration_fog.reveal_around(captain.global_position)
+    if revealed <= 0:
+        return
+    explored_map_cells[active_map_id] = exploration_fog.get_saved_cells()
+    exploration_save_cooldown -= delta
+    if exploration_save_cooldown <= 0.0:
+        _save_game()
+        exploration_save_cooldown = 3.0
 
 func _unhandled_input(event: InputEvent) -> void:
     if config_failed:
@@ -1283,6 +1325,7 @@ func _save_game() -> void:
         "camp": camp_manager.save_camp(),
         "chest_opened": chest_opened,
         "harvested_resources": harvested_resource_ids.duplicate(),
+        "explored_map_cells": _serialize_explored_map_cells(),
         "boss_defeated": boss_defeated,
         "elite_defeated": elite_defeated,
         "map_id": active_map_id,
