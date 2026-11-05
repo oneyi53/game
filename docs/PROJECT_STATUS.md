@@ -1,3 +1,16 @@
+# 最新进展（2026-11-05：探索度 API 首轮实现）
+
+- 分支：`feat/exploration-progression-foundation-2026-11-05`。
+- `scripts/core/exploration_fog.gd`：新增探索度统计 API，返回适用状态、已探索有效格数、总格数、比例和整数百分比；按地图尺寸动态计算网格分母；过滤非法格式、负数、越界格和非规范数字键，重复格只计一次；主城不适用。
+- `tests/test_exploration_fog.gd`：新增 7 项回归，覆盖空地图、默认 360 格、重复格、非法/越界格、边缘格、自定义地图尺寸、非法尺寸。
+- `.github/workflows/godot-cloud-validation.yml`：新增探索迷雾测试步骤并上传诊断日志。
+- 存档兼容：仅从现有 cell key 计算统计，不改 `explored_map_cells` 格式，不增加 schema 字段。
+- 相关设计：`docs/EXPLORATION_SYSTEM_DESIGN.md`；当前 E1 已有首轮代码与测试，待 CI 运行确认；HUD 显示仍未接入。
+- 当前最新代码提交：`63b69a9013aa478a3f0bc6f2b49711bedefc21fc`。
+- 验证边界：已提交代码与测试/CI 接线，尚未取得 CI 结果；未导出 APK、未进行 Android 真机验收。
+
+---
+
 # 最新进展（2026-11-05：探索系统规格化）
 
 - 当前工作分支：`feat/exploration-progression-foundation-2026-11-05`，从参考基线提交 `ea7ac53013d4f6038f7b838b526e54b0262273e4` 建立。
