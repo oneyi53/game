@@ -1,18 +1,8 @@
 class_name CampManager
 extends RefCounted
 
-# Camp buildings (data/camp.json) and campfire unlock framework
-# (data/campfires.json). Text is the reviewed system-draft wording,
-# not a new invention: building intros / built messages and the
-# campfire fog / insufficient / dispel / teleport lines come from
-# system_draft/system-draft-reviewed.md verbatim.
-# Built and unlocked state lives in the save under "camp":
-# {"built": [...], "campfires_unlocked": [...]}. An old save
-# without "camp" defaults to hero_management built, the other two
-# buildings unbuilt, and no campfire unlocked. Unknown ids in a
-# save are ignored, never a crash. This manager changes no stats:
-# building only records state and shows the reviewed message;
-# equipment upgrade and hero levelling belong to later blocks.
+# Camp buildings (data/camp.json) and campfire unlock framework.
+# Save shape remains {"built": [...], "campfires_unlocked": [...]}.
 
 var error_message: String = ""
 var buildings: Dictionary = {}
@@ -22,31 +12,62 @@ var campfire_order: Array = []
 var built: Dictionary = {}
 var campfires_unlocked: Dictionary = {}
 
-func load_all() -> bool:
-    if not _load_camp():
+func load_all(camp_path: String = "res://data/camp.json", campfires_path: String = "res://data/campfires.json") -> bool:
+    var camp_data = _load_json(camp_path)
+    if camp_data == null:
         return false
-    if not _load_campfires():
+    var campfire_data = _load_json(campfires_path)
+    if campfire_data == null:
         return false
+
+    var next_buildings: Dictionary = {}
+    var next_building_order: Array = []
+    var next_built: Dictionary = {}
+    if not _parse_camp(camp_data, next_buildings, next_building_order, next_built):
+        return false
+
+    var next_campfires: Dictionary = {}
+    var next_campfire_order: Array = []
+    var next_unlocked: Dictionary = {}
+    if not _parse_campfires(campfire_data, next_campfires, next_campfire_order, next_unlocked):
+        return false
+
+    # Publish a complete validated snapshot only after both files pass.
+    buildings = next_buildings
+    building_order = next_building_order
+    built = next_built
+    campfires = next_campfires
+    campfire_order = next_campfire_order
+    campfires_unlocked = next_unlocked
+    error_message = ""
     return true
 
 func _load_json(path: String):
     if not FileAccess.file_exists(path):
         error_message = "缺少配置文件：" + path
         return null
-    var text: String = FileAccess.get_file_as_string(path)
-    if text == "":
+    var source: String = FileAccess.get_file_as_string(path)
+    if source.strip_edges() == "":
         error_message = "配置文件为空：" + path
         return null
-    var json = JSON.new()
-    if json.parse(text) != OK:
+    var json := JSON.new()
+    if json.parse(source) != OK:
         error_message = "配置文件不是合法 JSON：" + path
         return null
     return json.data
 
-func _load_camp() -> bool:
-    var data = _load_json("res://data/camp.json")
-    if data == null:
+func _is_non_blank_string(value) -> bool:
+    return typeof(value) == TYPE_STRING and not str(value).strip_edges().is_empty()
+
+func _is_integer_number(value) -> bool:
+    if typeof(value) == TYPE_INT:
+        return true
+    if typeof(value) != TYPE_FLOAT:
         return false
+    var number: float = float(value)
+    return is_finite(number) and is_equal_approx(number, floor(number))
+
+func _parse_camp(data, out_buildings: Dictionary, out_order: Array, out_built: Dictionary) -> bool:
     if not (data is Dictionary) or not data.has("buildings") or not (data["buildings"] is Array):
         error_message = "camp.json 必须是含 buildings 数组的对象"
         return false
@@ -58,24 +79,29 @@ func _load_camp() -> bool:
             if not entry.has(field):
                 error_message = "camp.json 缺少字段：" + field
                 return false
-        if buildings.has(str(entry["id"])):
-            error_message = "camp.json 有重复 id：" + str(entry["id"])
+        for field in ["id", "name", "intro", "built_message"]:
+            if not _is_non_blank_string(entry[field]):
+                error_message = "camp.json 字段必须是非空字符串：" + field
+                return false
+        if typeof(entry["default_built"]) != TYPE_BOOL:
+            error_message = "camp.json default_built 必须是 bool，id：" + str(entry["id"])
             return false
-        if int(entry["cost_wood"]) < 0:
-            error_message = "camp.json 建造木材成本不能为负，id：" + str(entry["id"])
+        if not _is_integer_number(entry["cost_wood"]) or int(entry["cost_wood"]) < 0:
+            error_message = "camp.json cost_wood 必须是非负整数，id：" + str(entry["id"])
             return false
-        buildings[str(entry["id"])] = entry
-        building_order.append(str(entry["id"]))
-        built[str(entry["id"])] = bool(entry["default_built"])
-    if not buildings.has("hero_management") or not built["hero_management"]:
+        var building_id: String = str(entry["id"])
+        if out_buildings.has(building_id):
+            error_message = "camp.json 有重复 id：" + building_id
+            return false
+        out_buildings[building_id] = entry.duplicate(true)
+        out_order.append(building_id)
+        out_built[building_id] = entry["default_built"]
+    if not out_buildings.has("hero_management") or not out_built["hero_management"]:
         error_message = "camp.json 必须含默认已建成的英雄管理"
         return false
     return true
 
-func _load_campfires() -> bool:
-    var data = _load_json("res://data/campfires.json")
-    if data == null:
-        return false
+func _parse_campfires(data, out_campfires: Dictionary, out_order: Array, out_unlocked: Dictionary) -> bool:
     if not (data is Array):
         error_message = "campfires.json 必须是数组"
         return false
@@ -87,20 +113,31 @@ func _load_campfires() -> bool:
             if not entry.has(field):
                 error_message = "campfires.json 缺少字段：" + field
                 return false
-        if campfires.has(str(entry["id"])):
-            error_message = "campfires.json 有重复 id：" + str(entry["id"])
+        for field in ["id", "area", "target_area", "intro", "fog_prompt", "insufficient_prompt", "dispel_prompt", "teleport_intro"]:
+            if not _is_non_blank_string(entry[field]):
+                error_message = "campfires.json 字段必须是非空字符串：" + field
+                return false
+        if not _is_integer_number(entry["cost_wood"]) or int(entry["cost_wood"]) <= 0:
+            error_message = "campfires.json cost_wood 必须是正整数，id：" + str(entry["id"])
             return false
-        if int(entry["cost_wood"]) <= 0:
-            error_message = "campfires.json 火堆木材成本必须为正整数，id：" + str(entry["id"])
+        var campfire_id: String = str(entry["id"])
+        if out_campfires.has(campfire_id):
+            error_message = "campfires.json 有重复 id：" + campfire_id
             return false
         var pos = entry["position"]
         if not (pos is Dictionary) or not pos.has("x") or not pos.has("y"):
-            error_message = "campfires.json 火堆缺少 position.x/y，id：" + str(entry["id"])
+            error_message = "campfires.json 火堆缺少 position.x/y，id：" + campfire_id
             return false
-        campfires[str(entry["id"])] = entry
-        campfire_order.append(str(entry["id"]))
-        campfires_unlocked[str(entry["id"])] = false
+        if not _is_finite_number(pos["x"]) or not _is_finite_number(pos["y"]):
+            error_message = "campfires.json position.x/y 必须是有限数值，id：" + campfire_id
+            return false
+        out_campfires[campfire_id] = entry.duplicate(true)
+        out_order.append(campfire_id)
+        out_unlocked[campfire_id] = false
     return true
+
+func _is_finite_number(value) -> bool:
+    return (typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT) and is_finite(float(value))
 
 func building(building_id: String):
     return buildings.get(building_id, null)
