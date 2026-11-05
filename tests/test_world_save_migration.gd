@@ -64,8 +64,8 @@ func _test_projection_bounds_and_depth() -> void:
     var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     assert(is_equal_approx(bounds.position.x, 0.0))
     assert(is_equal_approx(bounds.position.y, 0.0))
-    assert(is_equal_approx(bounds.size.x, 750.0))
-    assert(is_equal_approx(bounds.size.y, 1500.0))
+    assert(is_equal_approx(bounds.size.x, 1200.0))
+    assert(is_equal_approx(bounds.size.y, 2400.0))
     assert(WorldProjectionScript.screen_depth(Vector2(500.0, 200.0)) > WorldProjectionScript.screen_depth(Vector2(200.0, 500.0)))
 
 
