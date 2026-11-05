@@ -272,3 +272,19 @@
 - PR #39 预备英雄属性详情：合并提交 `770d68b5f68e97f08748b4013222812196a61d93`，CI run 41826362294 通过。
 - 所有云端验证均为 Godot 4.7.2 资源导入、脚本解析、自动化回归测试和 headless 启动；不代表 Android 真机验收。
 - 下一阶段：主城建筑实体入口，然后任务活跃度与红点；保留 Android 真机验证为并行验收项。
+
+
+## 2026-11-05 — 修复 Android APK 模板安装步骤
+- 审查 Godot 4.7.2 源码后确认：`--install-android-build-template` 是 `--export-debug/--export-release` 的附加选项，不是可单独执行的 editor 命令；单独执行不会进入导出流程，导致工作流在模板安装步骤超时。
+- 删除独立的模板安装步骤，将 `--install-android-build-template` 合并到 Android preset 的实际 `--export-debug` 命令中，使 Godot 在导出前安装模板并继续构建。
+- 修改文件：`.github/workflows/android-debug-test-apk-optimized.yml`。
+- 修复提交：`e345dd6f64026fd31dfe358071fcce2d41b37586`。
+- 验证状态：修复后 Android APK workflow 待运行；尚无新 APK 产物，不能宣称导出成功。
+
+
+## 2026-11-05 — 修复 Android APK 模板安装步骤
+- 审查 Godot 4.7.2 源码后确认，`--install-android-build-template` 应作为 `--export-debug/--export-release` 的附加参数；单独执行 editor 命令不会触发导出流程，导致工作流模板步骤超时。
+- 删除独立模板安装步骤，将该参数合并到 Android preset 的实际导出命令，使 Godot 在导出前安装模板并继续构建。
+- 修改文件：`.github/workflows/android-debug-test-apk-optimized.yml`。
+- 修复提交：`e345dd6f64026fd31dfe358071fcce2d41b37586`。
+- 验证状态：修复后 Android APK workflow 待运行；尚无新 APK 产物。

@@ -1,3 +1,13 @@
+# 最新进展（2026-11-05：Android APK 导出模板步骤修复，待构建）
+
+- 已定位 Android Debug APK workflow 的超时根因：Godot 4.7.2 的 `--install-android-build-template` 需要作为导出命令的附加参数，单独执行不会触发导出流程。
+- 已移除独立模板安装步骤，并将参数并入 `--export-debug "Android"` 命令；预期由一次导出操作完成模板安装与 APK 构建。
+- 修改分支：`ci/optimize-android-apk-export-2026-11-05`；工作流提交：`e345dd6f64026fd31dfe358071fcce2d41b37586`；记录提交：`036ae8628bec7cdb91468532825c8b87df2c1b0a`。
+- 验证状态：Android workflow 待运行；APK 尚未生成/验收。
+- 下一步：检查新的 Android Actions 日志；如导出成功，核对 APK 文件、SHA256 和 artifact，再交付设备测试。
+
+---
+
 # 项目状态与架构档案
 
 > Hero World 长期上下文入口。仓库 `oneyi53/game`；唯一正式主线 `main`。
