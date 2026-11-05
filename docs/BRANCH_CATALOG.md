@@ -4,6 +4,13 @@
 > 唯一正式主线：main；最近玩法整合提交 05ae26f4961a4d2f0b26cf243963b305dce61a60（后续文档同步可能更新 main HEAD）。
 > 分支存在不代表已合并；PR 合并状态以 GitHub merged_at 为准。
 
+## 当前开发分支（2026-11-05）
+
+- `feat/reference-grade-world-exploration-2026-11-05`：相对 main ahead 106 / behind 0；仅作为 M0-M2 开发整合分支，未合并。
+- 本轮新增：QuestManager 的 harvest/explore/deliver 目标和 prerequisite gating；main.gd 采集/地图切换事件接线；Boss 独立锁定范围攻击；RecruitmentManager 碎片掉落 10 次保底及存档字段。
+- 最新核对：任务、Boss、招募、主流程和状态/日志文件已从远端分支重新 fetch；未运行 Godot 4.7.2、Android 导出或真机测试。
+- 继续保持 main 不动；旧分支逐文件审查，不整分支合并。
+
 ## 使用规则
 - 新工作一律从最新 main 建立主题分支；不在 main 直接做大功能。
 - 已合并分支是历史来源，不作为新开发基线。
