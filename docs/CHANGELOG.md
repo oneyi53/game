@@ -491,3 +491,10 @@
 - 已将 Camera2D limit_right/limit_bottom 更新为 1500/750，初始中心调整为 750/375，避免相机在扩展地图边缘提前受限。
 - 新增世界回归断言，实例化主场景并核对 Camera2D 限制与 projected_bounds 一致；世界测试计数更新为 14。
 - 最新 Godot 4.7.2 CI 待运行；相机移动/竖屏视野仍需 Android 真机验收。
+
+
+## 2026-11-05 — QuestManager 必填元数据校验补强
+- 复核现有 QuestManager 测试后发现：`reward_gold` 虽被直接索引并校验数值，但未先纳入必填字段检查；缺失时可能触发字典键访问错误，而非返回可读配置错误。
+- 将 `reward_gold` 纳入必填字段；同时要求任务 `name`、`type`、`objective_type` 均为非空字符串，避免错误类型被隐式转成字符串继续校验。
+- 新增回归样本：缺失 reward_gold/name、非字符串/空白 name、非字符串 type/objective_type。测试继续使用 user:// 临时配置，不修改正式 quests.json。
+- 本次提交尚待 Godot 4.7.2 CI 复验；不代表 Android APK 或真机验收。
