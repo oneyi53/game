@@ -16,9 +16,16 @@ static func world_to_screen(world_position: Vector2) -> Vector2:
         (world_position.x - world_position.y) * ISO_Y_SCALE + VERTICAL_OFFSET
     )
 
-# Painter's order follows projected vertical depth in the portrait view.
+# Convert a screen-space joystick direction into logical world movement.
+static func screen_to_world_direction(screen_direction: Vector2) -> Vector2:
+    return Vector2(
+        2.0 * screen_direction.x + screen_direction.y,
+        2.0 * screen_direction.x - screen_direction.y
+    )
+
+# Painter's order follows projected vertical depth and remains non-negative.
 static func screen_depth(world_position: Vector2) -> float:
-    return world_position.x - world_position.y
+    return world_position.x - world_position.y + MAP_HEIGHT
 
 static func world_rect_to_screen_polygon(rect: Rect2) -> PackedVector2Array:
     return PackedVector2Array([
