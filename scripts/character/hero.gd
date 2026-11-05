@@ -49,6 +49,9 @@ var move_acceleration: float = 900.0
 var move_braking: float = 1200.0
 var facing_sign: float = 1.0
 var motion_phase: float = 0.0
+var attack_flash_remaining: float = 0.0
+var attack_flash_total: float = 0.18
+var attack_direction: Vector2 = Vector2.RIGHT
 
 func setup(p_data: Dictionary, p_is_captain: bool) -> void:
     data = p_data
@@ -126,6 +129,9 @@ func heal(amount: int) -> void:
     hp_changed.emit(self)
 
 func _physics_process(delta: float) -> void:
+    if attack_flash_remaining > 0.0:
+        attack_flash_remaining = maxf(0.0, attack_flash_remaining - delta)
+        queue_redraw()
     if dead:
         velocity = Vector2.ZERO
         move_and_slide()
@@ -238,6 +244,11 @@ func _scan_and_attack() -> void:
             final_damage = int(round(float(final_damage) * 1.15))
     if crit_chance > 0.0 and randf() < crit_chance:
         final_damage = int(round(float(final_damage) * (2.0 + float(crit_damage_pct) / 100.0)))
+    attack_direction = (best.global_position - global_position).normalized()
+    if attack_direction == Vector2.ZERO:
+        attack_direction = Vector2.RIGHT * facing_sign
+    attack_flash_remaining = attack_flash_total
+    queue_redraw()
     if best.has_method("take_damage"):
         best.take_damage(final_damage)
 
@@ -276,6 +287,10 @@ func use_skill() -> bool:
         if str(enemy.get_meta("world_map_id", WorldMaps.MOSS_CROWN)) != world_map_id:
             continue
         if global_position.distance_to(enemy.global_position) <= 140.0:
+            attack_direction = (enemy.global_position - global_position).normalized()
+            attack_flash_remaining = 0.32
+            attack_flash_total = 0.32
+            queue_redraw()
             if enemy.has_method("take_damage"):
                 enemy.take_damage(attack * 2)
     return true
@@ -308,6 +323,15 @@ func _draw() -> void:
     else:
         draw_circle(Vector2.ZERO, 18.0, hero_color)
     draw_set_transform(offset)
+    if attack_flash_remaining > 0.0:
+        var progress: float = 1.0 - attack_flash_remaining / maxf(attack_flash_total, 0.01)
+        var slash_alpha: float = 1.0 - progress
+        var slash_center: Vector2 = attack_direction * (34.0 + progress * 10.0)
+        var slash_angle: float = attack_direction.angle()
+        draw_set_transform(offset + slash_center, slash_angle)
+        draw_arc(Vector2.ZERO, 30.0, -1.05 + progress * 0.45, 1.05 + progress * 0.45, 20, Color(1.0, 0.9, 0.58, slash_alpha), 5.0)
+        draw_line(Vector2(-8.0, -18.0), Vector2(22.0, 0.0), Color(1.0, 1.0, 0.86, slash_alpha), 3.0)
+        draw_set_transform(offset)
     draw_rect(Rect2(-24.0, -98.0, 48.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
     var fill: float = 48.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
     draw_rect(Rect2(-24.0, -98.0, fill, 5.0), Color(0.2, 0.9, 0.3))
