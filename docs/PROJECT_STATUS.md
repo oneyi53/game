@@ -1,3 +1,9 @@
+## 2026-11-05 — Gemini 美术协作准备
+
+- 核对 `assets/art-v1/SPRITE_SPEC.md` 与 `scripts/character/hero.gd`：英雄目前仍以单张静态 PNG 为主体，只有程序化 bob、挤压、攻击倾斜和受击后仰；真正逐帧动画未完成。
+- 新增 `assets/art-v1/GEMINI_ART_BRIEF_V1.md`，将队长四方向行走图集设为第一批样片（4×4、每帧 512×512、2048×2048、脚底锚点 256,480），并定义普攻/受击死亡图集和四区域环境物件的后续规范。
+- 当前只完成 Gemini 生成任务单，尚未实际生成、下载或接入新素材。待用户/Gemini 提供 PNG 后再审查 alpha、格子、锚点和角色一致性。
+
 ## 2026-11-05 — 任务目标配置与交付链路审计
 
 - 已从开发分支源码核对：原有 9 条任务均为 `kill`、`boss`、`chest`；QuestManager 已实现 `harvest`、`explore`、`deliver` 进度入口，其中 `on_item_delivered(npc_id, item_id)` 已按 NPC/物品/前置任务匹配，并非管理器入口缺失。
