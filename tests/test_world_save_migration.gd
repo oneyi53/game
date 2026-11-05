@@ -223,9 +223,9 @@ func _test_screen_controls_match_portrait_projection() -> void:
     var right_delta: Vector2 = WorldProjectionScript.world_to_screen(right) - WorldProjectionScript.world_to_screen(Vector2.ZERO)
     var down_delta: Vector2 = WorldProjectionScript.world_to_screen(down) - WorldProjectionScript.world_to_screen(Vector2.ZERO)
     var up_delta: Vector2 = WorldProjectionScript.world_to_screen(up) - WorldProjectionScript.world_to_screen(Vector2.ZERO)
-    assert(right_delta.x > 0.0 and is_zero_approx(right_delta.y))
-    assert(down_delta.y > 0.0 and is_zero_approx(down_delta.x))
-    assert(up_delta.y < 0.0 and is_zero_approx(up_delta.x))
+    assert(right_delta.is_equal_approx(Vector2.RIGHT))
+    assert(down_delta.is_equal_approx(Vector2.DOWN))
+    assert(up_delta.is_equal_approx(Vector2.UP))
 
 
 func _test_camera_limits_match_projected_bounds() -> void:
