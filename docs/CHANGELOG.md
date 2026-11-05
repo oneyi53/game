@@ -323,3 +323,8 @@
 - Added `docs/OPEN_SOURCE_CODE_REUSE_STUDY_2026-11-05.md` covering three requested repositories, inspected commits, licenses, key source files, portability, adoption decisions and implementation priorities.
 - MIT Unity/Pygame projects are eligible for attributed porting but their engine-specific files are not directly usable in Godot. The Godot sample has no declared license; no code/assets copied from it.
 - No upstream source was copied in this pass. This is a source/license audit, not a claim that the evaluated systems are integrated.
+
+## 2026-11-05 — Enemy combat readability pass
+- `scripts/enemy/enemy.gd`: added a short attack wind-up, visible warning ring, range re-check before damage, interruption on hit, hit flash, and knockback response.
+- Independently implemented in GDScript from general combat-design principles; no unlicensed upstream code was copied.
+- Godot runtime validation and Android export are still pending.
