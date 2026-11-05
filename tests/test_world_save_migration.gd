@@ -24,7 +24,8 @@ func _initialize() -> void:
     _test_project_orientation_is_portrait()
     _test_portrait_projection_fills_viewport()
     _test_portrait_depth_order()
-    print("World coordinate tests: 18 passed")
+    _test_screen_controls_match_portrait_projection()
+    print("World coordinate tests: 19 passed")
     quit()
 
 
@@ -214,6 +215,18 @@ func _test_portrait_depth_order() -> void:
     var upper := WorldProjectionScript.screen_depth(Vector2(300.0, 800.0))
     var lower := WorldProjectionScript.screen_depth(Vector2(800.0, 300.0))
     assert(lower > upper)
+
+func _test_screen_controls_match_portrait_projection() -> void:
+    var right: Vector2 = WorldProjectionScript.screen_to_world_direction(Vector2.RIGHT)
+    var down: Vector2 = WorldProjectionScript.screen_to_world_direction(Vector2.DOWN)
+    var up: Vector2 = WorldProjectionScript.screen_to_world_direction(Vector2.UP)
+    var right_delta: Vector2 = WorldProjectionScript.world_to_screen(right) - WorldProjectionScript.world_to_screen(Vector2.ZERO)
+    var down_delta: Vector2 = WorldProjectionScript.world_to_screen(down) - WorldProjectionScript.world_to_screen(Vector2.ZERO)
+    var up_delta: Vector2 = WorldProjectionScript.world_to_screen(up) - WorldProjectionScript.world_to_screen(Vector2.ZERO)
+    assert(right_delta.x > 0.0 and is_zero_approx(right_delta.y))
+    assert(down_delta.y > 0.0 and is_zero_approx(down_delta.x))
+    assert(up_delta.y < 0.0 and is_zero_approx(up_delta.x))
+
 
 func _test_camera_limits_match_projected_bounds() -> void:
     var instance = MainScene.instantiate()
