@@ -1,3 +1,11 @@
+## 2026-11-05 — 任务目标配置与交付链路审计
+
+- 已从开发分支源码核对：原有 9 条任务均为 `kill`、`boss`、`chest`；QuestManager 已实现 `harvest`、`explore`、`deliver` 进度入口，其中 `on_item_delivered(npc_id, item_id)` 已按 NPC/物品/前置任务匹配，并非管理器入口缺失。
+- 已核实 6 个真实采集点 ID：`moss_wood_01`、`moss_wood_02`、`valley_wood_01`、`valley_wood_02`、`grove_wood_01`、`grove_wood_02`；地图 ID 为 `town`、`moss_crown`、`fallen_leaf`、`morning_dew`。采集和地图切换事件已接入 QuestManager。
+- 新增一条可达的 `explore` 任务 `side_return_to_town`，目标为真实地图 ID `town`，从野外切回营地时推进；不依赖可能已在旧存档中耗尽的一次性采集点，也不改变地图解锁和存档 schema。
+- 交付玩法仍未接入：当前交互入口只处理营火、宝箱、资源节点；背包目前存储的是六种散件装备 ID，没有任务物品数量/扣除接口；仓库尚未核实到可交互 NPC 实体。因此不新增 deliver 配置，不虚构 NPC 或物品 ID。
+- 验证边界：完成 GitHub 最新分支源码静态核对和配置修改；未运行 Godot 4.7.2、未执行自动化测试、未导出 APK、未做真机测试。
+
 # 最新进展补充（2026-11-05：DataLoader 校验与状态原子性）
 
 - 开发分支：`feat/reference-grade-world-exploration-2026-11-05`；`main` 未修改。
