@@ -466,3 +466,11 @@ main 已经包含基础美术资源文件；PR #32 已将英雄、怪物、Boss�
 - QuestManager 的 13 组测试在 CI 中通过；此前 JSON 整数验证已按 Godot JSON 数值解析为 int/float 的真实行为修正，仍拒绝 bool、字符串和小数。
 - 同轮 CI 的最终 headless 主场景 smoke 暴露 ExplorationFog 实例化类型不匹配；已修复为使用脚本类的 new() 创建实例。此修复尚待新一轮 CI 复验。
 - 地图回归断言已同步到当前 1600×1400 逻辑地图与 1500×750 投影边界。
+
+
+## 最新验证结果（2026-11-05：Godot 4.7.2 全套云端回归）
+
+- <https://github.com/oneyi53/game/actions/runs/41990831333> 全部通过，提交 SHA：`b414f6d48a3c8a7566ae60ab726fd1e23a9cbc96`。
+- 通过项目：资源导入/脚本解析、世界坐标、英雄编队、预备英雄装备、战力、主城建筑、QuestManager 13 组回归、headless 主场景 smoke。
+- QuestManager 的严格配置校验、前置循环检测、加载失败原子性和重载保留进度已由 Godot 4.7.2 实际执行验证。
+- 验证边界：没有 Android APK 导出、安装或真机触控/帧率/画面验收；不能将云端 headless 结果称为真机通过。
