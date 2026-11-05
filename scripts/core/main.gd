@@ -1003,6 +1003,7 @@ func _on_teleport_pressed() -> void:
 func _open_teleport_panel() -> void:
     if not _has_unlocked_campfire():
         return
+    _cancel_resource_harvest("已打开传送面板，采集中断")
     if teleport_panel == null:
         _ensure_teleport_panel()
     _refresh_teleport_destinations()
@@ -1064,8 +1065,18 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
     hud.show_message("已传送至 " + destination_name)
     _save_game()
 
+func _cancel_resource_harvest(message: String = "") -> void:
+    if harvest_target == null:
+        return
+    harvest_target = null
+    harvest_timer = 0.0
+    if message != "":
+        hud.show_message(message)
+
 func _toggle_menu_panel(target: Control) -> void:
     var should_open: bool = not target.visible
+    if should_open:
+        _cancel_resource_harvest("已打开面板，采集中断")
     var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
     if teleport_panel != null:
         panels.append(teleport_panel)
