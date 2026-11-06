@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - build/android-apk-from-tested-exploration-2026-11-05
+      - feat/exploration-progression-foundation-2026-11-05
   workflow_dispatch:
 
 permissions:
