@@ -34,8 +34,7 @@ signal offline_pressed
 @onready var offline_button: Button = $OfflineButton
 @onready var boss_banner: ColorRect = $BossBanner
 @onready var boss_banner_label: Label = $BossBanner/BossBannerLabel
-@onready var quest_panel: Control = $"../QuestPanel"
-@onready var quest_label: Label = $"../QuestPanel/QuestLabel"
+@onready var quest_panel: QuestPanel = $"../QuestPanel"
 @onready var quest_close_button: Button = $"../QuestPanel/QuestCloseButton"
 
 # Start true so the first set_combat_mode(false) in _ready actually hides
@@ -75,8 +74,14 @@ func set_avatar_level(level: int) -> void:
 func set_teleport_available(available: bool) -> void:
     teleport_button.disabled = not available
 
-func set_quest_text(text: String) -> void:
-    quest_label.text = text
+func set_quest_manager(p_quest_manager) -> void:
+    quest_panel.set_manager(p_quest_manager)
+
+func refresh_quest_panel() -> void:
+    quest_panel.refresh()
+
+func set_quest_text(_text: String) -> void:
+    quest_panel.refresh()
 
 func set_boss_banner(show: bool, boss_name: String = "") -> void:
     boss_banner.visible = show

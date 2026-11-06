@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/core/map.gd" id="2_map"]
@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://scripts/ui/recruit_panel.gd" id="12_recruit"]
 [ext_resource type="PackedScene" path="res://scenes/campfire.tscn" id="9_fire"]
 [ext_resource type="Texture2D" path="res://assets/art-v1/sprites/heroes/captain.png" id="13_avatar"]
+[ext_resource type="Script" path="res://scripts/ui/quest_panel.gd" id="14_quest"]
+[ext_resource type="Script" path="res://scripts/ui/map_panel.gd" id="15_map"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -215,30 +217,81 @@ offset_bottom = 48.0
 text = "击杀BOSS"
 
 [node name="QuestPanel" type="Control" parent="UI"]
+script = ExtResource("14_quest")
 visible = false
-offset_left = 60.0
-offset_top = 180.0
-offset_right = 660.0
-offset_bottom = 560.0
+offset_left = 20.0
+offset_top = 230.0
+offset_right = 700.0
+offset_bottom = 1080.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/QuestPanel"]
-offset_right = 600.0
-offset_bottom = 380.0
+offset_right = 680.0
+offset_bottom = 850.0
 color = Color(0, 0, 0, 0.82)
 
-[node name="QuestLabel" type="Label" parent="UI/QuestPanel"]
+[node name="HeaderLabel" type="Label" parent="UI/QuestPanel"]
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 584.0
-offset_bottom = 300.0
-text = "任务：—"
+offset_right = 664.0
+offset_bottom = 60.0
+text = "任务"
+
+[node name="QuestScroll" type="ScrollContainer" parent="UI/QuestPanel"]
+offset_left = 12.0
+offset_top = 70.0
+offset_right = 668.0
+offset_bottom = 780.0
+horizontal_scroll_mode = 0
+
+[node name="QuestList" type="VBoxContainer" parent="UI/QuestPanel/QuestScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="QuestCloseButton" type="Button" parent="UI/QuestPanel"]
-offset_left = 460.0
-offset_top = 320.0
-offset_right = 584.0
-offset_bottom = 364.0
+offset_left = 280.0
+offset_top = 790.0
+offset_right = 400.0
+offset_bottom = 834.0
 text = "收起"
+
+[node name="MapPanel" type="Control" parent="UI"]
+script = ExtResource("15_map")
+visible = false
+offset_left = 27.0
+offset_top = 180.0
+offset_right = 693.0
+offset_bottom = 1070.0
+
+[node name="PanelBackground" type="ColorRect" parent="UI/MapPanel"]
+offset_right = 666.0
+offset_bottom = 890.0
+color = Color(0, 0, 0, 0.82)
+
+[node name="HeaderLabel" type="Label" parent="UI/MapPanel"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 650.0
+offset_bottom = 60.0
+text = "世界地图"
+
+[node name="MapScroll" type="ScrollContainer" parent="UI/MapPanel"]
+offset_left = 12.0
+offset_top = 70.0
+offset_right = 654.0
+offset_bottom = 800.0
+horizontal_scroll_mode = 0
+
+[node name="MapGrid" type="GridContainer" parent="UI/MapPanel/MapScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+
+[node name="CloseButton" type="Button" parent="UI/MapPanel"]
+offset_left = 273.0
+offset_top = 810.0
+offset_right = 393.0
+offset_bottom = 854.0
+text = "关闭"
 
 [node name="Joystick" type="Control" parent="UI"]
 anchors_preset = 15
@@ -252,33 +305,40 @@ script = ExtResource("4_joy")
 [node name="HeroPanel" type="Control" parent="UI"]
 script = ExtResource("5_panel")
 visible = false
-offset_left = 60.0
-offset_top = 350.0
-offset_right = 660.0
-offset_bottom = 710.0
+offset_left = 27.0
+offset_top = 230.0
+offset_right = 693.0
+offset_bottom = 1070.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/HeroPanel"]
-offset_right = 600.0
-offset_bottom = 360.0
+offset_right = 666.0
+offset_bottom = 840.0
 color = Color(0, 0, 0, 0.82)
 
 [node name="PanelLabel" type="RichTextLabel" parent="UI/HeroPanel"]
 offset_left = 16.0
 offset_top = 10.0
-offset_right = 584.0
+offset_right = 650.0
 offset_bottom = 128.0
 bbcode_enabled = false
 
 [node name="FormationScroll" type="ScrollContainer" parent="UI/HeroPanel"]
 offset_left = 12.0
-offset_top = 136.0
-offset_right = 588.0
-offset_bottom = 350.0
+offset_top = 140.0
+offset_right = 654.0
+offset_bottom = 780.0
 horizontal_scroll_mode = 0
 
 [node name="FormationList" type="VBoxContainer" parent="UI/HeroPanel/FormationScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="CloseButton" type="Button" parent="UI/HeroPanel"]
+offset_left = 273.0
+offset_top = 790.0
+offset_right = 393.0
+offset_bottom = 830.0
+text = "关闭"
 
 
 [node name="EquipPanel" type="Control" parent="UI"]
@@ -324,14 +384,14 @@ bbcode_enabled = false
 [node name="BackpackPanel" type="Control" parent="UI"]
 script = ExtResource("10_pack")
 visible = false
-offset_left = 60.0
-offset_top = 520.0
-offset_right = 660.0
-offset_bottom = 760.0
+offset_left = 27.0
+offset_top = 218.0
+offset_right = 693.0
+offset_bottom = 1040.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/BackpackPanel"]
-offset_right = 600.0
-offset_bottom = 240.0
+offset_right = 666.0
+offset_bottom = 822.0
 color = Color(0, 0, 0, 0.7)
 
 [node name="PanelLabel" type="RichTextLabel" parent="UI/BackpackPanel"]

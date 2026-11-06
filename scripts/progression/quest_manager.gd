@@ -110,6 +110,19 @@ func _complete(quest: Dictionary) -> void:
     completed[quest_id] = true
     quest_completed.emit(quest_id, str(quest["name"]), str(quest.get("complete_line", "")), int(quest.get("reward_gold", 0)))
 
+func progress_rows() -> Array:
+    var rows: Array = []
+    for quest in quests:
+        var quest_id: String = str(quest["id"])
+        var done: bool = bool(completed.get(quest_id, false))
+        var current: int = int(counts.get(quest_id, 0))
+        var target: int = int(quest.get("count", 1))
+        if str(quest.get("objective_type", "")) == "boss":
+            current = 1 if done else 0
+            target = 1
+        rows.append({"id": quest_id, "name": str(quest["name"]), "current": current, "target": target, "done": done, "reward_gold": int(quest.get("reward_gold", 0))})
+    return rows
+
 func progress_lines() -> Array:
     var lines: Array = []
     for quest in quests:

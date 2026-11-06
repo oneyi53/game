@@ -48,6 +48,8 @@ const EFFECT_ATLAS: Texture2D = preload("res://assets/art-v1/effects/effect_atla
 @onready var backpack_panel: BackpackPanel = $UI/BackpackPanel
 @onready var offline_panel: OfflinePanel = $UI/OfflinePanel
 @onready var recruit_panel: RecruitPanel = $UI/RecruitPanel
+@onready var quest_panel: QuestPanel = $UI/QuestPanel
+@onready var map_panel: MapPanel = $UI/MapPanel
 @onready var error_label: Label = $UI/ErrorLabel
 
 var teleport_panel: PanelContainer = null
@@ -271,6 +273,11 @@ func _ready() -> void:
     hud.recruit_panel_pressed.connect(_on_recruit_panel_pressed)
     hud.quest_pressed.connect(_on_quest_panel_pressed)
     hud.offline_pressed.connect(_on_offline_panel_pressed)
+    hud.set_quest_manager(quest_manager)
+    hero_panel.close_requested.connect(func() -> void: hero_panel.visible = false)
+    backpack_panel.close_requested.connect(func() -> void: backpack_panel.visible = false)
+    map_panel.map_selected.connect(_on_map_panel_selected)
+    map_panel.close_requested.connect(func() -> void: map_panel.visible = false)
     recruit_panel.set_data(recruitment_manager, level_manager, data_loader.heroes)
     recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
     recruit_panel.visible = false
@@ -575,17 +582,24 @@ func _serialize_map_positions() -> Dictionary:
 
 
 func _on_map_pressed() -> void:
-    var popup := PopupMenu.new()
-    popup.add_item("王朝营地（安全区）", 0)
-    popup.add_item("苔冠空地", 1)
-    popup.add_item("落叶幽谷", 2)
-    popup.add_item("朝露林地", 3)
-    popup.id_pressed.connect(func(map_index: int):
-        _on_map_selected(map_index)
-        popup.queue_free()
-    )
-    add_child(popup)
-    popup.popup_centered()
+    _show_map_panel()
+
+func _show_map_panel() -> void:
+    var order: Array = [WorldMapManagerScript.TOWN, WorldMapManagerScript.MOSS_CROWN, WorldMapManagerScript.FALLEN_LEAF, WorldMapManagerScript.MORNING_DEW]
+    var entries: Array = []
+    for map_id in order:
+        entries.append({
+            "id": str(map_id),
+            "name": world_map_manager.map_name(str(map_id)),
+            "safe": world_map_manager.is_safe_map(str(map_id)),
+            "unlocked": world_map_manager.is_unlocked(str(map_id), boss_defeated, elite_defeated, valley_quest_done),
+        })
+    map_panel.set_maps(entries, active_map_id)
+    _toggle_menu_panel(map_panel)
+
+func _on_map_panel_selected(map_index: int) -> void:
+    map_panel.visible = false
+    _on_map_selected(map_index)
 
 
 func _on_map_selected(map_index: int) -> void:
@@ -860,7 +874,7 @@ func _open_teleport_panel() -> void:
     if teleport_panel == null:
         _ensure_teleport_panel()
     _refresh_teleport_destinations()
-    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel, quest_panel, map_panel]
     for panel in panels:
         panel.visible = false
     teleport_panel.visible = true
@@ -920,7 +934,7 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
 
 func _toggle_menu_panel(target: Control) -> void:
     var should_open: bool = not target.visible
-    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel, quest_panel, map_panel]
     if teleport_panel != null:
         panels.append(teleport_panel)
     for panel in panels:
@@ -1130,10 +1144,7 @@ func _on_equip_panel_pressed() -> void:
         equip_panel.refresh()
 
 func _refresh_quest_label() -> void:
-    var text: String = ""
-    for line in quest_manager.progress_lines():
-        text += str(line) + "\n"
-    hud.set_quest_text(text.strip_edges())
+    hud.refresh_quest_panel()
 
 func _refresh_top_bar() -> void:
     if hud == null or captain == null or formation_manager == null:
@@ -1146,7 +1157,7 @@ func _refresh_top_bar() -> void:
         hud.set_avatar_level(level_manager.level(captain.hero_id))
 
 func _on_quest_panel_pressed() -> void:
-    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel, quest_panel, map_panel]
     if teleport_panel != null:
         panels.append(teleport_panel)
     for panel in panels:

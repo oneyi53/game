@@ -1,11 +1,14 @@
 class_name BackpackPanel
 extends Control
 
-# Backpack panel: loose equipment now uses its original item PNG icon.
-# Decompose confirmation and mailbox claim behavior are unchanged.
+# Backpack panel: 5-column slot grid (reference: backpack screen).
+# Tap a slot to select it; the detail area below shows its stats and
+# the equip / decompose actions. Decompose confirmation and mailbox
+# claim behavior are unchanged.
 signal decompose_requested(index)
 signal claim_requested(index)
 signal equip_requested(index, hero_id)
+signal close_requested
 
 @onready var panel_label: RichTextLabel = $PanelLabel
 
@@ -24,6 +27,7 @@ var hero_options: Array = []
 var scroll: ScrollContainer = null
 var list_box: VBoxContainer = null
 var pending_decompose: int = -1
+var selected_index: int = -1
 
 func set_manager(p_manager: BackpackManager, p_heroes: Array = []) -> void:
     manager = p_manager
@@ -55,10 +59,23 @@ func _ensure_dynamic() -> void:
         return
     scroll = ScrollContainer.new()
     scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+    scroll.offset_bottom = -64.0
     add_child(scroll)
     list_box = VBoxContainer.new()
     list_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     scroll.add_child(list_box)
+    var close_button := Button.new()
+    close_button.text = "关闭"
+    close_button.anchor_left = 0.5
+    close_button.anchor_right = 0.5
+    close_button.anchor_top = 1.0
+    close_button.anchor_bottom = 1.0
+    close_button.offset_left = -60.0
+    close_button.offset_right = 60.0
+    close_button.offset_top = -56.0
+    close_button.offset_bottom = -16.0
+    close_button.pressed.connect(func() -> void: close_requested.emit())
+    add_child(close_button)
 
 func _make_item_row(item_id: String, item_name: String, stats: String) -> HBoxContainer:
     var row := HBoxContainer.new()
@@ -92,32 +109,25 @@ func rebuild() -> void:
         empty_label.text = "背包是空的，击败小怪有概率掉落散件。"
         empty_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
         list_box.add_child(empty_label)
-    for i in range(manager.backpack.size()):
-        var item_id: String = str(manager.backpack[i])
-        var entry = manager.item(item_id)
-        if entry == null:
-            continue
-        list_box.add_child(_make_item_row(item_id, str(entry["name"]), manager.stats_text(item_id)))
-        var action_row := HBoxContainer.new()
-        action_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        var target := OptionButton.new()
-        target.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        for hero_entry in hero_options:
-            target.add_item(str(hero_entry.get("name", hero_entry.get("id", ""))))
-            target.set_item_metadata(target.item_count - 1, str(hero_entry.get("id", "")))
-        if target.item_count > 0:
-            target.select(0)
-        action_row.add_child(target)
-        var wear_button := Button.new()
-        wear_button.text = "穿戴"
-        wear_button.disabled = target.item_count == 0
-        wear_button.pressed.connect(_on_equip_button_pressed.bind(i, target))
-        action_row.add_child(wear_button)
-        list_box.add_child(action_row)
-        var button: Button = Button.new()
-        button.text = "确认分解？" if i == pending_decompose else "分解（+" + str(manager.decompose_gold) + " 金币）"
-        button.pressed.connect(_on_decompose_button_pressed.bind(i))
-        list_box.add_child(button)
+    else:
+        if selected_index < 0 or selected_index >= manager.backpack.size():
+            selected_index = 0
+        var grid := GridContainer.new()
+        grid.columns = 5
+        grid.add_theme_constant_override("h_separation", 8)
+        grid.add_theme_constant_override("v_separation", 8)
+        grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        list_box.add_child(grid)
+        for i in range(manager.backpack.size()):
+            var item_id: String = str(manager.backpack[i])
+            var slot := Button.new()
+            slot.custom_minimum_size = Vector2(111, 91)
+            slot.icon = ITEM_TEXTURES.get(item_id)
+            slot.expand_icon = true
+            slot.text = "×1" if i == selected_index else ""
+            slot.pressed.connect(_on_slot_pressed.bind(i))
+            grid.add_child(slot)
+        _build_detail_area()
     if not manager.mailbox.is_empty():
         var mailbox_header: Label = Label.new()
         mailbox_header.text = "邮箱（背包满时溢出到这里，背包有空位时可领取）："
@@ -133,6 +143,42 @@ func rebuild() -> void:
             button.text = "领取到背包"
             button.pressed.connect(_on_claim_button_pressed.bind(i))
             list_box.add_child(button)
+
+func _build_detail_area() -> void:
+    if selected_index < 0 or selected_index >= manager.backpack.size():
+        return
+    var item_id: String = str(manager.backpack[selected_index])
+    var entry = manager.item(item_id)
+    if entry == null:
+        return
+    var detail := Label.new()
+    detail.text = "已选：" + str(entry["name"]) + "（" + manager.stats_text(item_id) + "）"
+    detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    list_box.add_child(detail)
+    var action_row := HBoxContainer.new()
+    action_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    var target := OptionButton.new()
+    target.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    for hero_entry in hero_options:
+        target.add_item(str(hero_entry.get("name", hero_entry.get("id", ""))))
+        target.set_item_metadata(target.item_count - 1, str(hero_entry.get("id", "")))
+    if target.item_count > 0:
+        target.select(0)
+    action_row.add_child(target)
+    var wear_button := Button.new()
+    wear_button.text = "穿戴"
+    wear_button.disabled = target.item_count == 0
+    wear_button.pressed.connect(_on_equip_button_pressed.bind(selected_index, target))
+    action_row.add_child(wear_button)
+    var button: Button = Button.new()
+    button.text = "确认分解？" if selected_index == pending_decompose else "分解（+" + str(manager.decompose_gold) + " 金币）"
+    button.pressed.connect(_on_decompose_button_pressed.bind(selected_index))
+    action_row.add_child(button)
+    list_box.add_child(action_row)
+
+func _on_slot_pressed(index: int) -> void:
+    selected_index = index
+    rebuild()
 
 func _on_decompose_button_pressed(index: int) -> void:
     if index != pending_decompose:
