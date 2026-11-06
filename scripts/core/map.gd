@@ -16,7 +16,7 @@ const DECORATIONS := {
         "landmarks": [{"kind": "fountain", "position": Vector2(600, 450), "radius": 34.0}]
     },
     "moss_crown": {
-        "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820), Vector2(1280, 180), Vector2(1380, 480), Vector2(1260, 980), Vector2(1040, 1220), Vector2(760, 1160), Vector2(360, 1180), Vector2(120, 1080), Vector2(80, 300), Vector2(480, 260), Vector2(680, 940)],
+        "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(1120, 900), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820), Vector2(1280, 180), Vector2(1380, 480), Vector2(1260, 980), Vector2(1040, 1220), Vector2(760, 1160), Vector2(360, 1180), Vector2(120, 1080), Vector2(80, 300), Vector2(480, 260), Vector2(680, 940)],
         "landmarks": [{"kind": "tower", "position": Vector2(260, 300), "radius": 30.0}, {"kind": "fountain", "position": Vector2(920, 500), "radius": 28.0}]
     },
     "fallen_leaf": {
