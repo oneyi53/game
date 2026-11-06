@@ -211,20 +211,20 @@ jobs:
           retention-days: 14
 
       - name: Check InstaBox Android SSH connectivity
-        if: ${{ secrets.INSTABOX_SSH_COMMAND != '' }}
         shell: bash
         env:
           INSTABOX_SSH_COMMAND: ${{ secrets.INSTABOX_SSH_COMMAND }}
         run: |
           set -euo pipefail
           if [[ -z "${INSTABOX_SSH_COMMAND}" ]]; then
-            echo "INSTABOX_SSH_COMMAND is empty."
-            exit 1
+            echo "InstaBox SSH check skipped: secret is not configured."
+            exit 0
           fi
           echo "Connecting to InstaBox Android sandbox..."
           # The repository secret must contain the exact SSH command copied from InstaBox.
           # Append a harmless remote diagnostic command; never print the secret.
-          eval "${INSTABOX_SSH_COMMAND} 'printf \"INSTA_SSH_OK\\n\"; uname -a; (command -v adb && adb devices -l) || echo ADB_NOT_FOUND'"
+          read -r -a ssh_args <<< "${INSTABOX_SSH_COMMAND}"
+          "${ssh_args[@]}" 'printf "INSTA_SSH_OK\\n"; uname -a; (command -v adb && adb devices -l) || echo ADB_NOT_FOUND'
 
       - name: Upload diagnostic logs
         if: always()
