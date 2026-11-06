@@ -980,15 +980,15 @@ func _refresh_resource_prompt() -> void:
         if campfire_entry != null and captain.global_position.distance_to(campfire_node.global_position) < 80.0:
             hud.set_interact_prompt("传送" if camp_manager.is_campfire_unlocked(str(campfire_entry["id"])) else "解锁营火")
             return
+    if chest_node != null and chest_node.visible and captain.global_position.distance_to(chest_node.global_position) < 80.0:
+        hud.set_interact_prompt("开启宝箱" if not chest_node.is_open else "已开启")
+        return
     var nearby_exit: Dictionary = world_map_manager.physical_exit_at(active_map_id, captain.global_position)
     if not nearby_exit.is_empty():
         var exit_target: String = str(nearby_exit["to"])
         var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
         var unlocked: bool = world_map_manager.is_unlocked(exit_target, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done)
         hud.set_interact_prompt("前往" + world_map_manager.map_name(exit_target) if unlocked else "道路未开放")
-        return
-    if chest_node != null and chest_node.visible and captain.global_position.distance_to(chest_node.global_position) < 80.0:
-        hud.set_interact_prompt("开启宝箱" if not chest_node.is_open else "已开启")
         return
     var nearest_node: Node2D = _nearest_resource_node(90.0)
     if nearest_node == null:
