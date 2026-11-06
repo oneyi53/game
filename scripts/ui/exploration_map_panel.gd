@@ -6,6 +6,8 @@ signal campfire_teleport_requested(marker_index: int)
 
 const MAP_SIZE := Vector2(1600.0, 1400.0)
 const CELL_SIZE := 80.0
+const MAP_COLUMNS := int(ceil(MAP_SIZE.x / CELL_SIZE))
+const MAP_ROWS := int(ceil(MAP_SIZE.y / CELL_SIZE))
 const MAP_RECT := Rect2(40.0, 220.0, 640.0, 560.0)
 const CARD_RECT := Rect2(18.0, 86.0, 684.0, 1100.0)
 const REGION_IDS := ["town", "moss_crown", "fallen_leaf", "morning_dew"]
@@ -74,10 +76,10 @@ func _draw() -> void:
 func _draw_map_surface() -> void:
     draw_rect(MAP_RECT, Color(0.15, 0.22, 0.16), true)
     draw_rect(MAP_RECT, Color(0.61, 0.67, 0.43), false, 2.0)
-    for x in range(20):
-        for y in range(18):
+    for x in range(MAP_COLUMNS):
+        for y in range(MAP_ROWS):
             var cell_key := str(x) + ":" + str(y)
-            var cell_rect := Rect2(MAP_RECT.position.x + float(x) * MAP_RECT.size.x / 20.0, MAP_RECT.position.y + float(y) * MAP_RECT.size.y / 18.0, MAP_RECT.size.x / 20.0, MAP_RECT.size.y / 18.0)
+            var cell_rect := Rect2(MAP_RECT.position.x + float(x) * MAP_RECT.size.x / float(MAP_COLUMNS), MAP_RECT.position.y + float(y) * MAP_RECT.size.y / float(MAP_ROWS), MAP_RECT.size.x / float(MAP_COLUMNS), MAP_RECT.size.y / float(MAP_ROWS))
             # The town is a safe hub, not an unexplored wilderness map.
             # Render its full layout instead of covering it with exploration fog.
             if current_map_id == "town" or cell_key in explored_cells:
