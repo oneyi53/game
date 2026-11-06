@@ -155,6 +155,12 @@ func _draw() -> void:
     elif active_map_id == WorldMaps.FALLEN_LEAF:
         for point in [Vector2(240, 240), Vector2(420, 300), Vector2(760, 260), Vector2(940, 620)]:
             _draw_dot(point, 5.0, Color(0.84, 0.65, 0.27))
+        var grove_gate: Vector2 = WorldProjectionScript.world_to_screen(Vector2(480.0, 1120.0))
+        draw_circle(grove_gate, 32.0, Color(0.08, 0.14, 0.1, 0.82))
+        draw_circle(grove_gate, 23.0, Color(0.76, 0.66, 0.36))
+        draw_circle(grove_gate, 14.0, Color(0.25, 0.42, 0.24))
+        if font != null:
+            draw_string(font, grove_gate + Vector2(-48.0, 48.0), "林地道路", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1.0, 0.95, 0.75))
     elif active_map_id == WorldMaps.MORNING_DEW:
         for point in [Vector2(260, 260), Vector2(480, 620), Vector2(860, 280), Vector2(1040, 660)]:
             _draw_dot(point, 5.0, Color(0.68, 0.9, 0.82))
