@@ -56,7 +56,7 @@ jobs:
             echo "World save migration tests reported errors."
             exit 1
           fi
-          grep -q "World coordinate tests: 19 passed" world-save-migration-tests.log
+          grep -q "World coordinate tests: 20 passed" world-save-migration-tests.log
 
       - name: Run exploration fog regression tests
         shell: bash

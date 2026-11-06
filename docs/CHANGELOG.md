@@ -1,3 +1,13 @@
+# 2026-11-06 — E3b 自动切图修正与 CI 门禁修复
+
+- 分支：`feat/exploration-progression-foundation-2026-11-05`；提交：`786cb0d2f9eeda59bd657e8dbd9cb7195893f4b2`。
+- `scripts/core/main.gd`：区域 Boss 任务完成后不再自动调用地图切换；改为提示后续区域已解锁，由玩家自行决定何时传送，保留 Boss 后清理、拾取与继续探索的控制权。
+- `docs/WORLD_COORDINATE_MIGRATION.md`：纠正当前逻辑地图尺寸 1600×1400 与投影包围范围 1200×2400 的描述；补充可行走边界和真机验证要求。
+- `tests/test_world_save_migration.gd`：新增“区域任务完成不强制切图”回归，世界坐标测试输出更新为 20 项。
+- CI 首次运行 `42144937357` 失败原因：测试本身输出 `World coordinate tests: 20 passed`，workflow 仍检查旧的 `19 passed` 文本。已修复 workflow grep 断言，等待新一轮 CI 复核。
+- 同 SHA Android debug 构建 run `42144937305` 成功；按项目决策暂缓分发，不代表真机测试通过。
+- 后续：先确认 CI 修复通过，再审计大区域/小区域地图结构和可行走边界；不急于反复生成 APK。
+
 # 2026-11-06 — 单机化决策基线与离线收益异常分类
 
 - 新增 `docs/SINGLE_PLAYER_DESIGN_DECISIONS.md`，把原版设计职能、单机替代方向、战斗策略、养成经济、离线安全边界和工程优先级固化为决策文档。
