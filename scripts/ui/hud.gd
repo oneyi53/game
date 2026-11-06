@@ -12,6 +12,10 @@ signal recruit_panel_pressed
 signal teleport_pressed
 signal map_pressed
 
+const PANEL_DARK := Color(0.10, 0.14, 0.18, 0.88)
+const PANEL_GOLD := Color(0.75, 0.48, 0.18, 0.96)
+const TEXT_LIGHT := Color(1.0, 0.95, 0.82, 1.0)
+
 @onready var gold_label: Label = $GoldLabel
 @onready var wood_label: Label = $WoodLabel
 @onready var message_label: Label = $MessageLabel
@@ -42,61 +46,81 @@ func _ready() -> void:
     teleport_button.pressed.connect(_on_teleport_button_pressed)
     map_button.pressed.connect(_on_map_button_pressed)
     teleport_button.disabled = true
-    _style_label(gold_label, 20, Color(1.0, 0.9, 0.58))
-    _style_label(wood_label, 20, Color(0.88, 0.95, 0.78))
-    _style_label(quest_label, 17, Color(1.0, 0.97, 0.84))
-    _style_label(message_label, 17, Color(1.0, 0.94, 0.72))
-    _style_label(cooldown_label, 16, Color(1.0, 0.9, 0.66))
-    _style_label(map_name_label, 21, Color(1.0, 0.96, 0.78))
-    _style_label(exploration_label, 15, Color(0.78, 0.92, 0.72))
+    _apply_reference_layout()
+    get_viewport().size_changed.connect(_apply_reference_layout)
+
+func _apply_reference_layout() -> void:
+    var viewport_size := get_viewport_rect().size
+    var sx := viewport_size.x / 720.0
+    var sy := viewport_size.y / 1280.0
+
+    # Preserve the exploration and region labels while adopting the reference
+    # game's portrait HUD hierarchy. Coordinates are based on 720x1280.
+    _place(gold_label, Vector2(14, 14), Vector2(220, 42), sx, sy)
+    _place(wood_label, Vector2(242, 14), Vector2(464, 42), sx, sy)
+    _place(map_name_label, Vector2(250, 62), Vector2(220, 34), sx, sy)
+    _place(exploration_label, Vector2(250, 98), Vector2(220, 28), sx, sy)
+    _place(message_label, Vector2(16, 134), Vector2(688, 32), sx, sy)
+    _place(quest_label, Vector2(14, 176), Vector2(190, 150), sx, sy)
+    quest_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+    _style_label(gold_label, PANEL_GOLD, 22)
+    _style_label(wood_label, PANEL_DARK, 20)
+    _style_label(map_name_label, PANEL_DARK, 19)
+    _style_label(exploration_label, PANEL_DARK, 15)
+    _style_label(message_label, PANEL_DARK, 17)
+    _style_label(quest_label, PANEL_DARK, 18)
     exploration_label.visible = false
-    _style_button(skill_button, Color(0.66, 0.31, 0.12), 22)
-    _style_button(interact_button, Color(0.2, 0.43, 0.25), 18)
-    for button in [save_button, hero_button, equip_button, camp_button, backpack_button, recruit_button]:
-        _style_button(button, Color(0.13, 0.25, 0.23), 16)
-    _style_button(teleport_button, Color(0.25, 0.37, 0.3), 16)
-    _style_button(map_button, Color(0.25, 0.37, 0.3), 16)
 
+    # Left-side progression and inventory shortcuts.
+    _place(hero_button, Vector2(12, 340), Vector2(112, 58), sx, sy)
+    _place(equip_button, Vector2(12, 410), Vector2(112, 58), sx, sy)
+    _place(camp_button, Vector2(12, 480), Vector2(112, 58), sx, sy)
+    _place(recruit_button, Vector2(12, 550), Vector2(112, 58), sx, sy)
+    _place(backpack_button, Vector2(12, 1040), Vector2(112, 64), sx, sy)
+    _place(save_button, Vector2(12, 1114), Vector2(112, 56), sx, sy)
 
+    # Right-side world actions and combat controls.
+    _place(teleport_button, Vector2(596, 340), Vector2(112, 58), sx, sy)
+    _place(map_button, Vector2(596, 410), Vector2(112, 58), sx, sy)
+    _place(interact_button, Vector2(596, 900), Vector2(112, 58), sx, sy)
+    _place(skill_button, Vector2(596, 970), Vector2(112, 64), sx, sy)
+    _place(cooldown_label, Vector2(560, 1040), Vector2(148, 30), sx, sy)
+    cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
-func set_region_name(region_name: String) -> void:
-    map_name_label.text = region_name
+    for button in [skill_button, interact_button, save_button, hero_button, equip_button, camp_button, backpack_button, recruit_button, teleport_button, map_button]:
+        _style_button(button, PANEL_DARK)
+    _style_button(skill_button, Color(0.42, 0.22, 0.12, 0.96))
 
+func _place(control: Control, design_pos: Vector2, design_size: Vector2, sx: float, sy: float) -> void:
+    control.set_anchors_preset(Control.PRESET_TOP_LEFT)
+    control.position = Vector2(design_pos.x * sx, design_pos.y * sy)
+    control.size = Vector2(design_size.x * sx, design_size.y * sy)
 
-func set_exploration_stats(applicable: bool, percent: int = 0) -> void:
-    exploration_label.visible = applicable
-    if applicable:
-        exploration_label.text = "探索度 " + str(clampi(percent, 0, 100)) + "%"
-
-
-func _style_label(label: Label, font_size: int, font_color: Color) -> void:
+func _style_label(label: Label, fill: Color, font_size: int) -> void:
+    var style := StyleBoxFlat.new()
+    style.bg_color = fill
+    style.border_color = Color(0.78, 0.62, 0.36, 0.75)
+    style.set_border_width_all(1)
+    style.set_corner_radius_all(12)
+    style.content_margin_left = 12
+    style.content_margin_right = 12
+    label.add_theme_stylebox_override("normal", style)
+    label.add_theme_color_override("font_color", TEXT_LIGHT)
     label.add_theme_font_size_override("font_size", font_size)
-    label.add_theme_color_override("font_color", font_color)
-    label.add_theme_color_override("font_shadow_color", Color(0.03, 0.06, 0.04, 0.95))
-    label.add_theme_constant_override("shadow_offset_x", 1)
-    label.add_theme_constant_override("shadow_offset_y", 2)
-    var plate := StyleBoxFlat.new()
-    plate.bg_color = Color(0.035, 0.075, 0.055, 0.78)
-    plate.border_color = Color(0.72, 0.66, 0.43, 0.48)
-    plate.set_border_width_all(1)
-    plate.set_corner_radius_all(12)
-    plate.content_margin_left = 10.0
-    plate.content_margin_right = 10.0
-    plate.content_margin_top = 5.0
-    plate.content_margin_bottom = 5.0
-    label.add_theme_stylebox_override("normal", plate)
 
-
-func _style_button(button: Button, fill: Color, font_size: int) -> void:
+func _style_button(button: Button, fill: Color) -> void:
+    button.add_theme_font_size_override("font_size", 19)
+    button.add_theme_color_override("font_color", TEXT_LIGHT)
+    button.add_theme_color_override("font_hover_color", Color.WHITE)
+    button.add_theme_color_override("font_pressed_color", Color.WHITE)
     var normal := StyleBoxFlat.new()
     normal.bg_color = fill
-    normal.border_color = fill.lightened(0.28)
+    normal.border_color = Color(0.78, 0.62, 0.36, 0.95)
     normal.set_border_width_all(2)
-    normal.set_corner_radius_all(18)
-    normal.content_margin_left = 8.0
-    normal.content_margin_right = 8.0
-    normal.content_margin_top = 6.0
-    normal.content_margin_bottom = 6.0
+    normal.set_corner_radius_all(13)
+    normal.content_margin_left = 5
+    normal.content_margin_right = 5
     var hover := normal.duplicate() as StyleBoxFlat
     hover.bg_color = fill.lightened(0.12)
     var pressed := normal.duplicate() as StyleBoxFlat
@@ -104,15 +128,21 @@ func _style_button(button: Button, fill: Color, font_size: int) -> void:
     button.add_theme_stylebox_override("normal", normal)
     button.add_theme_stylebox_override("hover", hover)
     button.add_theme_stylebox_override("pressed", pressed)
-    button.add_theme_color_override("font_color", Color(1.0, 0.97, 0.86))
-    button.add_theme_color_override("font_hover_color", Color.WHITE)
-    button.add_theme_font_size_override("font_size", font_size)
+    button.add_theme_stylebox_override("disabled", normal)
+
+func set_region_name(region_name: String) -> void:
+    map_name_label.text = region_name
+
+func set_exploration_stats(applicable: bool, percent: int = 0) -> void:
+    exploration_label.visible = applicable
+    if applicable:
+        exploration_label.text = "探索度 " + str(clampi(percent, 0, 100)) + "%"
 
 func set_gold(amount: int) -> void:
-    gold_label.text = "金币：" + str(amount)
+    gold_label.text = "金币  " + str(amount)
 
 func set_wood(amount: int, cap: int) -> void:
-    wood_label.text = "木材：" + str(amount) + "/" + str(cap)
+    wood_label.text = "木材  " + str(amount) + "/" + str(cap)
 
 func set_teleport_available(available: bool) -> void:
     teleport_button.disabled = not available
@@ -127,7 +157,6 @@ func show_message(text: String) -> void:
     message_label.text = text
 
 func set_skill_cooldown(remaining: float, ready: bool) -> void:
-    # The second argument is retained for call-site compatibility; active skill now uses team rage.
     cooldown_label.text = "怒气：" + str(int(remaining)) + "/10 · 技能需3格"
 
 func _on_skill_button_pressed() -> void:
@@ -156,7 +185,6 @@ func _on_recruit_button_pressed() -> void:
 
 func _on_teleport_button_pressed() -> void:
     teleport_pressed.emit()
-
 
 func _on_map_button_pressed() -> void:
     map_pressed.emit()
