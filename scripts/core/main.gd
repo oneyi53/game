@@ -743,8 +743,12 @@ func _apply_active_map_visibility() -> void:
             enemy.set_deferred("collision_mask", 1 if belongs else 0)
     if chest_node != null:
         chest_node.visible = active_map_id == WorldMapManagerScript.MOSS_CROWN
-    if campfire_node != null and is_instance_valid(campfire_node):
-        campfire_node.visible = str(campfire_node.get_meta("world_map_id", "")) == active_map_id
+    for campfire_child in get_children():
+        if not (campfire_child is Node2D) or not campfire_child.has_meta("campfire_id"):
+            continue
+        var belongs: bool = str(campfire_child.get_meta("world_map_id", "")) == active_map_id
+        campfire_child.visible = belongs
+        campfire_child.process_mode = Node.PROCESS_MODE_INHERIT if belongs else Node.PROCESS_MODE_DISABLED
     for resource_node in resource_nodes:
         if resource_node == null or not is_instance_valid(resource_node):
             continue
