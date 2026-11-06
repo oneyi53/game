@@ -2,6 +2,7 @@ extends Control
 
 signal close_requested
 signal region_selected(map_index: int)
+signal campfire_teleport_requested(marker_index: int)
 
 const MAP_SIZE := Vector2(1600.0, 1400.0)
 const CELL_SIZE := 80.0
@@ -126,6 +127,13 @@ func _gui_input(event: InputEvent) -> void:
         close_requested.emit()
         accept_event()
         return
+    if MAP_RECT.has_point(pointer):
+        for marker_index in range(teleport_positions.size()):
+            var marker_position: Vector2 = _map_to_panel(teleport_positions[marker_index])
+            if marker_position.distance_to(pointer) <= 24.0:
+                campfire_teleport_requested.emit(marker_index)
+                accept_event()
+                return
     var tab_y := 1045.0
     var tab_width := 154.0
     for i in range(REGION_IDS.size()):
