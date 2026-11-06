@@ -564,21 +564,26 @@ func _spawn_enemies() -> void:
         enemies.append(elite_boss)
 
 func _spawn_campfire() -> void:
-    # Framework campfire only: it unlocks a future area flag and
-    # never gates any existing zone. Existing zones keep their
-    # boss / quest gates exactly as before, so an old save that
-    # already opened them stays open whether or not this campfire
-    # is ever visited. If campfires.json ever gains more entries,
-    # each gets its own node the same way.
-    if camp_manager == null or camp_manager.campfire_order.is_empty():
+    # Never place a future-area campfire into a current map by accident.
+    # A campfire's map_id is its physical owner; target_area is not a map
+    # placement hint. Unknown future maps remain data-only until authored.
+    if camp_manager == null:
         return
-    var entry = camp_manager.campfire(camp_manager.campfire_order[0])
-    if entry == null:
-        return
-    var pos = entry["position"]
-    campfire_node = CAMPFIRE_SCENE.instantiate()
-    campfire_node.global_position = Vector2(float(pos["x"]), float(pos["y"]))
-    add_child(campfire_node)
+    for campfire_id in camp_manager.campfire_order:
+        var entry = camp_manager.campfire(str(campfire_id))
+        if entry == null:
+            continue
+        var owner_map: String = camp_manager.campfire_map_id(str(campfire_id))
+        if not world_map_manager.is_known_map(owner_map):
+            continue
+        var pos: Dictionary = entry["position"]
+        var node: Node2D = CAMPFIRE_SCENE.instantiate()
+        node.global_position = Vector2(float(pos["x"]), float(pos["y"]))
+        node.set_meta("campfire_id", str(campfire_id))
+        node.set_meta("world_map_id", owner_map)
+        add_child(node)
+        if campfire_node == null:
+            campfire_node = node
 
 func _spawn_resource_nodes() -> void:
     # Stable IDs and save data prevent gathering the same node by re-entering a map.
@@ -738,8 +743,8 @@ func _apply_active_map_visibility() -> void:
             enemy.set_deferred("collision_mask", 1 if belongs else 0)
     if chest_node != null:
         chest_node.visible = active_map_id == WorldMapManagerScript.MOSS_CROWN
-    if campfire_node != null:
-        campfire_node.visible = active_map_id == WorldMapManagerScript.MOSS_CROWN
+    if campfire_node != null and is_instance_valid(campfire_node):
+        campfire_node.visible = str(campfire_node.get_meta("world_map_id", "")) == active_map_id
     for resource_node in resource_nodes:
         if resource_node == null or not is_instance_valid(resource_node):
             continue
@@ -817,8 +822,9 @@ func _update_world_visuals() -> void:
             _set_world_depth_order(unit)
     if chest_node != null and is_instance_valid(chest_node) and chest_node.visible:
         _set_world_depth_order(chest_node)
-    if campfire_node != null and is_instance_valid(campfire_node) and campfire_node.visible:
-        _set_world_depth_order(campfire_node)
+    for campfire_child in get_children():
+        if campfire_child is Node2D and campfire_child.has_meta("campfire_id") and campfire_child.visible:
+            _set_world_depth_order(campfire_child)
     for resource_node in resource_nodes:
         if resource_node != null and is_instance_valid(resource_node) and resource_node.visible:
             _set_world_depth_order(resource_node)
@@ -918,10 +924,12 @@ func _on_skill_pressed() -> void:
 func _on_interact_pressed() -> void:
     if captain == null:
         return
-    if campfire_node != null and campfire_node.visible and camp_manager != null and not camp_manager.campfire_order.is_empty():
-        var entry = camp_manager.campfire(camp_manager.campfire_order[0])
-        if entry != null and captain.global_position.distance_to(campfire_node.global_position) < 80.0:
-            _on_campfire_interact(entry)
+    var nearby_campfire: Node2D = _nearest_campfire(80.0)
+    if nearby_campfire != null:
+        var nearby_campfire_id: String = str(nearby_campfire.get_meta("campfire_id", ""))
+        var nearby_campfire_entry = camp_manager.campfire(nearby_campfire_id) if camp_manager != null else null
+        if nearby_campfire_entry != null:
+            _on_campfire_interact(nearby_campfire_entry)
             return
     if chest_node != null and chest_node.visible and captain.global_position.distance_to(chest_node.global_position) < 80.0:
         var gained: int = chest_node.try_open()
@@ -975,10 +983,11 @@ func _refresh_resource_prompt() -> void:
         return
     # Keep interaction affordances aligned with the actual interaction
     # priority: campfire first, then chest, then resource nodes.
-    if campfire_node != null and campfire_node.visible and camp_manager != null and not camp_manager.campfire_order.is_empty():
-        var campfire_entry = camp_manager.campfire(camp_manager.campfire_order[0])
-        if campfire_entry != null and captain.global_position.distance_to(campfire_node.global_position) < 80.0:
-            hud.set_interact_prompt("传送" if camp_manager.is_campfire_unlocked(str(campfire_entry["id"])) else "解锁营火")
+    var nearby_campfire: Node2D = _nearest_campfire(80.0)
+    if nearby_campfire != null:
+        var nearby_campfire_entry = camp_manager.campfire(str(nearby_campfire.get_meta("campfire_id", "")))
+        if nearby_campfire_entry != null:
+            hud.set_interact_prompt("传送" if camp_manager.is_campfire_unlocked(str(nearby_campfire_entry["id"])) else "解锁营火")
             return
     if chest_node != null and chest_node.visible and captain.global_position.distance_to(chest_node.global_position) < 80.0:
         hud.set_interact_prompt("开启宝箱" if not chest_node.is_open else "已开启")
@@ -1056,11 +1065,37 @@ func _on_campfire_interact(entry: Dictionary) -> void:
 func _has_unlocked_campfire() -> bool:
     if camp_manager == null:
         return false
-    # The teleport button is backed by the configured primary campfire
-    # node. Do not let a future, unrelated campfire unlock this one.
-    if camp_manager.campfire_order.is_empty():
-        return false
-    return camp_manager.is_campfire_unlocked(str(camp_manager.campfire_order[0]))
+    for map_id in [WorldMapManagerScript.MOSS_CROWN, WorldMapManagerScript.FALLEN_LEAF, WorldMapManagerScript.MORNING_DEW]:
+        if camp_manager.has_unlocked_campfire_on_map(str(map_id)):
+            return true
+    return false
+
+func _nearest_campfire(max_distance: float) -> Node2D:
+    if captain == null:
+        return null
+    var nearest: Node2D = null
+    var nearest_distance: float = max_distance
+    for child in get_children():
+        if not (child is Node2D) or not child.has_meta("campfire_id") or not child.visible:
+            continue
+        var distance: float = captain.global_position.distance_to(child.global_position)
+        if distance < nearest_distance:
+            nearest_distance = distance
+            nearest = child
+    return nearest
+
+func _campfire_positions_by_map() -> Dictionary:
+    var positions: Dictionary = {}
+    if camp_manager == null:
+        return positions
+    for child in get_children():
+        if not (child is Node2D) or not child.has_meta("campfire_id"):
+            continue
+        var campfire_id: String = str(child.get_meta("campfire_id"))
+        var map_id: String = camp_manager.campfire_map_id(campfire_id)
+        if camp_manager.is_campfire_unlocked(campfire_id) and world_map_manager.is_known_map(map_id):
+            positions[map_id] = child.global_position
+    return positions
 
 func _ensure_teleport_panel() -> void:
     if teleport_panel != null:
@@ -1113,7 +1148,7 @@ func _refresh_teleport_destinations() -> void:
         teleport_list.remove_child(child)
         child.queue_free()
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
-    var destinations: Array = world_map_manager.teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, _has_unlocked_campfire(), _discovered_map_ids())
+    var destinations: Array = world_map_manager.teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, false, _discovered_map_ids(), _campfire_positions_by_map())
     for destination in destinations:
         _add_teleport_destination(str(destination["id"]), str(destination["name"]), bool(destination["available"]), str(destination["hint"]))
 
@@ -1154,8 +1189,7 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
         _close_teleport_panel()
         return
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
-    var campfire_position: Vector2 = campfire_node.global_position if campfire_node != null and is_instance_valid(campfire_node) else Vector2.ZERO
-    var destination: Dictionary = world_map_manager.resolve_teleport_destination(destination_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, _has_unlocked_campfire(), campfire_position, _discovered_map_ids())
+    var destination: Dictionary = world_map_manager.resolve_teleport_destination(destination_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, false, Vector2.ZERO, _discovered_map_ids(), _campfire_positions_by_map())
     if not bool(destination.get("ok", false)):
         var reason: String = str(destination.get("reason", "unknown"))
         hud.show_message("传送失败：" + ("该区域尚未解锁" if reason == "locked" else "营火据点不可用" if reason == "missing_campfire" else "未知目的地"))
