@@ -3,7 +3,7 @@
 - 唯一活动开发分支：`feat/exploration-progression-foundation-2026-11-05`；`main` 保持稳定，不强推。旧的 `feat/reference-grade-world-exploration-2026-11-05` 不再作为活动主线，先完成其 3 个独有提交的内容对账。
 - 已修正 `docs/MILESTONE_PLAN.md` 中错误的执行分支指向；后续 M0-M2 开发以该文件和本状态记录为准。
 - M0 Android 冒烟：`docs/SMOKE_TEST.md` 共 20 项，目前设备结果仍为“未执行”；没有可用于填写真机通过的设备记录、录像或设备参数。CI/headless 通过不替代真机验收。
-- APK：当前记录没有与最新活动分支 SHA 对应且经验证的 APK 交付证据；不得用旧 APK 或 CI 成功代替。
+- APK：当前活动分支 SHA 尚无对应 APK。\n- 历史可安装测试包已找回：构建 run `42047370898`，artifact `13425372004`，APK 171 MiB（179,017,415 bytes），SHA256 `290bac8a4823220324956b7d04a29beb65cc74afdf8cea096143e3be2691cf58`；构建 commit `b663ae687f90a723321547b4941993c9bca879ca`。当前活动分支从该 commit 直接领先 39 个提交（无落后），所以这是可安装的旧基线测试包，不是当前活动 SHA 的候选包；可先用于基础竖屏体验检查，不能代替最新构建。
 - 分支清理：已完成 70 个 refs 的分类审计，但尚未删除任何分支；连接器没有 branch-ref DELETE 操作。37 个合并到 main 的源分支仅为候选，需在授权 GitHub 分支管理界面执行并逐项确认。
 - 立即执行顺序：核对 main 独有的 `5.png`、`image.png`；核对 reference-grade 独有 3 个提交；审计离线结算旧 API 调用兼容性；继续 E3b 与 M0 真机构建/验收。禁止新开无必要长期分支。
 
