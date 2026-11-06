@@ -1,3 +1,14 @@
+# 项目管理纠偏与当前验收状态（2026-11-06）
+
+- 唯一活动开发分支：`feat/exploration-progression-foundation-2026-11-05`；`main` 保持稳定，不强推。旧的 `feat/reference-grade-world-exploration-2026-11-05` 不再作为活动主线，先完成其 3 个独有提交的内容对账。
+- 已修正 `docs/MILESTONE_PLAN.md` 中错误的执行分支指向；后续 M0-M2 开发以该文件和本状态记录为准。
+- M0 Android 冒烟：`docs/SMOKE_TEST.md` 共 20 项，目前设备结果仍为“未执行”；没有可用于填写真机通过的设备记录、录像或设备参数。CI/headless 通过不替代真机验收。
+- APK：当前记录没有与最新活动分支 SHA 对应且经验证的 APK 交付证据；不得用旧 APK 或 CI 成功代替。
+- 分支清理：已完成 70 个 refs 的分类审计，但尚未删除任何分支；连接器没有 branch-ref DELETE 操作。37 个合并到 main 的源分支仅为候选，需在授权 GitHub 分支管理界面执行并逐项确认。
+- 立即执行顺序：核对 main 独有的 `5.png`、`image.png`；核对 reference-grade 独有 3 个提交；审计离线结算旧 API 调用兼容性；继续 E3b 与 M0 真机构建/验收。禁止新开无必要长期分支。
+
+---
+
 # 最新进展（2026-11-06：单机化决策基线与离线结算异常分类）
 
 - 新增 `docs/SINGLE_PLAYER_DESIGN_DECISIONS.md`：记录原版职能到单机替代、战斗策略、养成经济、离线收益安全边界、当前工程映射和优先级。
