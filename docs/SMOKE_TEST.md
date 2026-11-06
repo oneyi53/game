@@ -1,15 +1,17 @@
 # M0 Android 冒烟测试清单
 
-## 当前候选包（2026-11-06）
+## 当前候选包（2026-11-06：首次成功导出）
 
-- Git commit：`7b723680f5f920f3a1909eba57e23cfab5018c34`
-- Android build run：`42142439236`
-- Artifact ID：`13467954084`
-- APK 大小：180,334,221 bytes
-- APK SHA256：`c1526e79842002da9409990e74eb4e7261e41e9c53d2960222c13bf3446a2f85`
+- Git commit：`71fc6aeb89915c45eaa3da2b1bddb79d7f16a8ba`
+- Android build run：`42175019271`
+- Artifact ID：`13483430889`
+- Artifact 名称：`hero-world-android-debug`
+- APK 文件大小：73,907,164 bytes（约 70.5 MiB）
+- Artifact SHA256（压缩包）：`eec892af3ab6dde99af23aa49bfc4254886741f473510ef10de42a9f753067bb`
 - 构建结果：成功；Android 真机结果：未执行。
+- 下载入口：https://github.com/oneyi53/game/actions/runs/42175019271
 
-> 本包是 M0 当前集成候选，包含现有可玩主流程和 HUD/摇杆整合。日常活跃度/红点仍是未接入主流程的 M1 原型，不计入本轮 M0 验收。
+> 该包是首个成功导出的 Android debug 候选包。CI 通过不代表 20 项设备冒烟通过；日常活跃度/红点仍是未接入主流程的 M1 原型，不计入本轮 M0 验收。
 
 > 状态约定：`未执行` / `通过` / `失败` / `阻塞（缺设备/构建）`。不得将 CI/headless 结果填写为 Android 真机通过。
 > 每次执行记录：APK 对应 commit SHA、设备型号、Android 版本、分辨率/DPI、测试日期、录像位置、缺陷编号。
