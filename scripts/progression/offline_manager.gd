@@ -1,19 +1,11 @@
 class_name OfflineManager
 extends RefCounted
 
-# Simplified offline earnings (data/offline.json). Only gold and
-# wood are ever granted: no loose items, no experience, no quest
-# progress. The learning outline gives no hourly rates and no
-# 8/12-hour distinction, so the table's rates, the 10-minute
-# threshold and the unified 8-hour cap are draft assumptions
-# recorded in offline.json's note, not outline quotations.
-# Settlement is pure: settle() computes from (now, last saved,
-# current gold/wood, wood cap) and never mutates state; Main
-# applies the result, shows the panel, then saves at once so the
-# same offline span cannot be claimed twice. An old save without
-# last_saved_unix gets no retroactive earnings: the first load
-# only stamps the timestamp on the next save.
-
+# Offline earnings are deliberately local and conservative. The client
+# cannot prove wall-clock integrity without a trusted external source;
+# this manager classifies detectable timestamp anomalies and enforces
+# the configured payout cap, but does not claim to prevent save editing
+# or repeated forward-clock manipulation.
 var error_message: String = ""
 var gold_per_hour: int = 0
 var wood_per_hour: int = 0
@@ -47,23 +39,45 @@ func load_all() -> bool:
     if gold_per_hour < 0 or wood_per_hour < 0 or cap_hours <= 0 or min_minutes < 0:
         error_message = "offline.json 数值非法：每小时收益不能为负，封顶小时必须为正，阈值分钟不能为负"
         return false
+    error_message = ""
     return true
 
+func _empty_settlement(reason: String, elapsed: int = 0) -> Dictionary:
+    return {
+        "eligible": false,
+        "reason": reason,
+        "elapsed_seconds": maxi(0, elapsed),
+        "billed_seconds": 0,
+        "gold": 0,
+        "wood": 0
+    }
+
 func settle(now_unix: int, last_saved_unix, current_wood: int, wood_cap: int) -> Dictionary:
-    # Returns {eligible, reason, elapsed_seconds, billed_seconds,
-    # gold, wood}. last_saved_unix may be absent (old save) or
-    # non-numeric (hand-edited save): both mean "no earnings",
-    # never a crash and never a retroactive payout.
+    # A missing legacy timestamp is not an anomaly: it simply has no
+    # historical interval to settle. Malformed and future timestamps
+    # are distinguished so callers/tests can observe clock rollback.
     if not (last_saved_unix is int or last_saved_unix is float):
-        return {"eligible": false, "reason": "no_timestamp", "elapsed_seconds": 0, "billed_seconds": 0, "gold": 0, "wood": 0}
-    var last: int = int(last_saved_unix)
-    if last <= 0 or now_unix < last:
-        return {"eligible": false, "reason": "no_timestamp", "elapsed_seconds": 0, "billed_seconds": 0, "gold": 0, "wood": 0}
+        return _empty_settlement("no_timestamp")
+    var last_value: float = float(last_saved_unix)
+    if not is_finite(last_value) or last_value <= 0.0:
+        return _empty_settlement("invalid_timestamp")
+    if now_unix <= 0:
+        return _empty_settlement("invalid_now")
+    var last: int = int(last_value)
+    if now_unix < last:
+        return _empty_settlement("clock_rollback")
     var elapsed: int = now_unix - last
     if elapsed < min_minutes * 60:
-        return {"eligible": false, "reason": "below_threshold", "elapsed_seconds": elapsed, "billed_seconds": 0, "gold": 0, "wood": 0}
+        return _empty_settlement("below_threshold", elapsed)
     var billed: int = mini(elapsed, cap_hours * 3600)
     var gold: int = int(float(billed) / 3600.0 * float(gold_per_hour))
     var wood: int = int(float(billed) / 3600.0 * float(wood_per_hour))
     wood = mini(wood, maxi(0, wood_cap - current_wood))
-    return {"eligible": true, "reason": "ok", "elapsed_seconds": elapsed, "billed_seconds": billed, "gold": gold, "wood": wood}
+    return {
+        "eligible": true,
+        "reason": "ok" if elapsed <= cap_hours * 3600 else "capped",
+        "elapsed_seconds": elapsed,
+        "billed_seconds": billed,
+        "gold": gold,
+        "wood": wood
+    }
