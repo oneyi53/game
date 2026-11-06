@@ -1047,10 +1047,11 @@ func _on_campfire_interact(entry: Dictionary) -> void:
 func _has_unlocked_campfire() -> bool:
     if camp_manager == null:
         return false
-    for campfire_id in camp_manager.campfire_order:
-        if camp_manager.is_campfire_unlocked(str(campfire_id)):
-            return true
-    return false
+    # The teleport button is backed by the configured primary campfire
+    # node. Do not let a future, unrelated campfire unlock this one.
+    if camp_manager.campfire_order.is_empty():
+        return false
+    return camp_manager.is_campfire_unlocked(str(camp_manager.campfire_order[0]))
 
 func _ensure_teleport_panel() -> void:
     if teleport_panel != null:
