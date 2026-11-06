@@ -205,7 +205,7 @@ jobs:
             echo "World map manager tests reported errors."
             exit 1
           fi
-          grep -q "World map manager tests: 21 passed" world-map-manager-tests.log
+          grep -q "World map manager tests: 32 passed" world-map-manager-tests.log
 
       - name: Run headless project smoke test
         shell: bash
