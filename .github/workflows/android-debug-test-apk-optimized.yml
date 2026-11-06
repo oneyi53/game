@@ -1,10 +1,7 @@
 name: Android debug test APK (optimized)
 
 on:
-  push:
-    branches:
-      - build/android-apk-from-tested-exploration-2026-11-05
-      - feat/exploration-progression-foundation-2026-11-05
+  # APK export is intentionally manual: only build after an explicit user request.
   workflow_dispatch:
 
 permissions:
