@@ -161,6 +161,14 @@ func _draw() -> void:
     else:
         for point in [Vector2(260, 480), Vector2(500, 620), Vector2(900, 480), Vector2(1100, 700)]:
             _draw_dot(point, 4.0, Color(1.0, 0.85, 0.2))
+        # Locked regional road is visible from the start; the world gate
+        # activates only after the regional boss objective is complete.
+        var gate_screen: Vector2 = WorldProjectionScript.world_to_screen(Vector2(900.0, 790.0))
+        draw_circle(gate_screen, 32.0, Color(0.08, 0.14, 0.1, 0.82))
+        draw_circle(gate_screen, 23.0, Color(0.76, 0.66, 0.36))
+        draw_circle(gate_screen, 14.0, Color(0.25, 0.42, 0.24))
+        if font != null:
+            draw_string(font, gate_screen + Vector2(-48.0, 48.0), "幽谷道路", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1.0, 0.95, 0.75))
 
 
 func _draw_fullscreen_ground(bounds: Rect2, town: bool) -> void:
