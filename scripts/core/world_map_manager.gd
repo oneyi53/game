@@ -80,10 +80,14 @@ func teleport_destinations(boss_defeated: bool, elite_defeated: bool, valley_que
     ]
     return destinations
 
-func resolve_teleport_destination(destination_id: String, campfire_position: Vector2 = Vector2.ZERO) -> Dictionary:
-    for destination in teleport_destinations(true, true, true, true, true):
+func resolve_teleport_destination(destination_id: String, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, campfire_unlocked: bool, campfire_position: Vector2 = Vector2.ZERO) -> Dictionary:
+    for destination in teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done, campfire_unlocked):
         if str(destination["id"]) != destination_id:
             continue
+        if not bool(destination["available"]):
+            return {"ok": false, "reason": "locked"}
+        if str(destination["kind"]) == "campfire" and campfire_position == Vector2.ZERO:
+            return {"ok": false, "reason": "missing_campfire"}
         var position: Vector2 = campfire_position + Vector2(0.0, 96.0) if str(destination["kind"]) == "campfire" else spawn_position(str(destination["map_id"]))
         return {"ok": true, "map_id": str(destination["map_id"]), "position": clamp_position(position), "name": str(destination["name"])}
     return {"ok": false}
