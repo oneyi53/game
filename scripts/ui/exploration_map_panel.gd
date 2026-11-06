@@ -4,7 +4,8 @@ signal close_requested
 signal region_selected(map_index: int)
 signal campfire_teleport_requested(marker_index: int)
 
-const MAP_SIZE := Vector2(1600.0, 1400.0)
+const WorldMapManagerScript = preload("res://scripts/core/world_map_manager.gd")
+const MAP_SIZE: Vector2 = WorldMapManagerScript.MAP_SIZE
 const CELL_SIZE := 80.0
 const MAP_COLUMNS := int(ceil(MAP_SIZE.x / CELL_SIZE))
 const MAP_ROWS := int(ceil(MAP_SIZE.y / CELL_SIZE))
