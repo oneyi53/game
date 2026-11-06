@@ -23,7 +23,8 @@ const CONNECTIONS := [
 # Quest links remain logical until their physical gate positions are authored.
 const PHYSICAL_EXITS := [
     {"from": TOWN, "to": MOSS_CROWN, "position": Vector2(1460.0, 700.0), "radius": 84.0},
-    {"from": MOSS_CROWN, "to": FALLEN_LEAF, "position": Vector2(900.0, 790.0), "radius": 72.0}
+    {"from": MOSS_CROWN, "to": FALLEN_LEAF, "position": Vector2(900.0, 790.0), "radius": 72.0},
+    {"from": FALLEN_LEAF, "to": MORNING_DEW, "position": Vector2(480.0, 1120.0), "radius": 72.0}
 ]
 
 const MAPS := {
