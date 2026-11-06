@@ -830,8 +830,11 @@ func _process(delta: float) -> void:
     # links do not become walk-through exits until their scene coordinates exist.
     var nearby_exit: Dictionary = world_map_manager.physical_exit_at(active_map_id, captain.global_position)
     if not nearby_exit.is_empty():
-        _switch_map(str(nearby_exit["to"]))
-        return
+        var exit_target: String = str(nearby_exit["to"])
+        var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+        if world_map_manager.is_unlocked(exit_target, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
+            _switch_map(exit_target)
+            return
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(float(captain.rage), captain.rage >= Hero.SKILL_RAGE_COST)
