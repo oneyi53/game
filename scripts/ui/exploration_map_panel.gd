@@ -65,7 +65,7 @@ func _draw() -> void:
         if not unlocked:
             fill = Color(0.10, 0.11, 0.10, 1.0)
         draw_rect(tab_rect, fill, true, 8.0)
-        draw_rect(tab_rect, Color(0.70, 0.70, 0.48, 0.9) if active else Color(0.28, 0.37, 0.29, 1.0), false, 2.0, 8.0)
+        draw_rect(tab_rect, Color(0.70, 0.70, 0.48, 0.9) if active else Color(0.28, 0.37, 0.29, 1.0), false, 2.0, true)
         var tab_text: String = REGION_NAMES[i] if unlocked else "未解锁"
         _draw_text(tab_text, Vector2(tab_rect.position.x + 12.0, tab_rect.position.y + 46.0), 18, Color(0.91, 0.88, 0.72) if unlocked else Color(0.43, 0.46, 0.42))
     _draw_text("探索地图 · 逐步揭开未知区域", Vector2(42.0, 1155.0), 16, Color(0.54, 0.64, 0.54))
