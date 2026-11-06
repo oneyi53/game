@@ -185,6 +185,17 @@ jobs:
           fi
           grep -q "Resource node tests: 6 passed" resource-node-tests.log
 
+      - name: Run boss map isolation regression tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_boss_map_isolation.gd 2>&1 | tee boss-map-isolation-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' boss-map-isolation-tests.log; then
+            echo "Boss map isolation tests reported errors."
+            exit 1
+          fi
+          grep -q "Boss map isolation tests: 2 passed" boss-map-isolation-tests.log
+
       - name: Run headless project smoke test
         shell: bash
         run: |
@@ -228,6 +239,7 @@ jobs:
             quest-manager-tests.log
             camp-manager-tests.log
             resource-node-tests.log
+            boss-map-isolation-tests.log
             offline-manager-tests.log
             virtual-joystick-tests.log
           if-no-files-found: ignore
