@@ -77,7 +77,9 @@ func _draw_map_surface() -> void:
         for y in range(18):
             var cell_key := str(x) + ":" + str(y)
             var cell_rect := Rect2(MAP_RECT.position.x + float(x) * MAP_RECT.size.x / 20.0, MAP_RECT.position.y + float(y) * MAP_RECT.size.y / 18.0, MAP_RECT.size.x / 20.0, MAP_RECT.size.y / 18.0)
-            if cell_key in explored_cells:
+            # The town is a safe hub, not an unexplored wilderness map.
+            # Render its full layout instead of covering it with exploration fog.
+            if current_map_id == "town" or cell_key in explored_cells:
                 var terrain_tone := 0.18 + float((x * 7 + y * 3) % 8) * 0.012
                 draw_rect(cell_rect, Color(0.19 + terrain_tone * 0.25, 0.30 + terrain_tone, 0.18 + terrain_tone * 0.20, 1.0))
                 draw_rect(cell_rect, Color(0.72, 0.78, 0.56, 0.10), false, 1.0)
@@ -89,9 +91,9 @@ func _draw_map_surface() -> void:
         _draw_marker(marker, Color(0.45, 0.94, 0.65), 10.0)
     for marker in enemy_positions:
         _draw_marker(marker, Color(0.95, 0.34, 0.28), 8.0)
-    if current_map_id != "town":
-        _draw_marker(player_position, Color(0.35, 0.82, 1.0), 11.0)
-        draw_arc(_map_to_panel(player_position), 17.0, 0.0, TAU, 32, Color(0.70, 0.92, 1.0), 2.0)
+    # The party marker is useful in every region, including the safe hub.
+    _draw_marker(player_position, Color(0.35, 0.82, 1.0), 11.0)
+    draw_arc(_map_to_panel(player_position), 17.0, 0.0, TAU, 32, Color(0.70, 0.92, 1.0), 2.0)
 
 func _draw_marker(world_pos: Vector2, color: Color, radius: float) -> void:
     var point := _map_to_panel(world_pos)
