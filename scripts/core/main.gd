@@ -826,10 +826,11 @@ func _update_world_visuals() -> void:
 func _process(delta: float) -> void:
     if config_failed or captain == null:
         return
-    # The starter hub leads into the first forest by walking to its gate.
-    # Later biomes advance automatically when their main regional task ends.
-    if active_map_id == WorldMapManagerScript.TOWN and captain.global_position.distance_to(Vector2(1460.0, 700.0)) <= 84.0:
-        _switch_map(WorldMapManagerScript.MOSS_CROWN)
+    # Physical gates are authored alongside the world topology. Quest-only
+    # links do not become walk-through exits until their scene coordinates exist.
+    var nearby_exit: Dictionary = world_map_manager.physical_exit_at(active_map_id, captain.global_position)
+    if not nearby_exit.is_empty():
+        _switch_map(str(nearby_exit["to"]))
         return
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
