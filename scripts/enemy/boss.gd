@@ -139,8 +139,11 @@ func _update_telegraph(delta: float) -> void:
     telegraph_timer -= delta
     if telegraph_timer <= 0.0:
         var anyone_close: bool = false
+        var boss_map_id: String = str(get_meta("world_map_id", WorldMaps.MOSS_CROWN))
         for hero in get_tree().get_nodes_in_group("heroes"):
-            if hero == null or bool(hero.get("dead")):
+            if hero == null or not is_instance_valid(hero) or bool(hero.get("dead")):
+                continue
+            if str(hero.get("world_map_id")) != boss_map_id:
                 continue
             if global_position.distance_to(hero.global_position) <= 110.0:
                 anyone_close = true
