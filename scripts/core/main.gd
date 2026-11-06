@@ -1086,15 +1086,10 @@ func _refresh_teleport_destinations() -> void:
     for child in teleport_list.get_children():
         teleport_list.remove_child(child)
         child.queue_free()
-    _add_teleport_destination("town", "王朝营地", true, "返回安全区")
-    _add_teleport_destination("forest_entry", "森林入口", true, "冒险起点")
-    _add_teleport_destination("campfire", "营火据点", campfire_node != null, "已激活的营火")
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
-    var fallen_leaf_open: bool = world_map_manager.is_unlocked(WorldMapManagerScript.FALLEN_LEAF, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done)
-    var morning_dew_open: bool = world_map_manager.is_unlocked(WorldMapManagerScript.MORNING_DEW, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done)
-    _add_teleport_destination("moss_crown", "苔冠空地", true, "首个探索区域")
-    _add_teleport_destination("fallen_leaf", "落叶幽谷", fallen_leaf_open, "完成苔冠区域主线后开放")
-    _add_teleport_destination("morning_dew", "朝露林地", morning_dew_open, "完成落叶幽谷主线后开放")
+    var destinations: Array = world_map_manager.teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, _has_unlocked_campfire())
+    for destination in destinations:
+        _add_teleport_destination(str(destination["id"]), str(destination["name"]), bool(destination["available"]), str(destination["hint"]))
 
 func _add_teleport_destination(destination_id: String, label: String, available: bool, hint: String) -> void:
     var button := Button.new()
@@ -1132,51 +1127,28 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
     if captain == null or not _has_unlocked_campfire():
         _close_teleport_panel()
         return
-    var target_map_id: String = WorldMapManagerScript.MOSS_CROWN
-    var destination: Vector2 = world_map_manager.spawn_position(target_map_id)
-    var destination_name: String = ""
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
-    match destination_id:
-        "town":
-            target_map_id = WorldMapManagerScript.TOWN
-            destination = world_map_manager.spawn_position(target_map_id)
-            destination_name = "王朝营地"
-        "forest_entry":
-            destination_name = "森林入口"
-        "campfire":
-            if campfire_node == null:
-                hud.show_message("传送失败：营火据点不可用")
-                return
-            destination = campfire_node.global_position + Vector2(0.0, 96.0)
-            destination_name = "营火据点"
-        "moss_crown":
-            destination_name = "苔冠空地"
-        "fallen_leaf":
-            target_map_id = WorldMapManagerScript.FALLEN_LEAF
-            if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
-                hud.show_message("击败精英首领后才能前往落叶幽谷")
-                return
-            destination = world_map_manager.spawn_position(target_map_id)
-            destination_name = "落叶幽谷"
-        "morning_dew":
-            target_map_id = WorldMapManagerScript.MORNING_DEW
-            if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
-                hud.show_message("完成落叶幽谷主线后才能前往朝露林地")
-                return
-            destination = world_map_manager.spawn_position(target_map_id)
-            destination_name = "朝露林地"
-        _:
-            hud.show_message("传送失败：未知目的地")
-            return
+    var campfire_position: Vector2 = campfire_node.global_position if campfire_node != null and is_instance_valid(campfire_node) else Vector2.ZERO
+    var destination: Dictionary = world_map_manager.resolve_teleport_destination(destination_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, _has_unlocked_campfire(), campfire_position)
+    if not bool(destination.get("ok", false)):
+        var reason: String = str(destination.get("reason", "unknown"))
+        hud.show_message("传送失败：" + ("该区域尚未解锁" if reason == "locked" else "营火据点不可用" if reason == "missing_campfire" else "未知目的地"))
+        _refresh_teleport_destinations()
+        return
+    var target_map_id: String = str(destination["map_id"])
+    var target_position: Vector2 = destination["position"]
+    var destination_name: String = str(destination["name"])
     if target_map_id != active_map_id:
         _switch_map(target_map_id)
+        if active_map_id != target_map_id:
+            return
     for hero in heroes:
         if hero == null or not is_instance_valid(hero):
             continue
         hero.move_input = Vector2.ZERO
         hero.velocity = Vector2.ZERO
         hero.world_map_id = active_map_id
-        hero.global_position = WorldMapManagerScript.clamp_position(destination + hero.formation_offset)
+        hero.global_position = WorldMapManagerScript.clamp_position(target_position + hero.formation_offset)
     camera.position = _projected_camera_position(captain.global_position)
     _close_teleport_panel()
     hud.show_message("已传送至 " + destination_name)
