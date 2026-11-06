@@ -22,7 +22,8 @@ const CONNECTIONS := [
 # Only exits with verified in-scene coordinates are registered here.
 # Quest links remain logical until their physical gate positions are authored.
 const PHYSICAL_EXITS := [
-    {"from": TOWN, "to": MOSS_CROWN, "position": Vector2(1460.0, 700.0), "radius": 84.0}
+    {"from": TOWN, "to": MOSS_CROWN, "position": Vector2(1460.0, 700.0), "radius": 84.0},
+    {"from": MOSS_CROWN, "to": FALLEN_LEAF, "position": Vector2(900.0, 790.0), "radius": 72.0}
 ]
 
 const MAPS := {
@@ -86,7 +87,6 @@ func route_between(from_map_id: String, to_map_id: String) -> Array:
 func teleport_destinations(boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, campfire_unlocked: bool) -> Array:
     var destinations: Array = [
         {"id": "town", "name": "王朝营地", "map_id": TOWN, "kind": "spawn", "available": true, "hint": "返回安全区"},
-        {"id": "forest_entry", "name": "森林入口", "map_id": MOSS_CROWN, "kind": "fixed", "position": Vector2(800.0, 1260.0), "available": true, "hint": "森林南侧入口"},
         {"id": "campfire", "name": "营火据点", "map_id": MOSS_CROWN, "kind": "campfire", "available": campfire_unlocked, "hint": "已激活的营火"},
         {"id": MOSS_CROWN, "name": "苔冠空地", "map_id": MOSS_CROWN, "kind": "spawn", "available": true, "hint": "首个探索区域"},
         {"id": FALLEN_LEAF, "name": "落叶幽谷", "map_id": FALLEN_LEAF, "kind": "spawn", "available": is_unlocked(FALLEN_LEAF, boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done), "hint": "完成苔冠区域主线后开放"},
