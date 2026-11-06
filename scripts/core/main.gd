@@ -35,6 +35,7 @@ const BOSS_SCENE: PackedScene = preload("res://scenes/boss.tscn")
 const CAMPFIRE_SCENE: PackedScene = preload("res://scenes/campfire.tscn")
 const RESOURCE_NODE_SCRIPT = preload("res://scripts/interactable/resource_node.gd")
 const EXPLORATION_FOG_SCRIPT = preload("res://scripts/core/exploration_fog.gd")
+const EXPLORATION_MAP_PANEL_SCRIPT = preload("res://scripts/ui/exploration_map_panel.gd")
 const EFFECT_PLAYER = preload("res://scripts/fx/effect_player.gd")
 const EFFECT_ATLAS: Texture2D = preload("res://assets/art-v1/effects/effect_atlas.png")
 
@@ -54,6 +55,7 @@ const EFFECT_ATLAS: Texture2D = preload("res://assets/art-v1/effects/effect_atla
 
 var teleport_panel: PanelContainer = null
 var teleport_list: VBoxContainer = null
+var exploration_map_panel: Control = null
 
 var data_loader: DataLoader = null
 var save_manager: SaveManager = null
@@ -631,21 +633,55 @@ func _serialize_map_positions() -> Dictionary:
 
 
 func _on_map_pressed() -> void:
-    var popup := PopupMenu.new()
-    popup.add_item("王朝营地（安全区）", 0)
-    popup.add_item("苔冠空地", 1)
-    popup.add_item("落叶幽谷", 2)
-    popup.add_item("朝露林地", 3)
+    _ensure_exploration_map_panel()
+    _close_teleport_panel()
+    exploration_map_panel.visible = not exploration_map_panel.visible
+    if exploration_map_panel.visible:
+        _refresh_exploration_map_panel()
+
+func _ensure_exploration_map_panel() -> void:
+    if exploration_map_panel != null:
+        return
+    exploration_map_panel = EXPLORATION_MAP_PANEL_SCRIPT.new()
+    $UI.add_child(exploration_map_panel)
+    exploration_map_panel.connect("close_requested", _on_exploration_map_close_requested)
+    exploration_map_panel.connect("region_selected", _on_exploration_map_region_selected)
+
+func _on_exploration_map_close_requested() -> void:
+    if exploration_map_panel != null:
+        exploration_map_panel.visible = false
+
+func _on_exploration_map_region_selected(map_index: int) -> void:
+    _on_map_selected(map_index)
+    if exploration_map_panel != null:
+        exploration_map_panel.visible = false
+
+func _refresh_exploration_map_panel() -> void:
+    if exploration_map_panel == null or not exploration_map_panel.visible or captain == null:
+        return
+    var enemy_positions: Array = []
+    for enemy in enemies:
+        if enemy == null or not is_instance_valid(enemy) or not enemy.visible:
+            continue
+        if str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) == active_map_id:
+            enemy_positions.append(enemy.global_position)
+    var resource_positions: Array = []
+    for resource_node in resource_nodes:
+        if resource_node == null or not is_instance_valid(resource_node) or not resource_node.visible:
+            continue
+        if str(resource_node.get_meta("world_map_id", "")) == active_map_id:
+            resource_positions.append(resource_node.global_position)
+    var teleport_positions: Array = []
+    if active_map_id == WorldMapManagerScript.MOSS_CROWN and campfire_node != null and is_instance_valid(campfire_node):
+        teleport_positions.append(campfire_node.global_position)
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
-    popup.set_item_disabled(1, not world_map_manager.is_unlocked(WorldMapManagerScript.MOSS_CROWN, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done))
-    popup.set_item_disabled(2, not world_map_manager.is_unlocked(WorldMapManagerScript.FALLEN_LEAF, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done))
-    popup.set_item_disabled(3, not world_map_manager.is_unlocked(WorldMapManagerScript.MORNING_DEW, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done))
-    popup.id_pressed.connect(func(map_index: int):
-        _on_map_selected(map_index)
-        popup.queue_free()
-    )
-    add_child(popup)
-    popup.popup_centered()
+    var unlocked_maps: Array = [WorldMapManagerScript.TOWN, WorldMapManagerScript.MOSS_CROWN]
+    if world_map_manager.is_unlocked(WorldMapManagerScript.FALLEN_LEAF, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
+        unlocked_maps.append(WorldMapManagerScript.FALLEN_LEAF)
+    if world_map_manager.is_unlocked(WorldMapManagerScript.MORNING_DEW, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
+        unlocked_maps.append(WorldMapManagerScript.MORNING_DEW)
+    var stats: Dictionary = exploration_fog.get_exploration_stats() if exploration_fog != null else {"applicable": false, "percent": 0}
+    exploration_map_panel.call("set_snapshot", active_map_id, world_map_manager.map_name(active_map_id), captain.global_position, exploration_fog.get_saved_cells() if exploration_fog != null else [], enemy_positions, resource_positions, teleport_positions, unlocked_maps, bool(stats.get("applicable", false)), int(stats.get("percent", 0)))
 
 
 func _on_map_selected(map_index: int) -> void:
@@ -705,6 +741,7 @@ func _switch_map(target_map_id: String) -> void:
     if exploration_fog != null:
         exploration_fog.set_map_state(active_map_id, explored_map_cells.get(active_map_id, []))
     _refresh_exploration_hud()
+    _refresh_exploration_map_panel()
     var target_position: Vector2 = map_positions.get(active_map_id, world_map_manager.spawn_position(active_map_id))
     target_position = WorldMapManagerScript.clamp_position(target_position)
     for hero in heroes:
@@ -792,6 +829,7 @@ func _update_exploration(delta: float) -> void:
         return
     explored_map_cells[active_map_id] = exploration_fog.get_saved_cells()
     _refresh_exploration_hud()
+    _refresh_exploration_map_panel()
     exploration_save_cooldown -= delta
     if exploration_save_cooldown <= 0.0:
         _save_game()
