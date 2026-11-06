@@ -11,12 +11,63 @@ const MORNING_DEW := "morning_dew"
 
 const MAP_SIZE := Vector2(1600.0, 1400.0)
 const DEFAULT_MARGIN := 32.0
+# Region graph: physical exits and quest-gated world-map links share one source.
+# A route can span multiple links; UI and teleport services should not invent edges.
+const CONNECTIONS := [
+    {"from": TOWN, "to": MOSS_CROWN, "type": "gate", "name": "森林入口"},
+    {"from": MOSS_CROWN, "to": FALLEN_LEAF, "type": "quest", "name": "落叶幽谷道路"},
+    {"from": FALLEN_LEAF, "to": MORNING_DEW, "type": "quest", "name": "朝露林地道路"}
+]
+
 const MAPS := {
     TOWN: {"name": "王朝营地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 610.0), "safe": true},
     MOSS_CROWN: {"name": "苔冠空地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 620.0), "safe": false},
     FALLEN_LEAF: {"name": "落叶幽谷", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 650.0), "safe": false},
     MORNING_DEW: {"name": "朝露林地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 650.0), "safe": false}
 }
+
+func connections_from(map_id: String) -> Array:
+    var result: Array = []
+    for connection in CONNECTIONS:
+        if str(connection["from"]) == map_id:
+            result.append(connection.duplicate(true))
+        elif str(connection["to"]) == map_id:
+            var reverse: Dictionary = connection.duplicate(true)
+            var previous_from: String = str(reverse["from"])
+            reverse["from"] = reverse["to"]
+            reverse["to"] = previous_from
+            result.append(reverse)
+    return result
+
+func has_direct_connection(from_map_id: String, to_map_id: String) -> bool:
+    if not is_known_map(from_map_id) or not is_known_map(to_map_id):
+        return false
+    for connection in connections_from(from_map_id):
+        if str(connection["to"]) == to_map_id:
+            return true
+    return false
+
+func route_between(from_map_id: String, to_map_id: String) -> Array:
+    if not is_known_map(from_map_id) or not is_known_map(to_map_id):
+        return []
+    if from_map_id == to_map_id:
+        return [from_map_id]
+    var frontier: Array = [[from_map_id]]
+    var visited: Dictionary = {from_map_id: true}
+    while not frontier.is_empty():
+        var path: Array = frontier.pop_front()
+        var current: String = str(path.back())
+        for connection in connections_from(current):
+            var next_map: String = str(connection["to"])
+            if visited.has(next_map):
+                continue
+            var next_path: Array = path.duplicate()
+            next_path.append(next_map)
+            if next_map == to_map_id:
+                return next_path
+            visited[next_map] = true
+            frontier.append(next_path)
+    return []
 
 func is_known_map(map_id: String) -> bool:
     return MAPS.has(map_id)
