@@ -826,15 +826,8 @@ func _update_world_visuals() -> void:
 func _process(delta: float) -> void:
     if config_failed or captain == null:
         return
-    # Physical gates are authored alongside the world topology. Quest-only
-    # links do not become walk-through exits until their scene coordinates exist.
-    var nearby_exit: Dictionary = world_map_manager.physical_exit_at(active_map_id, captain.global_position)
-    if not nearby_exit.is_empty():
-        var exit_target: String = str(nearby_exit["to"])
-        var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
-        if world_map_manager.is_unlocked(exit_target, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
-            _switch_map(exit_target)
-            return
+    # Physical exits are explicit interactions, never automatic transitions.
+    # This prevents accidental map changes while fighting or harvesting nearby.
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(float(captain.rage), captain.rage >= Hero.SKILL_RAGE_COST)
@@ -925,6 +918,15 @@ func _on_skill_pressed() -> void:
 func _on_interact_pressed() -> void:
     if captain == null:
         return
+    var nearby_exit: Dictionary = world_map_manager.physical_exit_at(active_map_id, captain.global_position)
+    if not nearby_exit.is_empty():
+        var exit_target: String = str(nearby_exit["to"])
+        var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+        if not world_map_manager.is_unlocked(exit_target, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
+            hud.show_message("道路尚未开放：完成当前区域主线任务后解锁")
+            return
+        _switch_map(exit_target)
+        return
     if campfire_node != null and campfire_node.visible and camp_manager != null and not camp_manager.campfire_order.is_empty():
         var entry = camp_manager.campfire(camp_manager.campfire_order[0])
         if entry != null and captain.global_position.distance_to(campfire_node.global_position) < 80.0:
@@ -970,6 +972,13 @@ func _refresh_resource_prompt() -> void:
         return
     if harvest_target != null and is_instance_valid(harvest_target):
         hud.set_interact_prompt("采集中…")
+        return
+    var nearby_exit: Dictionary = world_map_manager.physical_exit_at(active_map_id, captain.global_position)
+    if not nearby_exit.is_empty():
+        var exit_target: String = str(nearby_exit["to"])
+        var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
+        var unlocked: bool = world_map_manager.is_unlocked(exit_target, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done)
+        hud.set_interact_prompt("前往" + world_map_manager.map_name(exit_target) if unlocked else "道路未开放")
         return
     # Keep interaction affordances aligned with the actual interaction
     # priority: campfire first, then chest, then resource nodes.
