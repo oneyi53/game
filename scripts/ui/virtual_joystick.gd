@@ -5,9 +5,12 @@ extends Control
 # areas, so interactive GUI controls keep priority. The originating pointer
 # alone controls movement; release/focus loss always clears the vector.
 
-const RADIUS: float = 60.0
-const KNOB_RADIUS: float = 25.0
-const KNOB_TRAVEL: float = 40.0
+# Reference layout (main-town benchmark, 720x1280): the joystick rest
+# circle is visible even when idle, centred at (344, 960), radius 90.
+const RADIUS: float = 90.0
+const KNOB_RADIUS: float = 35.0
+const KNOB_TRAVEL: float = 60.0
+const BASE_CENTER: Vector2 = Vector2(344.0, 960.0)
 
 var vector: Vector2 = Vector2.ZERO
 var dragging: bool = false
@@ -73,6 +76,8 @@ func _end_drag() -> void:
 
 func _draw() -> void:
     if not dragging:
+        draw_circle(BASE_CENTER, RADIUS, Color(1.0, 1.0, 1.0, 0.12))
+        draw_circle(BASE_CENTER, KNOB_RADIUS, Color(1.0, 1.0, 1.0, 0.3))
         return
     draw_circle(touch_origin, RADIUS, Color(1.0, 1.0, 1.0, 0.25))
     draw_circle(touch_origin + vector * KNOB_TRAVEL, KNOB_RADIUS, Color(1.0, 1.0, 1.0, 0.6))

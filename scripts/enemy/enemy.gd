@@ -22,6 +22,8 @@ var attack_cooldown: float = 1.0
 var aggro_range: float = 220.0
 var enemy_color: Color = Color.GREEN
 var dead: bool = false
+var last_damage: int = 0
+var damage_show_timer: float = 0.0
 var target_hero: Node2D = null
 var retarget_timer: float = 0.0
 var attack_timer: float = 0.0
@@ -44,6 +46,9 @@ func _physics_process(delta: float) -> void:
     if dead:
         return
     retarget_timer -= delta
+    if damage_show_timer > 0.0:
+        damage_show_timer -= delta
+        queue_redraw()
     if retarget_timer <= 0.0:
         retarget_timer = 0.5
         _retarget()
@@ -86,6 +91,8 @@ func take_damage(amount: int) -> void:
         return
     var damage: int = maxi(1, amount - defense)
     hp -= damage
+    last_damage = damage
+    damage_show_timer = 0.8
     queue_redraw()
     if hp <= 0:
         hp = 0
@@ -118,6 +125,13 @@ func _draw() -> void:
         draw_texture_rect(texture, Rect2(-48.0, -90.0, 96.0, 96.0), false)
     else:
         draw_circle(Vector2.ZERO, 16.0, enemy_color)
-    draw_rect(Rect2(-24.0, -98.0, 48.0, 5.0), Color(0.08, 0.08, 0.08, 0.92))
-    var fill: float = 48.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-24.0, -98.0, fill, 5.0), Color(0.95, 0.22, 0.2))
+    draw_rect(Rect2(-32.0, -100.0, 64.0, 6.0), Color(0.08, 0.08, 0.08, 0.92))
+    var fill: float = 64.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-32.0, -100.0, fill, 6.0), Color(0.95, 0.22, 0.2))
+    if damage_show_timer > 0.0:
+        var dmg_font: Font = ThemeDB.fallback_font
+        if dmg_font != null:
+            var dmg_text: String = str(last_damage)
+            var dmg_size: Vector2 = dmg_font.get_string_size(dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28)
+            var dmg_y: float = -130.0 - (0.8 - damage_show_timer) * 50.0
+            draw_string(dmg_font, Vector2(-dmg_size.x * 0.5, dmg_y), dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(1.0, 0.85, 0.2))

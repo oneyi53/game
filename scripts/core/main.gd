@@ -48,6 +48,8 @@ const EFFECT_ATLAS: Texture2D = preload("res://assets/art-v1/effects/effect_atla
 @onready var backpack_panel: BackpackPanel = $UI/BackpackPanel
 @onready var offline_panel: OfflinePanel = $UI/OfflinePanel
 @onready var recruit_panel: RecruitPanel = $UI/RecruitPanel
+@onready var quest_panel: QuestPanel = $UI/QuestPanel
+@onready var map_panel: MapPanel = $UI/MapPanel
 @onready var error_label: Label = $UI/ErrorLabel
 
 var teleport_panel: PanelContainer = null
@@ -269,6 +271,13 @@ func _ready() -> void:
     hud.camp_panel_pressed.connect(_on_camp_panel_pressed)
     hud.backpack_panel_pressed.connect(_on_backpack_panel_pressed)
     hud.recruit_panel_pressed.connect(_on_recruit_panel_pressed)
+    hud.quest_pressed.connect(_on_quest_panel_pressed)
+    hud.offline_pressed.connect(_on_offline_panel_pressed)
+    hud.set_quest_manager(quest_manager)
+    hero_panel.close_requested.connect(func() -> void: hero_panel.visible = false)
+    backpack_panel.close_requested.connect(func() -> void: backpack_panel.visible = false)
+    map_panel.map_selected.connect(_on_map_panel_selected)
+    map_panel.close_requested.connect(func() -> void: map_panel.visible = false)
     recruit_panel.set_data(recruitment_manager, level_manager, data_loader.heroes)
     recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
     recruit_panel.visible = false
@@ -287,6 +296,7 @@ func _ready() -> void:
     _refresh_quest_label()
     hero_panel.set_heroes(heroes)
     hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager, equipment_manager, camp_manager, backpack_manager.items)
+    _refresh_top_bar()
     hero_panel.leader_requested.connect(_on_formation_leader_requested)
     hero_panel.add_requested.connect(_on_formation_add_requested)
     hero_panel.remove_requested.connect(_on_formation_remove_requested)
@@ -325,7 +335,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     # Only active formation members spawn. The first slot is the
     # replaceable leader; owned reserve heroes keep their progression
     # and equipment data in the managers without requiring a world node.
-    var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
+    var offsets: Array = [Vector2.ZERO, Vector2(-70.0, 35.0), Vector2(70.0, 35.0), Vector2(0.0, 85.0), Vector2(-70.0, 85.0), Vector2(70.0, 85.0)]
     var start_pos: Vector2 = world_map_manager.spawn_position(active_map_id)
     if map_positions.has(active_map_id):
         start_pos = map_positions[active_map_id]
@@ -397,7 +407,7 @@ func _spawn_recruited_hero(hero_id: String) -> bool:
             break
     if hero_data.is_empty() or captain == null:
         return false
-    var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
+    var offsets: Array = [Vector2.ZERO, Vector2(-70.0, 35.0), Vector2(70.0, 35.0), Vector2(0.0, 85.0), Vector2(-70.0, 85.0), Vector2(70.0, 85.0)]
     var index: int = heroes.size()
     var hero = HERO_SCENE.instantiate()
     hero.setup(hero_data, false)
@@ -429,6 +439,7 @@ func _grant_party_xp(amount: int) -> void:
         hero.hp = maxi(1, int(round(hp_ratio * float(hero.max_hp))))
         hero.queue_redraw()
         hud.show_message(str(hero.hero_name) + " 升到 " + str(level_manager.level(hero.hero_id)) + " 级！")
+    _refresh_top_bar()
     if hero_panel.visible:
         hero_panel.refresh()
 
@@ -571,17 +582,24 @@ func _serialize_map_positions() -> Dictionary:
 
 
 func _on_map_pressed() -> void:
-    var popup := PopupMenu.new()
-    popup.add_item("王朝营地（安全区）", 0)
-    popup.add_item("苔冠空地", 1)
-    popup.add_item("落叶幽谷", 2)
-    popup.add_item("朝露林地", 3)
-    popup.id_pressed.connect(func(map_index: int):
-        _on_map_selected(map_index)
-        popup.queue_free()
-    )
-    add_child(popup)
-    popup.popup_centered()
+    _show_map_panel()
+
+func _show_map_panel() -> void:
+    var order: Array = [WorldMapManagerScript.TOWN, WorldMapManagerScript.MOSS_CROWN, WorldMapManagerScript.FALLEN_LEAF, WorldMapManagerScript.MORNING_DEW]
+    var entries: Array = []
+    for map_id in order:
+        entries.append({
+            "id": str(map_id),
+            "name": world_map_manager.map_name(str(map_id)),
+            "safe": world_map_manager.is_safe_map(str(map_id)),
+            "unlocked": world_map_manager.is_unlocked(str(map_id), boss_defeated, elite_defeated, valley_quest_done),
+        })
+    map_panel.set_maps(entries, active_map_id)
+    _toggle_menu_panel(map_panel)
+
+func _on_map_panel_selected(map_index: int) -> void:
+    map_panel.visible = false
+    _on_map_selected(map_index)
 
 
 func _on_map_selected(map_index: int) -> void:
@@ -676,6 +694,28 @@ func _process(delta: float) -> void:
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
+    var in_combat: bool = false
+    for enemy in enemies:
+        if enemy == null or not is_instance_valid(enemy):
+            continue
+        if bool(enemy.get("dead")):
+            continue
+        if str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) != active_map_id:
+            continue
+        if captain.global_position.distance_to(enemy.global_position) <= 140.0:
+            in_combat = true
+            break
+    hud.set_combat_mode(in_combat)
+    var boss_fight_name: String = ""
+    for boss_node in [boss, elite_boss]:
+        if boss_node == null or not is_instance_valid(boss_node):
+            continue
+        if bool(boss_node.get("dead")):
+            continue
+        if boss_node.target_hero != null and not bool(boss_node.target_hero.get("dead")):
+            boss_fight_name = str(boss_node.enemy_name)
+            break
+    hud.set_boss_banner(boss_fight_name != "", boss_fight_name)
     var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
         screen_input = joystick.vector
@@ -834,7 +874,7 @@ func _open_teleport_panel() -> void:
     if teleport_panel == null:
         _ensure_teleport_panel()
     _refresh_teleport_destinations()
-    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel, quest_panel, map_panel]
     for panel in panels:
         panel.visible = false
     teleport_panel.visible = true
@@ -894,7 +934,7 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
 
 func _toggle_menu_panel(target: Control) -> void:
     var should_open: bool = not target.visible
-    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel, quest_panel, map_panel]
     if teleport_panel != null:
         panels.append(teleport_panel)
     for panel in panels:
@@ -1104,10 +1144,31 @@ func _on_equip_panel_pressed() -> void:
         equip_panel.refresh()
 
 func _refresh_quest_label() -> void:
-    var text: String = ""
-    for line in quest_manager.progress_lines():
-        text += str(line) + "\n"
-    hud.set_quest_text(text.strip_edges())
+    hud.refresh_quest_panel()
+
+func _refresh_top_bar() -> void:
+    if hud == null or captain == null or formation_manager == null:
+        return
+    var total: int = 0
+    for hero_id in formation_manager.active_ids:
+        total += hero_panel._power_for_hero(hero_id)
+    hud.set_power(total)
+    if level_manager != null:
+        hud.set_avatar_level(level_manager.level(captain.hero_id))
+
+func _on_quest_panel_pressed() -> void:
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel, quest_panel, map_panel]
+    if teleport_panel != null:
+        panels.append(teleport_panel)
+    for panel in panels:
+        panel.visible = false
+    hud.toggle_quest_panel()
+
+func _on_offline_panel_pressed() -> void:
+    if offline_panel.scroll == null:
+        hud.show_message("暂无离线结算可查看")
+        return
+    _toggle_menu_panel(offline_panel)
 
 func _on_recruit_panel_pressed() -> void:
     _toggle_menu_panel(recruit_panel)
@@ -1141,6 +1202,7 @@ func _on_recruit_synthesize(hero_id: String) -> void:
         hud.show_message("新英雄加入并上阵：" + hero_name + "！")
     else:
         hud.show_message("新英雄加入收藏：" + hero_name + "；队伍已满，可在英雄编队中更换队长")
+    _refresh_top_bar()
     _save_game()
 
 func _on_quest_completed(quest_id: String, quest_name: String, complete_line: String, reward_gold: int) -> void:

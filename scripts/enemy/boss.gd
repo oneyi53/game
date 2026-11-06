@@ -26,6 +26,8 @@ var leash_range: float = 420.0
 var reward_gold: int = 100
 var boss_color: Color = Color(0.13, 0.53, 0.13)
 var dead: bool = false
+var last_damage: int = 0
+var damage_show_timer: float = 0.0
 var spawn_position: Vector2 = Vector2.ZERO
 var phase: int = 1
 var returning: bool = false
@@ -88,6 +90,9 @@ func _physics_process(delta: float) -> void:
         phase = 2
         queue_redraw()
     retarget_timer -= delta
+    if damage_show_timer > 0.0:
+        damage_show_timer -= delta
+        queue_redraw()
     if retarget_timer <= 0.0:
         retarget_timer = 0.5
         _retarget()
@@ -159,6 +164,8 @@ func take_damage(amount: int) -> void:
         return
     var damage: int = maxi(1, amount - defense)
     hp -= damage
+    last_damage = damage
+    damage_show_timer = 0.8
     queue_redraw()
     if hp <= 0:
         hp = 0
@@ -190,7 +197,18 @@ func _draw() -> void:
         draw_texture_rect(texture, Rect2(-96.0, -180.0, 192.0, 192.0), false)
     else:
         draw_circle(Vector2.ZERO, 28.0, boss_color)
-    draw_rect(Rect2(-42.0, -218.0, 84.0, 9.0), Color(0.04, 0.04, 0.04, 0.98))
-    var fill: float = 84.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-60.0, -222.0, 120.0, 12.0), Color(0.04, 0.04, 0.04, 0.98))
+    var fill: float = 120.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
     var phase_color: Color = Color(0.98, 0.62, 0.18) if phase >= 2 else Color(0.95, 0.2, 0.18)
-    draw_rect(Rect2(-42.0, -218.0, fill, 9.0), phase_color)
+    draw_rect(Rect2(-60.0, -222.0, fill, 12.0), phase_color)
+    var name_font: Font = ThemeDB.fallback_font
+    if name_font != null and enemy_name != "":
+        var name_size: Vector2 = name_font.get_string_size(enemy_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 20)
+        draw_string(name_font, Vector2(-name_size.x * 0.5, -230.0), enemy_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(1.0, 0.96, 0.82))
+    if damage_show_timer > 0.0:
+        var dmg_font: Font = ThemeDB.fallback_font
+        if dmg_font != null:
+            var dmg_text: String = str(last_damage)
+            var dmg_size: Vector2 = dmg_font.get_string_size(dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28)
+            var dmg_y: float = -262.0 - (0.8 - damage_show_timer) * 50.0
+            draw_string(dmg_font, Vector2(-dmg_size.x * 0.5, dmg_y), dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(1.0, 0.85, 0.2))
