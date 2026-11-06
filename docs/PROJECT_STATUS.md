@@ -1,3 +1,17 @@
+# 最新进展（2026-11-06：Android APK 首次成功导出，InstaBox 退出）
+
+- 当前活动分支：`feat/exploration-progression-foundation-2026-11-05`；本轮最新已验证提交：`71fc6aeb89915c45eaa3da2b1bddb79d7f16a8ba`。稳定基线 `main` 未移动。
+- 构建链路：已移除 InstaBox SSH 检查；GitHub-hosted `ubuntu-latest` 完成 Godot 4.7.2 验证与 Android debug APK 导出。
+- 最新成功 workflow：run `42175019271`，commit `71fc6ae`；所有 12 组回归测试、资源导入、脚本解析、headless 主场景启动、Android APK 导出和 artifact 上传均成功。
+- APK artifact：`hero-world-android-debug`，73,907,164 bytes，Artifact ID `13483430889`；下载入口：https://github.com/oneyi53/game/actions/runs/42175019271 。Artifact 保留至 2026-11-20。
+- 本轮修复：`export_presets.cfg` 在关闭 Gradle 时仍覆盖 Min SDK/Target SDK，Godot 报配置错误；已清空这两个无效覆盖值，非 Gradle Android 导出通过。
+- InstaBox 决策：放弃云安卓环境；workflow 已删除 InstaBox SSH 步骤。未删除用户账户中的 InstaBox 安装或 GitHub Secret，用户可自行撤销；工作流不再读取该 Secret。
+- 验收边界：APK 构建成功不等于真机验收。M0 Android 20 项冒烟、设备型号/Android 版本/分辨率/DPI、触控、画面与帧率记录仍待真实设备执行。
+- M0 内容风险：英雄仍为静态单图加程序化动作反馈，完整 idle/walk/attack/hit/death 逐帧动画未完成；地图层级仍为 4 张独立 map_id，地图边界/碰撞/镜头需设备验收；日常活跃度/红点仍为 M1 未接线原型。
+- 下一步：以本次 APK 作为首个可安装候选，优先完成真实设备 20 项冒烟并收集缺陷；并行继续补足 M0 战斗反馈/动画表现，不扩张 M1/M2 新系统。
+
+---
+
 # 最新进展（2026-11-06：E3b 修正与 CI 门禁复核）
 
 - 当前活动分支：`feat/exploration-progression-foundation-2026-11-05`；当前 HEAD：`786cb0d2f9eeda59bd657e8dbd9cb7195893f4b2`。稳定基线 `main` 未移动。
