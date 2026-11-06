@@ -19,8 +19,8 @@ const CONNECTIONS := [
     {"from": FALLEN_LEAF, "to": MORNING_DEW, "type": "quest", "name": "朝露林地道路"}
 ]
 
-# Physical exits use authored road endpoints; return exits sit at matching
-# map-entry spawn points, which are also the first points of each return road.
+# Physical exits use authored road endpoints. Return exits are placed on the
+# second waypoint of each return road, away from the arrival spawn.
 const PHYSICAL_EXITS := [
     {"from": TOWN, "to": MOSS_CROWN, "position": Vector2(1460.0, 700.0), "radius": 84.0},
     {"from": MOSS_CROWN, "to": TOWN, "position": Vector2(520.0, 560.0), "radius": 72.0},
