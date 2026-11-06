@@ -22,7 +22,7 @@ concurrency:
 jobs:
   godot-smoke:
     name: Import, parse and headless startup
-    runs-on: instabox-medium
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout repository
