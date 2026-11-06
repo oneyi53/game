@@ -1,3 +1,14 @@
+
+## 2026-11-06 — Boss 跨地图预警隔离修复（待 CI）
+
+- 静态审查发现 Boss 普通范围攻击的“是否触发预警”阶段未按地图过滤英雄：其他地图的英雄靠近相同坐标时可能无意义地触发预警，虽然最终伤害结算已有地图过滤。
+- `scripts/enemy/boss.gd`：预警触发扫描增加 Boss 所属地图过滤和实例有效性检查；不改变预警时长、攻击半径、伤害或冷却。
+- 新增 `tests/test_boss_map_isolation.gd`：验证异地图英雄不会触发预警，同地图近距离英雄仍会触发；2 项断言。
+- `.github/workflows/godot-cloud-validation.yml`：将新测试加入 Godot 4.7.2 CI 和诊断日志上传。
+- 代码/测试/CI 已提交；等待最新 CI 验证。未导出该新 SHA 的 APK，上一版 APK 仍对应 `71fc6ae`。
+
+- 主要提交：`4a82d94`（修复）、`0bde4b2`（测试）、`8911672`（CI 接线）。
+
 ## 2026-11-06 — 首个 Android APK 成功导出并放弃 InstaBox
 
 - GitHub Actions run `42175019271`，commit `71fc6aeb89915c45eaa3da2b1bddb79d7f16a8ba` 成功完成 Godot 4.7.2 导入、12 组回归测试、headless 主场景启动、Android debug APK 导出和 artifact 上传。
