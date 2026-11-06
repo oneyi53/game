@@ -13,5 +13,53 @@
     },
     "target_area": "future_area_1",
     "teleport_intro": "传送阵连接已经探索过的区域，靠近它就能快速前往已开放的地点。"
+  },
+  {
+    "cost_wood": 40,
+    "dispel_prompt": "营火已经点燃！这片区域的据点已建立，现在可以从已激活的营火快速返回。",
+    "fog_prompt": "先清理周围威胁，再建立这片区域的营火据点。",
+    "insufficient_prompt": "木材不足，先采集附近资源再来激活营火。",
+    "intro": "点燃营火，建立本区域的安全据点，并解锁本区域快速传送。",
+    "teleport_intro": "营火已激活，可从这里前往已探索并开放的区域。",
+    "id": "campfire_moss_crown",
+    "area": "苔冠空地",
+    "map_id": "moss_crown",
+    "target_area": "moss_crown",
+    "position": {
+      "x": 600,
+      "y": 980
+    }
+  },
+  {
+    "cost_wood": 50,
+    "dispel_prompt": "营火已经点燃！这片区域的据点已建立，现在可以从已激活的营火快速返回。",
+    "fog_prompt": "先清理周围威胁，再建立这片区域的营火据点。",
+    "insufficient_prompt": "木材不足，先采集附近资源再来激活营火。",
+    "intro": "点燃营火，建立本区域的安全据点，并解锁本区域快速传送。",
+    "teleport_intro": "营火已激活，可从这里前往已探索并开放的区域。",
+    "id": "campfire_fallen_leaf",
+    "area": "落叶幽谷",
+    "map_id": "fallen_leaf",
+    "target_area": "fallen_leaf",
+    "position": {
+      "x": 700,
+      "y": 900
+    }
+  },
+  {
+    "cost_wood": 60,
+    "dispel_prompt": "营火已经点燃！这片区域的据点已建立，现在可以从已激活的营火快速返回。",
+    "fog_prompt": "先清理周围威胁，再建立这片区域的营火据点。",
+    "insufficient_prompt": "木材不足，先采集附近资源再来激活营火。",
+    "intro": "点燃营火，建立本区域的安全据点，并解锁本区域快速传送。",
+    "teleport_intro": "营火已激活，可从这里前往已探索并开放的区域。",
+    "id": "campfire_morning_dew",
+    "area": "朝露林地",
+    "map_id": "morning_dew",
+    "target_area": "morning_dew",
+    "position": {
+      "x": 700,
+      "y": 950
+    }
   }
 ]

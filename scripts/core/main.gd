@@ -73,7 +73,6 @@ var world_map_manager: WorldMapManager = WorldMapManagerScript.new()
 var active_map_id: String = WorldMapManagerScript.TOWN
 var map_positions: Dictionary = {}
 var world_state_migrated: bool = false
-var campfire_node: Node2D = null
 var resource_nodes: Array = []
 var harvest_target: Node2D = null
 var harvest_timer: float = 0.0
@@ -582,8 +581,6 @@ func _spawn_campfire() -> void:
         node.set_meta("campfire_id", str(campfire_id))
         node.set_meta("world_map_id", owner_map)
         add_child(node)
-        if campfire_node == null:
-            campfire_node = node
 
 func _spawn_resource_nodes() -> void:
     # Stable IDs and save data prevent gathering the same node by re-entering a map.

@@ -55,6 +55,14 @@ func _test_real_tables_and_build_state() -> void:
     assert(restored.load_all(), restored.error_message)
     restored.load_camp(saved)
     assert(restored.is_built("blacksmith"))
+    # Production map anchors must be explicitly assigned to their own regions.
+    assert(manager.campfire_map_id("campfire_moss_crown") == "moss_crown")
+    assert(manager.campfire_map_id("campfire_fallen_leaf") == "fallen_leaf")
+    assert(manager.campfire_map_id("campfire_morning_dew") == "morning_dew")
+    assert(manager.campfires_for_map("moss_crown").size() == 1)
+    assert(manager.campfires_for_map("fallen_leaf").size() == 1)
+    assert(manager.campfires_for_map("morning_dew").size() == 1)
+    assert(manager.campfires_for_map("future_area_1").size() == 1, "legacy future framework campfire must remain isolated")
 
 func _assert_bad_building_cost(cost, label: String) -> void:
     var camp_path := _write_temp("camp_manager_bad_camp.json", {"buildings": [_camp_entry(cost, true)]})
