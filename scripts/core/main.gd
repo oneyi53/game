@@ -692,6 +692,16 @@ func _process(delta: float) -> void:
             in_combat = true
             break
     hud.set_combat_mode(in_combat)
+    var boss_fight_name: String = ""
+    for boss_node in [boss, elite_boss]:
+        if boss_node == null or not is_instance_valid(boss_node):
+            continue
+        if bool(boss_node.get("dead")):
+            continue
+        if boss_node.target_hero != null and not bool(boss_node.target_hero.get("dead")):
+            boss_fight_name = str(boss_node.enemy_name)
+            break
+    hud.set_boss_banner(boss_fight_name != "", boss_fight_name)
     var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
         screen_input = joystick.vector

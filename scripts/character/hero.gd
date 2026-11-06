@@ -27,6 +27,8 @@ var attack_range: float = 70.0
 var attack_cooldown: float = 0.6
 var hero_color: Color = Color.YELLOW
 var dead: bool = false
+var last_damage: int = 0
+var damage_show_timer: float = 0.0
 var level: int = 1
 var level_attack_pct: float = 0.0
 var level_hp_pct: float = 0.0
@@ -151,6 +153,9 @@ func _physics_process(delta: float) -> void:
             heal_timer = 2.0
             _heal_lowest_ally()
     attack_timer -= delta
+    if damage_show_timer > 0.0:
+        damage_show_timer -= delta
+        queue_redraw()
     if attack_timer <= 0.0:
         attack_timer = scan_interval
         _scan_and_attack()
@@ -235,6 +240,8 @@ func take_damage(amount: int) -> void:
         return
     var damage: int = maxi(1, amount - defense)
     hp -= damage
+    last_damage = damage
+    damage_show_timer = 0.8
     if hp <= 0:
         hp = 0
         dead = true
@@ -291,6 +298,13 @@ func _draw() -> void:
         draw_texture_rect(texture, Rect2(-48.0, -90.0, 96.0, 96.0), false)
     else:
         draw_circle(Vector2.ZERO, 18.0, hero_color)
-    draw_rect(Rect2(-24.0, -98.0, 48.0, 5.0), Color(0.08, 0.08, 0.08, 0.9))
-    var fill: float = 48.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
-    draw_rect(Rect2(-24.0, -98.0, fill, 5.0), Color(0.2, 0.9, 0.3))
+    draw_rect(Rect2(-32.0, -100.0, 64.0, 6.0), Color(0.08, 0.08, 0.08, 0.9))
+    var fill: float = 64.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
+    draw_rect(Rect2(-32.0, -100.0, fill, 6.0), Color(0.2, 0.9, 0.3))
+    if damage_show_timer > 0.0:
+        var dmg_font: Font = ThemeDB.fallback_font
+        if dmg_font != null:
+            var dmg_text: String = str(last_damage)
+            var dmg_size: Vector2 = dmg_font.get_string_size(dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28)
+            var dmg_y: float = -130.0 - (0.8 - damage_show_timer) * 50.0
+            draw_string(dmg_font, Vector2(-dmg_size.x * 0.5, dmg_y), dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(1.0, 0.85, 0.2))

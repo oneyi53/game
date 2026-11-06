@@ -199,6 +199,21 @@ offset_right = 680.0
 offset_bottom = 1015.0
 text = "技能就绪"
 
+[node name="BossBanner" type="ColorRect" parent="UI/HUD"]
+visible = false
+offset_left = 20.0
+offset_top = 1100.0
+offset_right = 360.0
+offset_bottom = 1160.0
+color = Color(0.1, 0.35, 0.75, 0.9)
+
+[node name="BossBannerLabel" type="Label" parent="UI/HUD/BossBanner"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 324.0
+offset_bottom = 48.0
+text = "击杀BOSS"
+
 [node name="QuestPanel" type="Control" parent="UI"]
 visible = false
 offset_left = 60.0

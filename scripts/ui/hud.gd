@@ -32,6 +32,8 @@ signal offline_pressed
 @onready var map_button: Button = $MapButton
 @onready var quest_button: Button = $QuestButton
 @onready var offline_button: Button = $OfflineButton
+@onready var boss_banner: ColorRect = $BossBanner
+@onready var boss_banner_label: Label = $BossBanner/BossBannerLabel
 @onready var quest_panel: Control = $"../QuestPanel"
 @onready var quest_label: Label = $"../QuestPanel/QuestLabel"
 @onready var quest_close_button: Button = $"../QuestPanel/QuestCloseButton"
@@ -75,6 +77,11 @@ func set_teleport_available(available: bool) -> void:
 
 func set_quest_text(text: String) -> void:
     quest_label.text = text
+
+func set_boss_banner(show: bool, boss_name: String = "") -> void:
+    boss_banner.visible = show
+    if show:
+        boss_banner_label.text = "击杀BOSS " + boss_name
 
 func toggle_quest_panel() -> void:
     quest_panel.visible = not quest_panel.visible
