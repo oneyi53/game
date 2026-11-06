@@ -12,7 +12,8 @@ func _initialize() -> void:
     _test_custom_map_dimensions()
     _test_invalid_dimensions_are_not_applicable()
     _test_town_exploration_is_not_applicable()
-    print("Exploration fog tests: 8 passed")
+    _test_position_visibility_tracks_discovered_cells()
+    print("Exploration fog tests: 9 passed")
     quit()
 
 func _test_empty_region_is_zero() -> void:
@@ -60,4 +61,17 @@ func _test_town_exploration_is_not_applicable() -> void:
     var stats: Dictionary = fog.get_exploration_stats()
     assert(stats["applicable"] == false)
     assert(stats["percent"] == 0)
+    assert(fog.is_position_explored(Vector2(600.0, 610.0)))
+    fog.free()
+
+
+func _test_position_visibility_tracks_discovered_cells() -> void:
+    var fog: ExplorationFog = Fog.new()
+    fog.set_map_state(WorldMaps.MOSS_CROWN, [])
+    assert(not fog.is_position_explored(Vector2(600.0, 620.0)))
+    fog.set_map_state(WorldMaps.MOSS_CROWN, ["7:7"])
+    assert(fog.is_position_explored(Vector2(600.0, 620.0)))
+    assert(not fog.is_position_explored(Vector2(640.0, 620.0)))
+    assert(not fog.is_position_explored(Vector2(-1.0, 0.0)))
+    assert(not fog.is_position_explored(Vector2(1600.0, 1400.0)))
     fog.free()

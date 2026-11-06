@@ -56,6 +56,7 @@ const EFFECT_ATLAS: Texture2D = preload("res://assets/art-v1/effects/effect_atla
 var teleport_panel: PanelContainer = null
 var teleport_list: VBoxContainer = null
 var exploration_map_panel: Control = null
+var map_panel_refresh_cooldown: float = 0.0
 
 var data_loader: DataLoader = null
 var save_manager: SaveManager = null
@@ -664,16 +665,19 @@ func _refresh_exploration_map_panel() -> void:
         if enemy == null or not is_instance_valid(enemy) or not enemy.visible:
             continue
         if str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) == active_map_id:
-            enemy_positions.append(enemy.global_position)
+            if exploration_fog == null or exploration_fog.is_position_explored(enemy.global_position):
+                enemy_positions.append(enemy.global_position)
     var resource_positions: Array = []
     for resource_node in resource_nodes:
         if resource_node == null or not is_instance_valid(resource_node) or not resource_node.visible:
             continue
         if str(resource_node.get_meta("world_map_id", "")) == active_map_id:
-            resource_positions.append(resource_node.global_position)
+            if exploration_fog == null or exploration_fog.is_position_explored(resource_node.global_position):
+                resource_positions.append(resource_node.global_position)
     var teleport_positions: Array = []
     if active_map_id == WorldMapManagerScript.MOSS_CROWN and campfire_node != null and is_instance_valid(campfire_node):
-        teleport_positions.append(campfire_node.global_position)
+        if exploration_fog == null or exploration_fog.is_position_explored(campfire_node.global_position):
+            teleport_positions.append(campfire_node.global_position)
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
     var unlocked_maps: Array = [WorldMapManagerScript.TOWN, WorldMapManagerScript.MOSS_CROWN]
     if world_map_manager.is_unlocked(WorldMapManagerScript.FALLEN_LEAF, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
@@ -813,6 +817,15 @@ func _process(delta: float) -> void:
     _refresh_resource_prompt()
     _update_exploration(delta)
     _tick_respawns(delta)
+    # Keep the open map snapshot live as the party and active entities move.
+    # A short interval avoids rebuilding marker arrays on every rendered frame.
+    if exploration_map_panel != null and exploration_map_panel.visible:
+        map_panel_refresh_cooldown -= delta
+        if map_panel_refresh_cooldown <= 0.0:
+            _refresh_exploration_map_panel()
+            map_panel_refresh_cooldown = 0.2
+    else:
+        map_panel_refresh_cooldown = 0.0
 
 func _refresh_exploration_hud() -> void:
     if hud == null or exploration_fog == null:

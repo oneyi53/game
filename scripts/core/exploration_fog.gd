@@ -82,6 +82,16 @@ func get_saved_cells() -> Array:
     result.sort()
     return result
 
+
+func is_position_explored(world_position: Vector2) -> bool:
+    if active_map_id == WorldMaps.TOWN:
+        return true
+    if world_position.x < 0.0 or world_position.y < 0.0 or world_position.x >= WorldMaps.MAP_SIZE.x or world_position.y >= WorldMaps.MAP_SIZE.y:
+        return false
+    var cell_x: int = int(floor(world_position.x / CELL_SIZE))
+    var cell_y: int = int(floor(world_position.y / CELL_SIZE))
+    return explored.has(str(cell_x) + ":" + str(cell_y))
+
 func _draw() -> void:
     if active_map_id == WorldMaps.TOWN:
         return

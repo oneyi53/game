@@ -67,7 +67,7 @@ jobs:
             echo "Exploration fog tests reported errors."
             exit 1
           fi
-          grep -q "Exploration fog tests: 8 passed" exploration-fog-tests.log
+          grep -q "Exploration fog tests: 9 passed" exploration-fog-tests.log
 
       - name: Run floating joystick regression tests
         shell: bash
