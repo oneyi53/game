@@ -85,15 +85,13 @@ func route_between(from_map_id: String, to_map_id: String) -> Array:
             frontier.append(next_path)
     return []
 
-func teleport_destinations(boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, campfire_unlocked: bool, discovered_map_ids: Array = []) -> Array:
-    # A story-unlocked region is not automatically a discovered fast-travel
-    # destination. Keep the capital as the guaranteed return anchor; only
-    # list field regions the player has actually entered before.
+func teleport_destinations(boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, _legacy_campfire_unlocked: bool = false, discovered_map_ids: Array = [], campfire_positions_by_map: Dictionary = {}) -> Array:
+    # Story access and discovery are separate from fast-travel activation.
+    # A field region is visible after discovery, but usable only when that
+    # same map owns an activated campfire. A global boolean is never enough.
     var destinations: Array = [
         {"id": "town", "name": "王朝营地", "map_id": TOWN, "kind": "spawn", "available": true, "hint": "返回安全区"}
     ]
-    if campfire_unlocked:
-        destinations.append({"id": "campfire", "name": "营火据点", "map_id": MOSS_CROWN, "kind": "campfire", "available": true, "hint": "已激活的营火"})
     var region_entries := [
         {"id": MOSS_CROWN, "name": "苔冠空地", "map_id": MOSS_CROWN, "hint": "首个探索区域"},
         {"id": FALLEN_LEAF, "name": "落叶幽谷", "map_id": FALLEN_LEAF, "hint": "完成苔冠区域主线后开放"},
@@ -104,19 +102,29 @@ func teleport_destinations(boss_defeated: bool, elite_defeated: bool, valley_que
         if not discovered_map_ids.has(map_id):
             continue
         var unlocked: bool = is_unlocked(map_id, boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done)
-        destinations.append({"id": map_id, "name": entry["name"], "map_id": map_id, "kind": "spawn", "available": unlocked, "hint": entry["hint"] if unlocked else "区域尚未开放"})
+        var has_anchor: bool = campfire_positions_by_map.has(map_id) and campfire_positions_by_map[map_id] is Vector2 and campfire_positions_by_map[map_id] != Vector2.ZERO
+        var available: bool = unlocked and has_anchor
+        var hint: String = str(entry["hint"])
+        if not unlocked:
+            hint = "区域尚未开放"
+        elif not has_anchor:
+            hint = "先激活本区域营火"
+        destinations.append({"id": "campfire:" + map_id, "name": str(entry["name"]) + "营火", "map_id": map_id, "kind": "campfire", "available": available, "hint": hint})
     return destinations
 
-func resolve_teleport_destination(destination_id: String, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, campfire_unlocked: bool, campfire_position: Vector2 = Vector2.ZERO, discovered_map_ids: Array = []) -> Dictionary:
-    for destination in teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done, campfire_unlocked, discovered_map_ids):
+func resolve_teleport_destination(destination_id: String, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, legacy_campfire_unlocked: bool, legacy_campfire_position: Vector2 = Vector2.ZERO, discovered_map_ids: Array = [], campfire_positions_by_map: Dictionary = {}) -> Dictionary:
+    for destination in teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done, legacy_campfire_unlocked, discovered_map_ids, campfire_positions_by_map):
         if str(destination["id"]) != destination_id:
             continue
         if not bool(destination["available"]):
             return {"ok": false, "reason": "locked"}
-        if str(destination["kind"]) == "campfire" and campfire_position == Vector2.ZERO:
-            return {"ok": false, "reason": "missing_campfire"}
-        var position: Vector2 = campfire_position + Vector2(0.0, 96.0) if str(destination["kind"]) == "campfire" else (destination["position"] if destination["kind"] == "fixed" else spawn_position(str(destination["map_id"])))
-        return {"ok": true, "map_id": str(destination["map_id"]), "position": clamp_position(position), "name": str(destination["name"])}
+        var map_id: String = str(destination["map_id"])
+        var position: Vector2 = spawn_position(map_id)
+        if str(destination["kind"]) == "campfire":
+            if not campfire_positions_by_map.has(map_id) or not (campfire_positions_by_map[map_id] is Vector2):
+                return {"ok": false, "reason": "missing_campfire"}
+            position = campfire_positions_by_map[map_id] + Vector2(0.0, 96.0)
+        return {"ok": true, "map_id": map_id, "position": clamp_position(position), "name": str(destination["name"])}
     return {"ok": false}
 
 func is_known_map(map_id: String) -> bool:
