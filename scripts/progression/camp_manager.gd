@@ -120,6 +120,12 @@ func _parse_campfires(data, out_campfires: Dictionary, out_order: Array, out_unl
         if not _is_integer_number(entry["cost_wood"]) or int(entry["cost_wood"]) <= 0:
             error_message = "campfires.json cost_wood 必须是正整数，id：" + str(entry["id"])
             return false
+        # map_id is the world containing this fire; target_area remains the
+        # area unlocked by activating it. Legacy entries default to target_area,
+        # keeping future-area framework fires out of current world maps.
+        if entry.has("map_id") and not _is_non_blank_string(entry["map_id"]):
+            error_message = "campfires.json map_id 必须是非空字符串"
+            return false
         var campfire_id: String = str(entry["id"])
         if out_campfires.has(campfire_id):
             error_message = "campfires.json 有重复 id：" + campfire_id
@@ -162,6 +168,31 @@ func unlock_campfire(campfire_id: String) -> bool:
         return false
     campfires_unlocked[campfire_id] = true
     return true
+
+func campfires_for_map(map_id: String) -> Array:
+    var result: Array = []
+    for campfire_id in campfire_order:
+        var entry: Dictionary = campfires[campfire_id]
+        var owner_map: String = str(entry.get("map_id", entry.get("target_area", "")))
+        if owner_map == map_id:
+            result.append(entry.duplicate(true))
+    return result
+
+func unlocked_campfires_for_map(map_id: String) -> Array:
+    var result: Array = []
+    for entry in campfires_for_map(map_id):
+        if is_campfire_unlocked(str(entry["id"])):
+            result.append(entry)
+    return result
+
+func has_unlocked_campfire_on_map(map_id: String) -> bool:
+    return not unlocked_campfires_for_map(map_id).is_empty()
+
+func campfire_map_id(campfire_id: String) -> String:
+    var entry = campfire(campfire_id)
+    if entry == null:
+        return ""
+    return str(entry.get("map_id", entry.get("target_area", "")))
 
 func load_camp(saved) -> void:
     if not (saved is Dictionary):

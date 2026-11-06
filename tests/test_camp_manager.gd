@@ -7,7 +7,8 @@ func _initialize() -> void:
     _test_building_cost_types_are_strict()
     _test_failed_reload_preserves_previous_snapshot()
     _test_campfire_cost_and_position_are_validated()
-    print("Camp manager tests: 4 passed")
+    _test_campfires_are_partitioned_by_world_map()
+    print("Camp manager tests: 5 passed")
     quit()
 
 func _write_temp(name: String, value) -> String:
@@ -102,3 +103,21 @@ func _test_campfire_cost_and_position_are_validated() -> void:
 
 func _remove_temp(path: String) -> void:
     DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+func _test_campfires_are_partitioned_by_world_map() -> void:
+    var entries := _campfires()
+    entries[0]["target_area"] = "future_area_1"
+    entries[0]["map_id"] = "moss_crown"
+    var camp_path := _write_temp("camp_manager_map_camp.json", {"buildings": [_camp_entry(0, true)]})
+    var fire_path := _write_temp("camp_manager_map_fires.json", entries)
+    var manager = CampManagerScript.new()
+    assert(manager.load_all(camp_path, fire_path), manager.error_message)
+    assert(manager.campfire_map_id("fire_a") == "moss_crown")
+    assert(manager.campfires_for_map("moss_crown").size() == 1)
+    assert(manager.campfires_for_map("future_area_1").is_empty())
+    assert(not manager.has_unlocked_campfire_on_map("moss_crown"))
+    assert(manager.unlock_campfire("fire_a"))
+    assert(manager.has_unlocked_campfire_on_map("moss_crown"))
+    assert(manager.unlocked_campfires_for_map("moss_crown").size() == 1)
+    _remove_temp(camp_path)
+    _remove_temp(fire_path)
