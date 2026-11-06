@@ -161,7 +161,7 @@ jobs:
             echo "Camp manager tests reported errors."
             exit 1
           fi
-          grep -q "Camp manager tests: 4 passed" camp-manager-tests.log
+          grep -q "Camp manager tests: 5 passed" camp-manager-tests.log
 
       - name: Run offline manager regression tests
         shell: bash
