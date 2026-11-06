@@ -138,11 +138,26 @@ func _draw_exploration_paths() -> void:
         draw_polyline(projected, Color(0.72, 0.62, 0.39, 0.88), 19.0, true)
         draw_polyline(projected, Color(0.82, 0.73, 0.5, 0.52), 2.0, true)
 
+func _draw_return_gate(position: Vector2, label: String) -> void:
+    var screen_position: Vector2 = WorldProjectionScript.world_to_screen(position)
+    draw_circle(screen_position, 30.0, Color(0.08, 0.14, 0.1, 0.82))
+    draw_circle(screen_position, 21.0, Color(0.76, 0.66, 0.36))
+    draw_circle(screen_position, 12.0, Color(0.25, 0.42, 0.24))
+    var font = ThemeDB.fallback_font
+    if font != null:
+        draw_string(font, screen_position + Vector2(-46.0, 46.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(1.0, 0.95, 0.75))
+
 func _draw() -> void:
     var bounds: Rect2 = WorldProjectionScript.projected_bounds()
     var town: bool = active_map_id == WorldMaps.TOWN
     _draw_fullscreen_ground(bounds, town)
     _draw_exploration_paths()
+    if active_map_id == WorldMaps.MOSS_CROWN:
+        _draw_return_gate(Vector2(600.0, 620.0), "返回营地")
+    elif active_map_id == WorldMaps.FALLEN_LEAF:
+        _draw_return_gate(Vector2(600.0, 650.0), "返回苔冠")
+    elif active_map_id == WorldMaps.MORNING_DEW:
+        _draw_return_gate(Vector2(600.0, 650.0), "返回幽谷")
     var font = ThemeDB.fallback_font
     if town:
         _draw_town_buildings()

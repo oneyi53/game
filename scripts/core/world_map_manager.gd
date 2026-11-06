@@ -19,12 +19,15 @@ const CONNECTIONS := [
     {"from": FALLEN_LEAF, "to": MORNING_DEW, "type": "quest", "name": "朝露林地道路"}
 ]
 
-# Only exits with verified in-scene coordinates are registered here.
-# Quest links remain logical until their physical gate positions are authored.
+# Physical exits use authored road endpoints; return exits sit at matching
+# map-entry spawn points, which are also the first points of each return road.
 const PHYSICAL_EXITS := [
     {"from": TOWN, "to": MOSS_CROWN, "position": Vector2(1460.0, 700.0), "radius": 84.0},
+    {"from": MOSS_CROWN, "to": TOWN, "position": Vector2(600.0, 620.0), "radius": 72.0},
     {"from": MOSS_CROWN, "to": FALLEN_LEAF, "position": Vector2(900.0, 790.0), "radius": 72.0},
-    {"from": FALLEN_LEAF, "to": MORNING_DEW, "position": Vector2(480.0, 1120.0), "radius": 72.0}
+    {"from": FALLEN_LEAF, "to": MOSS_CROWN, "position": Vector2(600.0, 650.0), "radius": 72.0},
+    {"from": FALLEN_LEAF, "to": MORNING_DEW, "position": Vector2(480.0, 1120.0), "radius": 72.0},
+    {"from": MORNING_DEW, "to": FALLEN_LEAF, "position": Vector2(600.0, 650.0), "radius": 72.0}
 ]
 
 const MAPS := {
