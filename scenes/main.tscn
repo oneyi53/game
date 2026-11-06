@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/core/map.gd" id="2_map"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scripts/ui/offline_panel.gd" id="11_offline"]
 [ext_resource type="Script" path="res://scripts/ui/recruit_panel.gd" id="12_recruit"]
 [ext_resource type="PackedScene" path="res://scenes/campfire.tscn" id="9_fire"]
+[ext_resource type="Texture2D" path="res://assets/art-v1/sprites/heroes/captain.png" id="13_avatar"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -43,32 +44,69 @@ script = ExtResource("3_hud")
 offset_right = 720.0
 offset_bottom = 1280.0
 
+[node name="AvatarTexture" type="TextureRect" parent="UI/HUD"]
+offset_left = 10.0
+offset_top = 50.0
+offset_right = 114.0
+offset_bottom = 151.0
+texture = ExtResource("13_avatar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AvatarLevelLabel" type="Label" parent="UI/HUD"]
+offset_left = 10.0
+offset_top = 128.0
+offset_right = 114.0
+offset_bottom = 156.0
+text = "Lv.1"
+
+[node name="PowerPanel" type="ColorRect" parent="UI/HUD"]
+offset_left = 107.0
+offset_top = 54.0
+offset_right = 295.0
+offset_bottom = 97.0
+color = Color(0.55, 0.08, 0.08, 0.9)
+
+[node name="PowerLabel" type="Label" parent="UI/HUD"]
+offset_left = 117.0
+offset_top = 60.0
+offset_right = 285.0
+offset_bottom = 91.0
+text = "战力 —"
+
+[node name="GoldPanel" type="ColorRect" parent="UI/HUD"]
+offset_left = 360.0
+offset_top = 56.0
+offset_right = 580.0
+offset_bottom = 97.0
+color = Color(0.35, 0.25, 0.05, 0.85)
+
 [node name="GoldLabel" type="Label" parent="UI/HUD"]
-offset_left = 20.0
-offset_top = 16.0
-offset_right = 340.0
-offset_bottom = 48.0
+offset_left = 372.0
+offset_top = 62.0
+offset_right = 568.0
+offset_bottom = 91.0
 text = "金币：0"
 
-[node name="WoodLabel" type="Label" parent="UI/HUD"]
+[node name="WoodPanel" type="ColorRect" parent="UI/HUD"]
 offset_left = 360.0
-offset_top = 16.0
-offset_right = 700.0
-offset_bottom = 48.0
+offset_top = 102.0
+offset_right = 580.0
+offset_bottom = 138.0
+color = Color(0.3, 0.2, 0.08, 0.85)
+
+[node name="WoodLabel" type="Label" parent="UI/HUD"]
+offset_left = 372.0
+offset_top = 108.0
+offset_right = 568.0
+offset_bottom = 132.0
 text = "木材：0/200"
 
 [node name="MessageLabel" type="Label" parent="UI/HUD"]
-offset_left = 20.0
-offset_top = 52.0
+offset_left = 110.0
+offset_top = 150.0
 offset_right = 700.0
-offset_bottom = 84.0
-
-[node name="QuestLabel" type="Label" parent="UI/HUD"]
-offset_left = 20.0
-offset_top = 88.0
-offset_right = 700.0
-offset_bottom = 300.0
-text = "任务：—"
+offset_bottom = 182.0
 
 [node name="SkillButton" type="Button" parent="UI/HUD"]
 offset_left = 540.0
@@ -85,59 +123,73 @@ offset_bottom = 1080.0
 text = "交互"
 
 [node name="SaveButton" type="Button" parent="UI/HUD"]
-offset_left = 10.0
-offset_top = 1205.0
-offset_right = 115.0
-offset_bottom = 1265.0
+offset_left = 634.0
+offset_top = 51.0
+offset_right = 706.0
+offset_bottom = 102.0
 text = "保存"
 
 [node name="HeroButton" type="Button" parent="UI/HUD"]
-offset_left = 130.0
-offset_top = 1205.0
-offset_right = 235.0
-offset_bottom = 1265.0
+offset_left = 14.0
+offset_top = 154.0
+offset_right = 94.0
+offset_bottom = 234.0
 text = "英雄"
 
 [node name="EquipButton" type="Button" parent="UI/HUD"]
-offset_left = 250.0
-offset_top = 1205.0
-offset_right = 355.0
-offset_bottom = 1265.0
+offset_left = 14.0
+offset_top = 230.0
+offset_right = 94.0
+offset_bottom = 310.0
 text = "装备"
 
 [node name="CampButton" type="Button" parent="UI/HUD"]
-offset_left = 370.0
-offset_top = 1205.0
-offset_right = 475.0
-offset_bottom = 1265.0
+offset_left = 14.0
+offset_top = 306.0
+offset_right = 94.0
+offset_bottom = 386.0
 text = "营地"
 
 [node name="BackpackButton" type="Button" parent="UI/HUD"]
-offset_left = 490.0
-offset_top = 1205.0
-offset_right = 595.0
-offset_bottom = 1265.0
+offset_left = 35.0
+offset_top = 978.0
+offset_right = 118.0
+offset_bottom = 1069.0
 text = "背包"
 
 [node name="RecruitButton" type="Button" parent="UI/HUD"]
-offset_left = 610.0
-offset_top = 1205.0
-offset_right = 710.0
-offset_bottom = 1265.0
+offset_left = 14.0
+offset_top = 382.0
+offset_right = 94.0
+offset_bottom = 462.0
 text = "招募"
 
+[node name="QuestButton" type="Button" parent="UI/HUD"]
+offset_left = 619.0
+offset_top = 238.0
+offset_right = 699.0
+offset_bottom = 318.0
+text = "任务"
+
 [node name="TeleportButton" type="Button" parent="UI/HUD"]
-offset_left = 540.0
-offset_top = 310.0
-offset_right = 680.0
-offset_bottom = 366.0
+offset_left = 619.0
+offset_top = 320.0
+offset_right = 699.0
+offset_bottom = 400.0
 text = "传送"
 
+[node name="OfflineButton" type="Button" parent="UI/HUD"]
+offset_left = 619.0
+offset_top = 402.0
+offset_right = 699.0
+offset_bottom = 482.0
+text = "离线"
+
 [node name="MapButton" type="Button" parent="UI/HUD"]
-offset_left = 540.0
-offset_top = 380.0
-offset_right = 680.0
-offset_bottom = 436.0
+offset_left = 608.0
+offset_top = 1082.0
+offset_right = 691.0
+offset_bottom = 1165.0
 text = "地图"
 
 [node name="CooldownLabel" type="Label" parent="UI/HUD"]
@@ -146,6 +198,32 @@ offset_top = 985.0
 offset_right = 680.0
 offset_bottom = 1015.0
 text = "技能就绪"
+
+[node name="QuestPanel" type="Control" parent="UI"]
+visible = false
+offset_left = 60.0
+offset_top = 180.0
+offset_right = 660.0
+offset_bottom = 560.0
+
+[node name="PanelBackground" type="ColorRect" parent="UI/QuestPanel"]
+offset_right = 600.0
+offset_bottom = 380.0
+color = Color(0, 0, 0, 0.82)
+
+[node name="QuestLabel" type="Label" parent="UI/QuestPanel"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 584.0
+offset_bottom = 300.0
+text = "任务：—"
+
+[node name="QuestCloseButton" type="Button" parent="UI/QuestPanel"]
+offset_left = 460.0
+offset_top = 320.0
+offset_right = 584.0
+offset_bottom = 364.0
+text = "收起"
 
 [node name="Joystick" type="Control" parent="UI"]
 anchors_preset = 15

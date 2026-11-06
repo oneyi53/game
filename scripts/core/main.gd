@@ -269,6 +269,8 @@ func _ready() -> void:
     hud.camp_panel_pressed.connect(_on_camp_panel_pressed)
     hud.backpack_panel_pressed.connect(_on_backpack_panel_pressed)
     hud.recruit_panel_pressed.connect(_on_recruit_panel_pressed)
+    hud.quest_pressed.connect(_on_quest_panel_pressed)
+    hud.offline_pressed.connect(_on_offline_panel_pressed)
     recruit_panel.set_data(recruitment_manager, level_manager, data_loader.heroes)
     recruit_panel.synthesize_requested.connect(_on_recruit_synthesize)
     recruit_panel.visible = false
@@ -287,6 +289,7 @@ func _ready() -> void:
     _refresh_quest_label()
     hero_panel.set_heroes(heroes)
     hero_panel.set_formation_data(formation_manager, data_loader.heroes, level_manager, equipment_manager, camp_manager, backpack_manager.items)
+    _refresh_top_bar()
     hero_panel.leader_requested.connect(_on_formation_leader_requested)
     hero_panel.add_requested.connect(_on_formation_add_requested)
     hero_panel.remove_requested.connect(_on_formation_remove_requested)
@@ -325,7 +328,7 @@ func _spawn_heroes(save_data: Dictionary) -> void:
     # Only active formation members spawn. The first slot is the
     # replaceable leader; owned reserve heroes keep their progression
     # and equipment data in the managers without requiring a world node.
-    var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
+    var offsets: Array = [Vector2.ZERO, Vector2(-70.0, 35.0), Vector2(70.0, 35.0), Vector2(0.0, 85.0), Vector2(-70.0, 85.0), Vector2(70.0, 85.0)]
     var start_pos: Vector2 = world_map_manager.spawn_position(active_map_id)
     if map_positions.has(active_map_id):
         start_pos = map_positions[active_map_id]
@@ -397,7 +400,7 @@ func _spawn_recruited_hero(hero_id: String) -> bool:
             break
     if hero_data.is_empty() or captain == null:
         return false
-    var offsets: Array = [Vector2.ZERO, Vector2(-50.0, 30.0), Vector2(50.0, 30.0), Vector2(0.0, 70.0), Vector2(-50.0, 70.0), Vector2(50.0, 70.0)]
+    var offsets: Array = [Vector2.ZERO, Vector2(-70.0, 35.0), Vector2(70.0, 35.0), Vector2(0.0, 85.0), Vector2(-70.0, 85.0), Vector2(70.0, 85.0)]
     var index: int = heroes.size()
     var hero = HERO_SCENE.instantiate()
     hero.setup(hero_data, false)
@@ -429,6 +432,7 @@ func _grant_party_xp(amount: int) -> void:
         hero.hp = maxi(1, int(round(hp_ratio * float(hero.max_hp))))
         hero.queue_redraw()
         hud.show_message(str(hero.hero_name) + " 升到 " + str(level_manager.level(hero.hero_id)) + " 级！")
+    _refresh_top_bar()
     if hero_panel.visible:
         hero_panel.refresh()
 
@@ -676,6 +680,18 @@ func _process(delta: float) -> void:
     _update_world_visuals()
     camera.position = _projected_camera_position(captain.global_position)
     hud.set_skill_cooldown(captain.skill_cooldown_remaining, captain.skill_ready)
+    var in_combat: bool = false
+    for enemy in enemies:
+        if enemy == null or not is_instance_valid(enemy):
+            continue
+        if bool(enemy.get("dead")):
+            continue
+        if str(enemy.get_meta("world_map_id", WorldMapManagerScript.MOSS_CROWN)) != active_map_id:
+            continue
+        if captain.global_position.distance_to(enemy.global_position) <= 140.0:
+            in_combat = true
+            break
+    hud.set_combat_mode(in_combat)
     var screen_input: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     if joystick.vector.length() > 0.1:
         screen_input = joystick.vector
@@ -1109,6 +1125,30 @@ func _refresh_quest_label() -> void:
         text += str(line) + "\n"
     hud.set_quest_text(text.strip_edges())
 
+func _refresh_top_bar() -> void:
+    if hud == null or captain == null or formation_manager == null:
+        return
+    var total: int = 0
+    for hero_id in formation_manager.active_ids:
+        total += hero_panel._power_for_hero(hero_id)
+    hud.set_power(total)
+    if level_manager != null:
+        hud.set_avatar_level(level_manager.level(captain.hero_id))
+
+func _on_quest_panel_pressed() -> void:
+    var panels: Array[Control] = [hero_panel, equip_panel, camp_panel, backpack_panel, recruit_panel, offline_panel]
+    if teleport_panel != null:
+        panels.append(teleport_panel)
+    for panel in panels:
+        panel.visible = false
+    hud.toggle_quest_panel()
+
+func _on_offline_panel_pressed() -> void:
+    if offline_panel.scroll == null:
+        hud.show_message("暂无离线结算可查看")
+        return
+    _toggle_menu_panel(offline_panel)
+
 func _on_recruit_panel_pressed() -> void:
     _toggle_menu_panel(recruit_panel)
     if recruit_panel.visible:
@@ -1141,6 +1181,7 @@ func _on_recruit_synthesize(hero_id: String) -> void:
         hud.show_message("新英雄加入并上阵：" + hero_name + "！")
     else:
         hud.show_message("新英雄加入收藏：" + hero_name + "；队伍已满，可在英雄编队中更换队长")
+    _refresh_top_bar()
     _save_game()
 
 func _on_quest_completed(quest_id: String, quest_name: String, complete_line: String, reward_gold: int) -> void:

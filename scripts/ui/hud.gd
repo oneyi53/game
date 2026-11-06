@@ -11,11 +11,14 @@ signal backpack_panel_pressed
 signal recruit_panel_pressed
 signal teleport_pressed
 signal map_pressed
+signal quest_pressed
+signal offline_pressed
 
 @onready var gold_label: Label = $GoldLabel
 @onready var wood_label: Label = $WoodLabel
 @onready var message_label: Label = $MessageLabel
-@onready var quest_label: Label = $QuestLabel
+@onready var power_label: Label = $PowerLabel
+@onready var avatar_level_label: Label = $AvatarLevelLabel
 @onready var skill_button: Button = $SkillButton
 @onready var interact_button: Button = $InteractButton
 @onready var save_button: Button = $SaveButton
@@ -27,6 +30,15 @@ signal map_pressed
 @onready var cooldown_label: Label = $CooldownLabel
 @onready var teleport_button: Button = $TeleportButton
 @onready var map_button: Button = $MapButton
+@onready var quest_button: Button = $QuestButton
+@onready var offline_button: Button = $OfflineButton
+@onready var quest_panel: Control = $"../QuestPanel"
+@onready var quest_label: Label = $"../QuestPanel/QuestLabel"
+@onready var quest_close_button: Button = $"../QuestPanel/QuestCloseButton"
+
+# Start true so the first set_combat_mode(false) in _ready actually hides
+# the skill controls (their .tscn default is visible).
+var _combat_mode: bool = true
 
 func _ready() -> void:
     skill_button.pressed.connect(_on_skill_button_pressed)
@@ -39,7 +51,12 @@ func _ready() -> void:
     recruit_button.pressed.connect(_on_recruit_button_pressed)
     teleport_button.pressed.connect(_on_teleport_button_pressed)
     map_button.pressed.connect(_on_map_button_pressed)
+    quest_button.pressed.connect(_on_quest_button_pressed)
+    offline_button.pressed.connect(_on_offline_button_pressed)
+    quest_close_button.pressed.connect(_on_quest_close_button_pressed)
     teleport_button.disabled = true
+    quest_panel.visible = false
+    set_combat_mode(false)
 
 func set_gold(amount: int) -> void:
     gold_label.text = "金币：" + str(amount)
@@ -47,14 +64,33 @@ func set_gold(amount: int) -> void:
 func set_wood(amount: int, cap: int) -> void:
     wood_label.text = "木材：" + str(amount) + "/" + str(cap)
 
+func set_power(total: int) -> void:
+    power_label.text = "战力 " + str(total)
+
+func set_avatar_level(level: int) -> void:
+    avatar_level_label.text = "Lv." + str(level)
+
 func set_teleport_available(available: bool) -> void:
     teleport_button.disabled = not available
 
 func set_quest_text(text: String) -> void:
     quest_label.text = text
 
+func toggle_quest_panel() -> void:
+    quest_panel.visible = not quest_panel.visible
+
 func show_message(text: String) -> void:
     message_label.text = text
+
+# Skill / interact only exist in combat. In town the main screen has
+# no skill buttons, matching the reference layout.
+func set_combat_mode(in_combat: bool) -> void:
+    if in_combat == _combat_mode:
+        return
+    _combat_mode = in_combat
+    skill_button.visible = in_combat
+    interact_button.visible = in_combat
+    cooldown_label.visible = in_combat
 
 func set_skill_cooldown(remaining: float, ready: bool) -> void:
     if ready:
@@ -89,6 +125,14 @@ func _on_recruit_button_pressed() -> void:
 func _on_teleport_button_pressed() -> void:
     teleport_pressed.emit()
 
-
 func _on_map_button_pressed() -> void:
     map_pressed.emit()
+
+func _on_quest_button_pressed() -> void:
+    quest_pressed.emit()
+
+func _on_offline_button_pressed() -> void:
+    offline_pressed.emit()
+
+func _on_quest_close_button_pressed() -> void:
+    quest_panel.visible = false
