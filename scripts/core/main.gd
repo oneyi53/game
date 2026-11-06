@@ -647,6 +647,30 @@ func _ensure_exploration_map_panel() -> void:
     $UI.add_child(exploration_map_panel)
     exploration_map_panel.connect("close_requested", _on_exploration_map_close_requested)
     exploration_map_panel.connect("region_selected", _on_exploration_map_region_selected)
+    exploration_map_panel.connect("campfire_teleport_requested", _on_exploration_map_campfire_teleport_requested)
+
+func _on_exploration_map_campfire_teleport_requested(marker_index: int) -> void:
+    if marker_index != 0 or captain == null or campfire_node == null or not is_instance_valid(campfire_node):
+        hud.show_message("传送失败：营火标记不可用")
+        return
+    if not camp_manager.is_campfire_unlocked(str(camp_manager.campfire_order[0])):
+        hud.show_message("营火尚未解锁，靠近营火并消耗木材后即可传送")
+        return
+    var destination: Vector2 = WorldMapManagerScript.clamp_position(campfire_node.global_position + Vector2(0.0, 96.0))
+    _cancel_resource_harvest()
+    for hero in heroes:
+        if hero == null or not is_instance_valid(hero):
+            continue
+        hero.move_input = Vector2.ZERO
+        hero.velocity = Vector2.ZERO
+        hero.world_map_id = active_map_id
+        hero.global_position = WorldMapManagerScript.clamp_position(destination + hero.formation_offset)
+    camera.position = _projected_camera_position(captain.global_position)
+    if exploration_map_panel != null:
+        exploration_map_panel.visible = false
+    hud.show_message("已传送至营火据点")
+    _save_game()
+
 
 func _on_exploration_map_close_requested() -> void:
     if exploration_map_panel != null:
