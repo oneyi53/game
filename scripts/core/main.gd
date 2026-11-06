@@ -991,7 +991,12 @@ func _refresh_resource_prompt() -> void:
     if nearby_campfire != null:
         var nearby_campfire_entry = camp_manager.campfire(str(nearby_campfire.get_meta("campfire_id", "")))
         if nearby_campfire_entry != null:
-            hud.set_interact_prompt("传送" if camp_manager.is_campfire_unlocked(str(nearby_campfire_entry["id"])) else "解锁营火")
+            var nearby_id: String = str(nearby_campfire_entry["id"])
+            if camp_manager.is_campfire_unlocked(nearby_id):
+                hud.set_interact_prompt("传送")
+            else:
+                var wood_cost: int = int(nearby_campfire_entry["cost_wood"])
+                hud.set_interact_prompt("点燃营火（木材不足）" if wood < wood_cost else "点燃营火（消耗 " + str(wood_cost) + " 木材）")
             return
     if chest_node != null and chest_node.visible and captain.global_position.distance_to(chest_node.global_position) < 80.0:
         hud.set_interact_prompt("开启宝箱" if not chest_node.is_open else "已开启")
@@ -1053,7 +1058,7 @@ func _on_campfire_interact(entry: Dictionary) -> void:
         return
     var cost: int = int(entry["cost_wood"])
     if wood < cost:
-        hud.show_message(str(entry["fog_prompt"]) + " " + str(entry["insufficient_prompt"]) + "（需要 " + str(cost) + " 木材，当前 " + str(wood) + "）")
+        hud.show_message(str(entry["insufficient_prompt"]) + "（需要 " + str(cost) + " 木材，当前 " + str(wood) + "）")
         return
     wood -= cost
     camp_manager.unlock_campfire(campfire_id)
