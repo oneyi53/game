@@ -25,7 +25,8 @@ func _initialize() -> void:
     _test_portrait_projection_fills_viewport()
     _test_portrait_depth_order()
     _test_screen_controls_match_portrait_projection()
-    print("World coordinate tests: 19 passed")
+    _test_regional_quest_does_not_force_map_transition()
+    print("World coordinate tests: 20 passed")
     quit()
 
 
@@ -226,6 +227,12 @@ func _test_screen_controls_match_portrait_projection() -> void:
     assert(right_delta.is_equal_approx(Vector2.RIGHT))
     assert(down_delta.is_equal_approx(Vector2.DOWN))
     assert(up_delta.is_equal_approx(Vector2.UP))
+
+
+func _test_regional_quest_does_not_force_map_transition() -> void:
+    var source := FileAccess.get_file_as_string("res://scripts/core/main.gd")
+    assert(not source.contains('call_deferred("_switch_map", WorldMapManagerScript.FALLEN_LEAF)'))
+    assert(not source.contains('call_deferred("_switch_map", WorldMapManagerScript.MORNING_DEW)'))
 
 
 func _test_camera_limits_match_projected_bounds() -> void:

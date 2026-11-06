@@ -1427,12 +1427,14 @@ func _on_quest_completed(quest_id: String, quest_name: String, complete_line: St
         if hero_panel.visible:
             hero_panel.refresh()
         hud.show_message("新英雄加入：" + hero_name + "！")
-    # The completed regional objective is the gate to the next full-screen biome.
-    # Defer the transition so quest signal handlers finish before nodes are moved.
+    # Completing a regional objective unlocks the next destination; it must
+    # never move the party automatically. The player chooses when to leave
+    # through the world map / activated campfire, preserving post-boss loot,
+    # exploration and cleanup time in the current region.
     if quest_id == "side_moss_crown_king":
-        call_deferred("_switch_map", WorldMapManagerScript.FALLEN_LEAF)
+        hud.show_message("新区域「落叶幽谷」已解锁，可从地图中前往")
     elif quest_id == "side_valley_puppet":
-        call_deferred("_switch_map", WorldMapManagerScript.MORNING_DEW)
+        hud.show_message("新区域「朝露林地」已解锁，可从地图中前往")
     _save_game()
 
 func _on_loose_unequip(hero_id: String, slot: String) -> void:
