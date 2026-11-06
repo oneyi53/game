@@ -1,3 +1,11 @@
+## 2026-11-06 — 首个 Android APK 成功导出并放弃 InstaBox
+
+- GitHub Actions run `42175019271`，commit `71fc6aeb89915c45eaa3da2b1bddb79d7f16a8ba` 成功完成 Godot 4.7.2 导入、12 组回归测试、headless 主场景启动、Android debug APK 导出和 artifact 上传。
+- Artifact：`hero-world-android-debug`，73,907,164 bytes，ID `13483430889`；下载入口见 `docs/SMOKE_TEST.md`。
+- 修复 Android 非 Gradle 导出预设：清空仅在 Gradle 构建时允许覆盖的 Min SDK/Target SDK 值。
+- 删除 workflow 中 InstaBox SSH 检查步骤，项目不再依赖 InstaBox 云安卓环境。
+- 验证边界：未进行 Android 真机安装、触控/视觉/帧率验收；M0 20 项冒烟仍待执行。
+
 # 2026-11-06 — E3b 自动切图修正与 CI 门禁修复
 
 - 分支：`feat/exploration-progression-foundation-2026-11-05`；提交：`786cb0d2f9eeda59bd657e8dbd9cb7195893f4b2`。
