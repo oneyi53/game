@@ -19,6 +19,12 @@ const CONNECTIONS := [
     {"from": FALLEN_LEAF, "to": MORNING_DEW, "type": "quest", "name": "朝露林地道路"}
 ]
 
+# Only exits with verified in-scene coordinates are registered here.
+# Quest links remain logical until their physical gate positions are authored.
+const PHYSICAL_EXITS := [
+    {"from": TOWN, "to": MOSS_CROWN, "position": Vector2(1460.0, 700.0), "radius": 84.0}
+]
+
 const MAPS := {
     TOWN: {"name": "王朝营地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 610.0), "safe": true},
     MOSS_CROWN: {"name": "苔冠空地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 620.0), "safe": false},
@@ -38,6 +44,14 @@ func connections_from(map_id: String) -> Array:
             reverse["to"] = previous_from
             result.append(reverse)
     return result
+
+func physical_exit_at(map_id: String, position: Vector2) -> Dictionary:
+    for exit in PHYSICAL_EXITS:
+        if str(exit["from"]) != map_id:
+            continue
+        if position.distance_to(exit["position"]) <= float(exit["radius"]):
+            return exit.duplicate(true)
+    return {}
 
 func has_direct_connection(from_map_id: String, to_map_id: String) -> bool:
     if not is_known_map(from_map_id) or not is_known_map(to_map_id):
