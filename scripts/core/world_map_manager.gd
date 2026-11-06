@@ -85,18 +85,30 @@ func route_between(from_map_id: String, to_map_id: String) -> Array:
             frontier.append(next_path)
     return []
 
-func teleport_destinations(boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, campfire_unlocked: bool) -> Array:
+func teleport_destinations(boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, campfire_unlocked: bool, discovered_map_ids: Array = []) -> Array:
+    # A story-unlocked region is not automatically a discovered fast-travel
+    # destination. Keep the capital as the guaranteed return anchor; only
+    # list field regions the player has actually entered before.
     var destinations: Array = [
-        {"id": "town", "name": "王朝营地", "map_id": TOWN, "kind": "spawn", "available": true, "hint": "返回安全区"},
-        {"id": "campfire", "name": "营火据点", "map_id": MOSS_CROWN, "kind": "campfire", "available": campfire_unlocked, "hint": "已激活的营火"},
-        {"id": MOSS_CROWN, "name": "苔冠空地", "map_id": MOSS_CROWN, "kind": "spawn", "available": true, "hint": "首个探索区域"},
-        {"id": FALLEN_LEAF, "name": "落叶幽谷", "map_id": FALLEN_LEAF, "kind": "spawn", "available": is_unlocked(FALLEN_LEAF, boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done), "hint": "完成苔冠区域主线后开放"},
-        {"id": MORNING_DEW, "name": "朝露林地", "map_id": MORNING_DEW, "kind": "spawn", "available": is_unlocked(MORNING_DEW, boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done), "hint": "完成落叶幽谷主线后开放"}
+        {"id": "town", "name": "王朝营地", "map_id": TOWN, "kind": "spawn", "available": true, "hint": "返回安全区"}
     ]
+    if campfire_unlocked:
+        destinations.append({"id": "campfire", "name": "营火据点", "map_id": MOSS_CROWN, "kind": "campfire", "available": true, "hint": "已激活的营火"})
+    var region_entries := [
+        {"id": MOSS_CROWN, "name": "苔冠空地", "map_id": MOSS_CROWN, "hint": "首个探索区域"},
+        {"id": FALLEN_LEAF, "name": "落叶幽谷", "map_id": FALLEN_LEAF, "hint": "完成苔冠区域主线后开放"},
+        {"id": MORNING_DEW, "name": "朝露林地", "map_id": MORNING_DEW, "hint": "完成落叶幽谷主线后开放"}
+    ]
+    for entry in region_entries:
+        var map_id: String = str(entry["map_id"])
+        if not discovered_map_ids.has(map_id):
+            continue
+        var unlocked: bool = is_unlocked(map_id, boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done)
+        destinations.append({"id": map_id, "name": entry["name"], "map_id": map_id, "kind": "spawn", "available": unlocked, "hint": entry["hint"] if unlocked else "区域尚未开放"})
     return destinations
 
-func resolve_teleport_destination(destination_id: String, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, campfire_unlocked: bool, campfire_position: Vector2 = Vector2.ZERO) -> Dictionary:
-    for destination in teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done, campfire_unlocked):
+func resolve_teleport_destination(destination_id: String, boss_defeated: bool, elite_defeated: bool, valley_quest_done: bool, moss_crown_quest_done: bool, campfire_unlocked: bool, campfire_position: Vector2 = Vector2.ZERO, discovered_map_ids: Array = []) -> Dictionary:
+    for destination in teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_crown_quest_done, campfire_unlocked, discovered_map_ids):
         if str(destination["id"]) != destination_id:
             continue
         if not bool(destination["available"]):

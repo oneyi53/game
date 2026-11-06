@@ -1094,6 +1094,18 @@ func _ensure_teleport_panel() -> void:
     close_button.pressed.connect(_close_teleport_panel)
     layout.add_child(close_button)
 
+func _discovered_map_ids() -> Array:
+    # Current map is always discovered. Previous visits survive in map_positions;
+    # explored cells are also accepted for saves written before map_positions.
+    var discovered: Array = [active_map_id, WorldMapManagerScript.TOWN]
+    for map_id in map_positions.keys():
+        if world_map_manager.is_known_map(str(map_id)) and not discovered.has(str(map_id)):
+            discovered.append(str(map_id))
+    for map_id in explored_map_cells.keys():
+        if world_map_manager.is_known_map(str(map_id)) and not discovered.has(str(map_id)):
+            discovered.append(str(map_id))
+    return discovered
+
 func _refresh_teleport_destinations() -> void:
     if teleport_list == null:
         return
@@ -1101,7 +1113,7 @@ func _refresh_teleport_destinations() -> void:
         teleport_list.remove_child(child)
         child.queue_free()
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
-    var destinations: Array = world_map_manager.teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, _has_unlocked_campfire())
+    var destinations: Array = world_map_manager.teleport_destinations(boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, _has_unlocked_campfire(), _discovered_map_ids())
     for destination in destinations:
         _add_teleport_destination(str(destination["id"]), str(destination["name"]), bool(destination["available"]), str(destination["hint"]))
 
@@ -1143,7 +1155,7 @@ func _on_teleport_destination_pressed(destination_id: String) -> void:
         return
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
     var campfire_position: Vector2 = campfire_node.global_position if campfire_node != null and is_instance_valid(campfire_node) else Vector2.ZERO
-    var destination: Dictionary = world_map_manager.resolve_teleport_destination(destination_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, _has_unlocked_campfire(), campfire_position)
+    var destination: Dictionary = world_map_manager.resolve_teleport_destination(destination_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done, _has_unlocked_campfire(), campfire_position, _discovered_map_ids())
     if not bool(destination.get("ok", false)):
         var reason: String = str(destination.get("reason", "unknown"))
         hud.show_message("传送失败：" + ("该区域尚未解锁" if reason == "locked" else "营火据点不可用" if reason == "missing_campfire" else "未知目的地"))
