@@ -153,11 +153,11 @@ func _draw() -> void:
     _draw_fullscreen_ground(bounds, town)
     _draw_exploration_paths()
     if active_map_id == WorldMaps.MOSS_CROWN:
-        _draw_return_gate(Vector2(600.0, 620.0), "返回营地")
+        _draw_return_gate(Vector2(520.0, 560.0), "返回营地")
     elif active_map_id == WorldMaps.FALLEN_LEAF:
-        _draw_return_gate(Vector2(600.0, 650.0), "返回苔冠")
+        _draw_return_gate(Vector2(500.0, 570.0), "返回苔冠")
     elif active_map_id == WorldMaps.MORNING_DEW:
-        _draw_return_gate(Vector2(600.0, 650.0), "返回幽谷")
+        _draw_return_gate(Vector2(500.0, 570.0), "返回幽谷")
     var font = ThemeDB.fallback_font
     if town:
         _draw_town_buildings()
