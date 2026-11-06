@@ -751,6 +751,11 @@ func _apply_active_map_visibility() -> void:
 func _switch_map(target_map_id: String) -> void:
     if target_map_id == active_map_id or not world_map_manager.is_known_map(target_map_id) or captain == null:
         return
+    # Every map transition must belong to the authored world-region graph.
+    # This keeps map UI, quest gates and teleport destinations on one topology.
+    if world_map_manager.route_between(active_map_id, target_map_id).is_empty():
+        hud.show_message("该区域尚未接入世界道路")
+        return
     var moss_quest_done: bool = quest_manager.is_completed("side_moss_crown_king") or elite_defeated
     if not world_map_manager.is_unlocked(target_map_id, boss_defeated, elite_defeated, valley_quest_done, moss_quest_done):
         hud.show_message("该地图尚未解锁：请先完成当前区域任务")
