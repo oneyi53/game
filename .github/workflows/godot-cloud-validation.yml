@@ -135,6 +135,17 @@ jobs:
           fi
           grep -q "Camp manager tests: 4 passed" camp-manager-tests.log
 
+      - name: Run offline manager regression tests
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --script res://tests/test_offline_manager.gd 2>&1 | tee offline-manager-tests.log
+          if grep -Eiq 'Parse Error|Failed to load script|SCRIPT ERROR|Compile Error|Assertion failed' offline-manager-tests.log; then
+            echo "Offline manager tests reported errors."
+            exit 1
+          fi
+          grep -q "Offline manager tests: 7 passed" offline-manager-tests.log
+
       - name: Run resource node tests
         shell: bash
         run: |
@@ -173,4 +184,5 @@ jobs:
             quest-manager-tests.log
             camp-manager-tests.log
             resource-node-tests.log
+            offline-manager-tests.log
           if-no-files-found: ignore
