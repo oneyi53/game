@@ -2,20 +2,20 @@ class_name WorldMapManager
 extends RefCounted
 
 # Each area is a self-contained logical world. Gameplay coordinates are
-# always map-local (0..1200, 0..900); projection is a render-only concern.
+# always map-local (0..3000, 0..2250); projection is a render-only concern.
 
 const TOWN := "town"
 const MOSS_CROWN := "moss_crown"
 const FALLEN_LEAF := "fallen_leaf"
 const MORNING_DEW := "morning_dew"
 
-const MAP_SIZE := Vector2(1200.0, 900.0)
+const MAP_SIZE := Vector2(3000.0, 2250.0)
 const DEFAULT_MARGIN := 32.0
 const MAPS := {
-    TOWN: {"name": "王朝营地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 610.0), "safe": true},
-    MOSS_CROWN: {"name": "苔冠空地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 620.0), "safe": false},
-    FALLEN_LEAF: {"name": "落叶幽谷", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 650.0), "safe": false},
-    MORNING_DEW: {"name": "朝露林地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(600.0, 650.0), "safe": false}
+    TOWN: {"name": "王朝营地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(1500.0, 1525.0), "safe": true},
+    MOSS_CROWN: {"name": "苔冠空地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(1500.0, 1550.0), "safe": false},
+    FALLEN_LEAF: {"name": "落叶幽谷", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(1500.0, 1625.0), "safe": false},
+    MORNING_DEW: {"name": "朝露林地", "bounds": Rect2(Vector2.ZERO, MAP_SIZE), "spawn": Vector2(1500.0, 1625.0), "safe": false}
 }
 
 func is_known_map(map_id: String) -> bool:
@@ -53,20 +53,20 @@ func map_for_enemy(enemy_id: String) -> String:
 
 func enemy_spawn_position(enemy_id: String) -> Vector2:
     match enemy_id:
-        "slime": return Vector2(820.0, 470.0)
-        "wolf": return Vector2(390.0, 650.0)
-        "boss_tree": return Vector2(930.0, 650.0)
-        "thorn_vine": return Vector2(360.0, 280.0)
-        "forest_wasp": return Vector2(780.0, 260.0)
-        "boss_thorn": return Vector2(930.0, 360.0)
-        "valley_firefly": return Vector2(300.0, 360.0)
-        "withered_puppet": return Vector2(850.0, 360.0)
-        "stream_spirit": return Vector2(600.0, 230.0)
-        "valley_mushroom": return Vector2(420.0, 650.0)
-        "dawn_deer": return Vector2(360.0, 420.0)
-        "hill_rock": return Vector2(850.0, 420.0)
+        "slime": return Vector2(2050.0, 1175.0)
+        "wolf": return Vector2(975.0, 1625.0)
+        "boss_tree": return Vector2(2325.0, 1625.0)
+        "thorn_vine": return Vector2(900.0, 700.0)
+        "forest_wasp": return Vector2(1950.0, 650.0)
+        "boss_thorn": return Vector2(2325.0, 900.0)
+        "valley_firefly": return Vector2(750.0, 900.0)
+        "withered_puppet": return Vector2(2125.0, 900.0)
+        "stream_spirit": return Vector2(1500.0, 575.0)
+        "valley_mushroom": return Vector2(1050.0, 1625.0)
+        "dawn_deer": return Vector2(900.0, 1050.0)
+        "hill_rock": return Vector2(2125.0, 1050.0)
         _:
-            return spawn_position(map_for_enemy(enemy_id)) + Vector2(100.0, 0.0)
+            return spawn_position(map_for_enemy(enemy_id)) + Vector2(250.0, 0.0)
 
 static func clamp_position(position: Vector2, margin: float = DEFAULT_MARGIN) -> Vector2:
     var safe_margin: float = clampf(margin, 0.0, minf(MAP_SIZE.x, MAP_SIZE.y) * 0.5)

@@ -13,20 +13,20 @@ signal building_pressed(building_id: String)
 
 const DECORATIONS := {
     "town": {
-        "trees": [Vector2(160, 170), Vector2(1040, 170), Vector2(160, 740), Vector2(1040, 740)],
-        "landmarks": [{"kind": "fountain", "position": Vector2(600, 450), "radius": 34.0}]
+        "trees": [Vector2(400, 425), Vector2(2600, 425), Vector2(400, 1850), Vector2(2600, 1850)],
+        "landmarks": [{"kind": "fountain", "position": Vector2(1500, 1125), "radius": 85.0}]
     },
     "moss_crown": {
-        "trees": [Vector2(100, 110), Vector2(300, 180), Vector2(1080, 120), Vector2(940, 220), Vector2(140, 760), Vector2(420, 800), Vector2(1080, 740), Vector2(900, 800), Vector2(180, 500), Vector2(1040, 560), Vector2(640, 100), Vector2(760, 820)],
-        "landmarks": [{"kind": "tower", "position": Vector2(260, 300), "radius": 30.0}, {"kind": "fountain", "position": Vector2(920, 500), "radius": 28.0}]
+        "trees": [Vector2(250, 275), Vector2(750, 450), Vector2(2700, 300), Vector2(2350, 550), Vector2(350, 1900), Vector2(1050, 2000), Vector2(2700, 1850), Vector2(2250, 2000), Vector2(450, 1250), Vector2(2600, 1400), Vector2(1600, 250), Vector2(1900, 2050)],
+        "landmarks": [{"kind": "tower", "position": Vector2(650, 750), "radius": 75.0}, {"kind": "fountain", "position": Vector2(2300, 1250), "radius": 70.0}]
     },
     "fallen_leaf": {
-        "trees": [Vector2(110, 130), Vector2(310, 110), Vector2(1080, 150), Vector2(980, 760), Vector2(140, 760), Vector2(420, 800), Vector2(180, 500), Vector2(1040, 560)],
-        "landmarks": [{"kind": "tree_cluster", "position": Vector2(620, 280), "radius": 36.0}]
+        "trees": [Vector2(275, 325), Vector2(775, 275), Vector2(2700, 375), Vector2(2450, 1900), Vector2(350, 1900), Vector2(1050, 2000), Vector2(450, 1250), Vector2(2600, 1400)],
+        "landmarks": [{"kind": "tree_cluster", "position": Vector2(1550, 700), "radius": 90.0}]
     },
     "morning_dew": {
-        "trees": [Vector2(100, 160), Vector2(300, 140), Vector2(1080, 140), Vector2(980, 220), Vector2(140, 760), Vector2(420, 790), Vector2(1080, 740), Vector2(900, 800)],
-        "landmarks": [{"kind": "tree_cluster", "position": Vector2(600, 450), "radius": 36.0}]
+        "trees": [Vector2(250, 400), Vector2(750, 350), Vector2(2700, 350), Vector2(2450, 550), Vector2(350, 1900), Vector2(1050, 1975), Vector2(2700, 1850), Vector2(2250, 2000)],
+        "landmarks": [{"kind": "tree_cluster", "position": Vector2(1500, 1125), "radius": 90.0}]
     }
 }
 
@@ -53,7 +53,7 @@ func _ready() -> void:
     _refresh_decorations()
     # Label layer last: it must draw above every decoration sprite.
     # Tree order alone is NOT enough: trees/landmarks/units all carry a
-    # depth z_index of 0..1024 (screen_depth/4), which beats a plain
+    # depth z_index of 0..1024 (screen_depth/10), which beats a plain
     # z_index 0 layer no matter where it sits in the tree. The v7 layer
     # fix left "苔" of "苔冠空地" still covered by the tower for exactly
     # this reason (verified in render 2026-11-07 02:30). Pin the layer
@@ -74,7 +74,7 @@ func _update_label() -> void:
     if font == null:
         label_layer.set_label("", Vector2.ZERO, 0.0)
         return
-    var label_pos: Vector2 = WorldProjectionScript.world_to_screen(bounds.position + Vector2(40.0, 55.0))
+    var label_pos: Vector2 = WorldProjectionScript.world_to_screen(bounds.position + Vector2(100.0, 137.5))
     var label_width: float = font.get_string_size(title).x + 34.0
     label_layer.set_label(title, label_pos, label_width)
 
@@ -88,7 +88,7 @@ func _build_decorations() -> void:
             tree.set_meta("map_id", str(map_id))
             add_child(tree)
             decoration_nodes.append(tree)
-            var blocker := _add_blocker(tree_pos + Vector2(0.0, -8.0), 18.0)
+            var blocker := _add_blocker(tree_pos + Vector2(0.0, -8.0), 45.0)
             blocker.set_meta("map_id", str(map_id))
         for landmark_spec in spec["landmarks"]:
             var landmark := Node2D.new()
@@ -139,7 +139,7 @@ func _draw() -> void:
     var bounds: Rect2 = manager.map_bounds(active_map_id)
     var town: bool = active_map_id == WorldMaps.TOWN
     var background: Color = Color(0.22, 0.38, 0.25) if town else Color(0.34, 0.62, 0.34)
-    draw_rect(Rect2(-1000.0, -1000.0, 3400.0, 2700.0), background)
+    draw_rect(Rect2(-2500.0, -2500.0, 8500.0, 6750.0), background)
     for xi in range(0, int(bounds.size.x), TILE):
         for yi in range(0, int(bounds.size.y), TILE):
             var odd: bool = (int(xi / TILE) + int(yi / TILE)) % 2 == 0
@@ -160,17 +160,17 @@ func _draw() -> void:
     # not here: _draw() renders below child sprites, so a label drawn here
     # gets covered by landmarks (e.g. the moss_crown tower over "苔冠空地").
     if town:
-        for point in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
+        for point in [Vector2(1250, 1125), Vector2(1410, 1125), Vector2(1570, 1125), Vector2(1730, 1125), Vector2(1570, 1285)]:
             _draw_ground_tile(int(point.x), int(point.y), Color(0.82, 0.75, 0.61))
         _draw_town_buildings()
     elif active_map_id == WorldMaps.FALLEN_LEAF:
-        for point in [Vector2(240, 240), Vector2(420, 300), Vector2(760, 260), Vector2(940, 620)]:
+        for point in [Vector2(600, 600), Vector2(1050, 750), Vector2(1900, 650), Vector2(2350, 1550)]:
             _draw_dot(point, 5.0, Color(0.84, 0.65, 0.27))
     elif active_map_id == WorldMaps.MORNING_DEW:
-        for point in [Vector2(260, 260), Vector2(480, 620), Vector2(860, 280), Vector2(1040, 660)]:
+        for point in [Vector2(650, 650), Vector2(1200, 1550), Vector2(2150, 700), Vector2(2600, 1650)]:
             _draw_dot(point, 5.0, Color(0.68, 0.9, 0.82))
     else:
-        for point in [Vector2(260, 480), Vector2(500, 620), Vector2(900, 480), Vector2(1100, 700)]:
+        for point in [Vector2(650, 1200), Vector2(1250, 1550), Vector2(2250, 1200), Vector2(2750, 1750)]:
             _draw_dot(point, 4.0, Color(1.0, 0.85, 0.2))
 
 func _draw_town_buildings() -> void:

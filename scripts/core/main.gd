@@ -663,7 +663,7 @@ func _projected_camera_position(logical_position: Vector2) -> Vector2:
 
 
 func _set_world_depth_order(unit: Node2D) -> void:
-    var depth_index: int = clampi(int(WorldProjectionScript.screen_depth(unit.global_position) / 4.0), 0, 1024)
+    var depth_index: int = clampi(int(WorldProjectionScript.screen_depth(unit.global_position) / 10.0), 0, 1024)
     if unit.z_index != depth_index:
         unit.z_index = depth_index
 
@@ -1290,6 +1290,7 @@ func _save_game() -> void:
         "boss_defeated": boss_defeated,
         "elite_defeated": elite_defeated,
         "map_id": active_map_id,
+        "world_size": {"x": 3000.0, "y": 2250.0},
         "map_positions": _serialize_map_positions(),
         "player_position": {"x": captain.global_position.x, "y": captain.global_position.y},
         "heroes": hero_states,

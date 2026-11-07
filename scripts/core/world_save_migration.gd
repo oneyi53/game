@@ -2,11 +2,11 @@ class_name WorldSaveMigration
 extends RefCounted
 
 # Converts saves from the original shared 1600x1200 world into the
-# map-local 1200x900 coordinate spaces used by the 2.5D world.
+# map-local 3000x2250 coordinate spaces used by the 2.5D world.
 # This helper is deliberately pure: it never reads or writes files.
 # Callers must persist its returned state only after a successful load.
 
-const MAP_SIZE := Vector2(1200.0, 900.0)
+const MAP_SIZE := Vector2(3000.0, 2250.0)
 const MARGIN := 32.0
 
 const TOWN := "town"
@@ -16,10 +16,10 @@ const MORNING_DEW := "morning_dew"
 
 const MAP_IDS := [TOWN, MOSS_CROWN, FALLEN_LEAF, MORNING_DEW]
 const SPAWNS := {
-    TOWN: Vector2(600.0, 610.0),
-    MOSS_CROWN: Vector2(600.0, 620.0),
-    FALLEN_LEAF: Vector2(600.0, 650.0),
-    MORNING_DEW: Vector2(600.0, 650.0)
+    TOWN: Vector2(1500.0, 1525.0),
+    MOSS_CROWN: Vector2(1500.0, 1550.0),
+    FALLEN_LEAF: Vector2(1500.0, 1625.0),
+    MORNING_DEW: Vector2(1500.0, 1625.0)
 }
 
 # Regions drawn by the original MapDrawer on its shared 1600x1200 map.
@@ -42,11 +42,32 @@ static func migrate_save(save_data: Dictionary) -> Dictionary:
             saved_position = clamp_to_map(_read_position(save_data.get("player_position")))
         else:
             saved_position = SPAWNS[safe_map_id]
+        var did_migrate: bool = safe_map_id != saved_map_id
+        # World-size migration (v10): saves written before the 2.5x world
+        # enlargement carry coordinates in the old 1200x900 space (or an
+        # explicit world_size stamp). Scale player_position and every
+        # map_positions entry by marked-size -> new-size, clamp into the
+        # new map, and stamp world_size so a second load does not scale
+        # again. A save without a stamp is treated as old 1200x900.
+        var saved_size: Vector2 = _read_world_size(save_data)
+        if saved_size != MAP_SIZE:
+            var scale_factor: Vector2 = Vector2(MAP_SIZE.x / saved_size.x, MAP_SIZE.y / saved_size.y)
+            saved_position = clamp_to_map(saved_position * scale_factor)
+            var saved_positions = save_data.get("map_positions", {})
+            if saved_positions is Dictionary:
+                var scaled_positions: Dictionary = {}
+                for saved_map in saved_positions:
+                    var entry = saved_positions[saved_map]
+                    if entry is Dictionary:
+                        scaled_positions[saved_map] = _position_to_data(clamp_to_map(_read_position(entry) * scale_factor))
+                result["map_positions"] = scaled_positions
+            result["world_size"] = {"x": MAP_SIZE.x, "y": MAP_SIZE.y}
+            did_migrate = true
         result["map_id"] = safe_map_id
         result["player_position"] = _position_to_data(saved_position)
         return {
             "data": result,
-            "migrated": safe_map_id != saved_map_id,
+            "migrated": did_migrate,
             "map_id": safe_map_id
         }
 
@@ -111,6 +132,17 @@ static func clamp_to_map(position: Vector2) -> Vector2:
         clampf(position.x, MARGIN, MAP_SIZE.x - MARGIN),
         clampf(position.y, MARGIN, MAP_SIZE.y - MARGIN)
     )
+
+
+static func _read_world_size(save_data: Dictionary) -> Vector2:
+    var stamp = save_data.get("world_size", {})
+    if stamp is Dictionary:
+        var x: float = float(stamp.get("x", 0.0))
+        var y: float = float(stamp.get("y", 0.0))
+        if x > 0.0 and y > 0.0:
+            return Vector2(x, y)
+    # No stamp means a save from the old 1200x900 world.
+    return Vector2(1200.0, 900.0)
 
 
 static func _read_position(value: Variant) -> Vector2:

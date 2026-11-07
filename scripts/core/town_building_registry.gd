@@ -4,10 +4,10 @@ extends RefCounted
 const WorldProjectionScript = preload("res://scripts/core/world_projection.gd")
 
 const BUILDINGS := [
-    {"id": "recruit", "title": "英雄招募所", "subtitle": "招募", "world_position": Vector2(360.0, 420.0), "color": Color(0.78, 0.58, 0.25), "panel": "recruit"},
-    {"id": "camp", "title": "营地工坊", "subtitle": "建设", "world_position": Vector2(840.0, 420.0), "color": Color(0.38, 0.62, 0.42), "panel": "camp"},
-    {"id": "equipment", "title": "装备工坊", "subtitle": "装备", "world_position": Vector2(360.0, 620.0), "color": Color(0.48, 0.58, 0.78), "panel": "equipment"},
-    {"id": "backpack", "title": "仓库", "subtitle": "背包", "world_position": Vector2(840.0, 620.0), "color": Color(0.68, 0.48, 0.38), "panel": "backpack"}
+    {"id": "recruit", "title": "英雄招募所", "subtitle": "招募", "world_position": Vector2(900.0, 1050.0), "color": Color(0.78, 0.58, 0.25), "panel": "recruit"},
+    {"id": "camp", "title": "营地工坊", "subtitle": "建设", "world_position": Vector2(2100.0, 1050.0), "color": Color(0.38, 0.62, 0.42), "panel": "camp"},
+    {"id": "equipment", "title": "装备工坊", "subtitle": "装备", "world_position": Vector2(900.0, 1550.0), "color": Color(0.48, 0.58, 0.78), "panel": "equipment"},
+    {"id": "backpack", "title": "仓库", "subtitle": "背包", "world_position": Vector2(2100.0, 1550.0), "color": Color(0.68, 0.48, 0.38), "panel": "backpack"}
 ]
 
 static func entries() -> Array:
