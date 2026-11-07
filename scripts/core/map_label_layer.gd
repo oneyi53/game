@@ -6,7 +6,7 @@ extends Node2D
 # therefore always draw on top of MapDrawer's own _draw(). This layer is
 # added last inside MapDrawer, so its _draw() runs after every sprite.
 # It ALSO needs z_index above the depth range: trees, landmarks and units
-# all carry z_index 0..1024 (screen_depth/4), which beats tree order.
+# all carry z_index 0..1024 (screen_depth/10), which beats tree order.
 # map.gd pins this layer at 4096; do not lower it below 1025.
 # Coordinates are the same projected map space MapDrawer._draw() uses.
 

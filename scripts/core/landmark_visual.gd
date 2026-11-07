@@ -8,14 +8,14 @@ const TEXTURES := {
     "tree_cluster": preload("res://assets/art-v1/sprites/scene/tree_yellow.png"),
     "campfire": preload("res://assets/art-v1/sprites/scene/campfire.png")
 }
-const HEIGHTS := {"tower": 180.0, "fountain": 150.0, "tree_cluster": 150.0, "campfire": 100.0}
+const HEIGHTS := {"tower": 450.0, "fountain": 375.0, "tree_cluster": 375.0, "campfire": 250.0}
 
 var landmark_kind: String = "tower"
 
 func setup(kind: String) -> void:
     landmark_kind = kind
     z_as_relative = false
-    z_index = clampi(int(WorldProjectionScript.screen_depth(global_position) / 4.0), 0, 1024)
+    z_index = clampi(int(WorldProjectionScript.screen_depth(global_position) / 10.0), 0, 1024)
     queue_redraw()
 
 func _draw() -> void:

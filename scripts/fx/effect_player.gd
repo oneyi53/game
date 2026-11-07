@@ -17,7 +17,7 @@ static func play(parent: Node, atlas: Texture2D, world_position: Vector2, atlas_
     sprite.centered = true
     sprite.rotation = start_rotation
     sprite.z_as_relative = false
-    sprite.z_index = clampi(int(WorldProjectionScript.screen_depth(world_position) / 4.0) + 1, 1, 1024)
+    sprite.z_index = clampi(int(WorldProjectionScript.screen_depth(world_position) / 10.0) + 1, 1, 1024)
     parent.add_child(sprite)
     sprite.global_position = WorldProjectionScript.world_to_screen(world_position)
     var final_scale := Vector2(target_size.x / atlas_region.size.x, target_size.y / atlas_region.size.y)
