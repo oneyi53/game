@@ -316,13 +316,7 @@ func _ready() -> void:
         var off_gold: int = int(pending_offline.get("gold", 0))
         var off_wood: int = int(pending_offline.get("wood", 0))
         if off_gold > 0 or off_wood > 0:
-            var billed: int = int(pending_offline.get("billed_seconds", 0))
-            var lines: Array = ["离线结算：离线 " + str(billed / 3600) + " 小时 " + str((billed % 3600) / 60) + " 分钟（按封顶后算）"]
-            if off_gold > 0:
-                lines.append("金币 +" + str(off_gold))
-            if off_wood > 0:
-                lines.append("木材 +" + str(off_wood))
-            offline_panel.show_settlement(lines)
+            offline_panel.show_settlement(pending_offline)
     camera.make_current()
     if captain != null:
         camera.position = _projected_camera_position(captain.global_position)
@@ -683,6 +677,13 @@ func _update_world_visuals() -> void:
     for unit in enemies:
         if is_instance_valid(unit) and unit.visible:
             _set_world_depth_order(unit)
+            # Redraw every frame: name/health bars are positioned from the
+            # live canvas transform (BOSS bar clamps clear of the HUD side
+            # columns), but Godot replays cached draw commands when the
+            # node or camera moves, so a bar drawn once goes stale and
+            # drifts back under the buttons. Heroes already redraw while
+            # moving; enemies need the same treatment.
+            unit.queue_redraw()
     if chest_node != null and is_instance_valid(chest_node) and chest_node.visible:
         _set_world_depth_order(chest_node)
     if campfire_node != null and is_instance_valid(campfire_node) and campfire_node.visible:
@@ -1166,8 +1167,11 @@ func _on_quest_panel_pressed() -> void:
 
 func _on_offline_panel_pressed() -> void:
     if offline_panel.scroll == null:
-        hud.show_message("暂无离线结算可查看")
-        return
+        # First open this session with nothing to settle: build the
+        # empty-state panel, then hide it again so the toggle below
+        # opens it instead of closing it (show_empty leaves it visible).
+        offline_panel.show_empty(offline_manager.gold_per_hour, offline_manager.wood_per_hour, offline_manager.cap_hours, offline_manager.min_minutes)
+        offline_panel.visible = false
     _toggle_menu_panel(offline_panel)
 
 func _on_recruit_panel_pressed() -> void:

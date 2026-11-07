@@ -197,18 +197,37 @@ func _draw() -> void:
         draw_texture_rect(texture, Rect2(-96.0, -180.0, 192.0, 192.0), false)
     else:
         draw_circle(Vector2.ZERO, 28.0, boss_color)
-    draw_rect(Rect2(-60.0, -222.0, 120.0, 12.0), Color(0.04, 0.04, 0.04, 0.98))
+    # Name + health bar cluster: keep it clear of the HUD side columns
+    # (left column ends x=94, right column starts x=619 in the 720-wide
+    # portrait HUD). The bar is drawn in node-local space after
+    # draw_set_transform(offset), so its screen x is the canvas origin
+    # plus offset.x; shift the whole cluster (bar, name, damage number)
+    # when it would slide under a column. A boss off-screen keeps its
+    # unshifted (invisible) bar, so no clamped bar ever floats alone.
+    var label_shift: float = 0.0
+    var canvas_xform: Transform2D = get_global_transform_with_canvas()
+    var bar_center_screen_x: float = canvas_xform.origin.x + offset.x * canvas_xform.get_scale().x
+    if bar_center_screen_x > -60.0 and bar_center_screen_x < 780.0:
+        var label_font: Font = ThemeDB.fallback_font
+        var name_half: float = 0.0
+        if label_font != null and enemy_name != "":
+            name_half = label_font.get_string_size(enemy_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x * 0.5
+        var half_label: float = maxf(60.0, name_half + 4.0)
+        var clamped_center: float = clampf(bar_center_screen_x, 94.0 + 8.0 + half_label, 619.0 - 8.0 - half_label)
+        if canvas_xform.get_scale().x != 0.0:
+            label_shift = (clamped_center - bar_center_screen_x) / canvas_xform.get_scale().x
+    draw_rect(Rect2(-60.0 + label_shift, -222.0, 120.0, 12.0), Color(0.04, 0.04, 0.04, 0.98))
     var fill: float = 120.0 * float(hp) / float(max_hp) if max_hp > 0 else 0.0
     var phase_color: Color = Color(0.98, 0.62, 0.18) if phase >= 2 else Color(0.95, 0.2, 0.18)
-    draw_rect(Rect2(-60.0, -222.0, fill, 12.0), phase_color)
+    draw_rect(Rect2(-60.0 + label_shift, -222.0, fill, 12.0), phase_color)
     var name_font: Font = ThemeDB.fallback_font
     if name_font != null and enemy_name != "":
         var name_size: Vector2 = name_font.get_string_size(enemy_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 20)
-        draw_string(name_font, Vector2(-name_size.x * 0.5, -230.0), enemy_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(1.0, 0.96, 0.82))
+        draw_string(name_font, Vector2(-name_size.x * 0.5 + label_shift, -230.0), enemy_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(1.0, 0.96, 0.82))
     if damage_show_timer > 0.0:
         var dmg_font: Font = ThemeDB.fallback_font
         if dmg_font != null:
             var dmg_text: String = str(last_damage)
             var dmg_size: Vector2 = dmg_font.get_string_size(dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28)
             var dmg_y: float = -262.0 - (0.8 - damage_show_timer) * 50.0
-            draw_string(dmg_font, Vector2(-dmg_size.x * 0.5, dmg_y), dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(1.0, 0.85, 0.2))
+            draw_string(dmg_font, Vector2(-dmg_size.x * 0.5 + label_shift, dmg_y), dmg_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(1.0, 0.85, 0.2))
