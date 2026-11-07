@@ -405,20 +405,20 @@ bbcode_enabled = false
 script = ExtResource("11_offline")
 visible = false
 offset_left = 60.0
-offset_top = 520.0
+offset_top = 360.0
 offset_right = 660.0
-offset_bottom = 760.0
+offset_bottom = 920.0
 
 [node name="PanelBackground" type="ColorRect" parent="UI/OfflinePanel"]
 offset_right = 600.0
-offset_bottom = 240.0
+offset_bottom = 560.0
 color = Color(0, 0, 0, 0.7)
 
 [node name="PanelLabel" type="RichTextLabel" parent="UI/OfflinePanel"]
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 584.0
-offset_bottom = 224.0
+offset_bottom = 544.0
 bbcode_enabled = false
 
 [node name="RecruitPanel" type="Control" parent="UI"]

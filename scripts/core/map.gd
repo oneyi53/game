@@ -6,6 +6,7 @@ const WorldMaps = preload("res://scripts/core/world_map_manager.gd")
 const TREE_SCRIPT = preload("res://scripts/core/tree_visual.gd")
 const LANDMARK_SCRIPT = preload("res://scripts/core/landmark_visual.gd")
 const TOWN_BUILDINGS = preload("res://scripts/core/town_building_registry.gd")
+const LABEL_LAYER_SCRIPT = preload("res://scripts/core/map_label_layer.gd")
 const TILE: int = 64
 
 signal building_pressed(building_id: String)
@@ -32,6 +33,7 @@ const DECORATIONS := {
 var active_map_id: String = WorldMaps.MOSS_CROWN
 var decoration_nodes: Array[Node2D] = []
 var blocker_nodes: Array[StaticBody2D] = []
+var label_layer: Node2D = null
 
 func set_active_map(map_id: String) -> void:
     var manager = WorldMaps.new()
@@ -40,6 +42,7 @@ func set_active_map(map_id: String) -> void:
         return
     active_map_id = map_id
     _refresh_decorations()
+    _update_label()
     queue_redraw()
 
 func get_active_map_id() -> String:
@@ -48,6 +51,32 @@ func get_active_map_id() -> String:
 func _ready() -> void:
     _build_decorations()
     _refresh_decorations()
+    # Label layer last: it must draw above every decoration sprite.
+    # Tree order alone is NOT enough: trees/landmarks/units all carry a
+    # depth z_index of 0..1024 (screen_depth/4), which beats a plain
+    # z_index 0 layer no matter where it sits in the tree. The v7 layer
+    # fix left "苔" of "苔冠空地" still covered by the tower for exactly
+    # this reason (verified in render 2026-11-07 02:30). Pin the layer
+    # above the whole depth range.
+    label_layer = Node2D.new()
+    label_layer.set_script(LABEL_LAYER_SCRIPT)
+    label_layer.z_index = 4096
+    add_child(label_layer)
+    _update_label()
+
+func _update_label() -> void:
+    if label_layer == null:
+        return
+    var manager = WorldMaps.new()
+    var bounds: Rect2 = manager.map_bounds(active_map_id)
+    var title: String = manager.map_name(active_map_id)
+    var font: Font = ThemeDB.fallback_font
+    if font == null:
+        label_layer.set_label("", Vector2.ZERO, 0.0)
+        return
+    var label_pos: Vector2 = WorldProjectionScript.world_to_screen(bounds.position + Vector2(40.0, 55.0))
+    var label_width: float = font.get_string_size(title).x + 34.0
+    label_layer.set_label(title, label_pos, label_width)
 
 func _build_decorations() -> void:
     for map_id in DECORATIONS.keys():
@@ -127,13 +156,9 @@ func _draw() -> void:
     var outline := _projected_rect(bounds)
     outline.append(outline[0])
     draw_polyline(outline, Color(0.2, 0.35, 0.2), 5.0, true)
-    var title: String = manager.map_name(active_map_id)
-    var font = ThemeDB.fallback_font
-    if font != null:
-        var label_pos: Vector2 = WorldProjectionScript.world_to_screen(bounds.position + Vector2(40.0, 55.0))
-        var label_width: float = font.get_string_size(title).x + 34.0
-        draw_rect(Rect2(label_pos.x - 12.0, label_pos.y - 27.0, label_width, 38.0), Color(0.08, 0.19, 0.12, 0.82))
-        draw_string(font, label_pos, title, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.96, 0.94, 0.78))
+    # Region nameplate is drawn by the top label layer (see _update_label),
+    # not here: _draw() renders below child sprites, so a label drawn here
+    # gets covered by landmarks (e.g. the moss_crown tower over "苔冠空地").
     if town:
         for point in [Vector2(500, 450), Vector2(564, 450), Vector2(628, 450), Vector2(692, 450), Vector2(628, 514)]:
             _draw_ground_tile(int(point.x), int(point.y), Color(0.82, 0.75, 0.61))

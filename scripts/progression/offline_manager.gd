@@ -51,19 +51,21 @@ func load_all() -> bool:
 
 func settle(now_unix: int, last_saved_unix, current_wood: int, wood_cap: int) -> Dictionary:
     # Returns {eligible, reason, elapsed_seconds, billed_seconds,
-    # gold, wood}. last_saved_unix may be absent (old save) or
+    # gold, wood, wood_capped, cap_hours}. last_saved_unix may be absent (old save) or
     # non-numeric (hand-edited save): both mean "no earnings",
     # never a crash and never a retroactive payout.
     if not (last_saved_unix is int or last_saved_unix is float):
-        return {"eligible": false, "reason": "no_timestamp", "elapsed_seconds": 0, "billed_seconds": 0, "gold": 0, "wood": 0}
+        return {"eligible": false, "reason": "no_timestamp", "elapsed_seconds": 0, "billed_seconds": 0, "gold": 0, "wood": 0, "wood_capped": false, "cap_hours": cap_hours}
     var last: int = int(last_saved_unix)
     if last <= 0 or now_unix < last:
-        return {"eligible": false, "reason": "no_timestamp", "elapsed_seconds": 0, "billed_seconds": 0, "gold": 0, "wood": 0}
+        return {"eligible": false, "reason": "no_timestamp", "elapsed_seconds": 0, "billed_seconds": 0, "gold": 0, "wood": 0, "wood_capped": false, "cap_hours": cap_hours}
     var elapsed: int = now_unix - last
     if elapsed < min_minutes * 60:
-        return {"eligible": false, "reason": "below_threshold", "elapsed_seconds": elapsed, "billed_seconds": 0, "gold": 0, "wood": 0}
+        return {"eligible": false, "reason": "below_threshold", "elapsed_seconds": elapsed, "billed_seconds": 0, "gold": 0, "wood": 0, "wood_capped": false, "cap_hours": cap_hours}
     var billed: int = mini(elapsed, cap_hours * 3600)
     var gold: int = int(float(billed) / 3600.0 * float(gold_per_hour))
-    var wood: int = int(float(billed) / 3600.0 * float(wood_per_hour))
-    wood = mini(wood, maxi(0, wood_cap - current_wood))
-    return {"eligible": true, "reason": "ok", "elapsed_seconds": elapsed, "billed_seconds": billed, "gold": gold, "wood": wood}
+    var raw_wood: int = int(float(billed) / 3600.0 * float(wood_per_hour))
+    var wood_room: int = maxi(0, wood_cap - current_wood)
+    var wood_capped: bool = raw_wood > wood_room
+    var wood: int = mini(raw_wood, wood_room)
+    return {"eligible": true, "reason": "ok", "elapsed_seconds": elapsed, "billed_seconds": billed, "gold": gold, "wood": wood, "wood_capped": wood_capped, "cap_hours": cap_hours}
