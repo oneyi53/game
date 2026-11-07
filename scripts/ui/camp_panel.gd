@@ -12,6 +12,7 @@ extends Control
 
 signal build_requested(building_id)
 signal hero_panel_requested
+signal close_requested
 
 @onready var panel_label: RichTextLabel = $PanelLabel
 
@@ -38,6 +39,7 @@ func _ensure_dynamic() -> void:
     add_child(scroll)
     list_box = VBoxContainer.new()
     list_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    list_box.add_theme_constant_override("separation", 16)
     scroll.add_child(list_box)
 
 func rebuild() -> void:
@@ -46,6 +48,7 @@ func rebuild() -> void:
     for child in list_box.get_children():
         list_box.remove_child(child)
         child.queue_free()
+    _add_title("营地")
     for building_id in manager.building_order:
         var entry = manager.building(building_id)
         if entry == null:
@@ -72,6 +75,22 @@ func rebuild() -> void:
             button.text = "建造（" + str(int(entry["cost_wood"])) + " 木材）"
             button.pressed.connect(_on_build_button_pressed.bind(building_id))
         list_box.add_child(button)
+    _add_close_button()
+
+func _add_title(text: String) -> void:
+    var title := Label.new()
+    title.text = text
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    title.add_theme_font_size_override("font_size", 40)
+    list_box.add_child(title)
+
+func _add_close_button() -> void:
+    var button := Button.new()
+    button.text = "关闭"
+    button.custom_minimum_size = Vector2(240, 72)
+    button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+    button.pressed.connect(func() -> void: close_requested.emit())
+    list_box.add_child(button)
 
 func _on_build_button_pressed(building_id: String) -> void:
     build_requested.emit(building_id)

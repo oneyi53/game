@@ -292,6 +292,7 @@ func _ready() -> void:
     camp_panel.set_manager(camp_manager)
     camp_panel.build_requested.connect(_on_camp_build)
     camp_panel.hero_panel_requested.connect(_on_camp_hero_panel_pressed)
+    camp_panel.close_requested.connect(func() -> void: camp_panel.visible = false)
     camp_panel.visible = false
     _refresh_quest_label()
     hero_panel.set_heroes(heroes)
